@@ -15,7 +15,8 @@ from .profile import TARGETS, load_json
 from .tracker import FINDING, parse_bug_report, parse_test_design
 
 CATEGORY = re.compile(r"^\*\*Category:\*\*\s*([a-z0-9-]+)\s*$")
-TODO = r"\b(TODO|FIXME)\b[:(]"
+# POSIX ERE, no \b: `git grep -E` uses the system regex library, and macOS's has no word boundaries.
+TODO = r"(^|[^A-Za-z0-9_])(TODO|FIXME)[:(]"
 
 
 def docs_root(root: Path) -> Path:
