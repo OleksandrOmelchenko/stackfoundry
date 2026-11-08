@@ -53,7 +53,7 @@ def git(root: Path, *args: str) -> str:
     env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@example.invalid",
            "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.invalid", "GIT_CONFIG_NOSYSTEM": "1"}
     return subprocess.run(["git", "-c", "core.autocrlf=false", "-c", "commit.gpgsign=false", *args], cwd=root,
-                          check=True, capture_output=True, text=True, env=env).stdout
+                          check=True, capture_output=True, text=True, encoding="utf-8", env=env).stdout
 
 
 def run_cli(args: list[str], cwd: Path | None = None, stdin: str = "", env: dict | None = None):

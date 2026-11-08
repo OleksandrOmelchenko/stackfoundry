@@ -11,7 +11,8 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Superseded pull-request pushes are cancelled; every run on main finishes, so main always has a verdict.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   unit:
@@ -21,7 +22,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python: ["3.10", "3.13"]
+        # The supported floor (bin/stackfoundry) and the newest release.
+        python: ["3.11", "3.x"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -42,7 +44,8 @@ jobs:
         with:
           node-version: lts/*
       - name: Install Claude Code CLI
-        run: npm install -g @anthropic-ai/claude-code
+        # Pinned so a CLI release cannot change what "valid" means between two runs of the same commit.
+        run: npm install -g @anthropic-ai/claude-code@2.1.307
       - name: Validate marketplace
         run: claude plugin validate --strict .
       - name: Validate plugin

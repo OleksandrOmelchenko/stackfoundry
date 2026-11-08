@@ -21,7 +21,10 @@ citing its source.
 To pin it for everyone who clones your repo, `init` adds `extraKnownMarketplaces` and `enabledPlugins` to the
 committed `.claude/settings.json`. Each collaborator still runs the install command once.
 
-Requirements: Claude Code, git, Python 3.10+ (the helper CLI and hooks use only the standard library).
+Requirements: Claude Code, git, Python 3.11+ (the helper CLI and hooks use only the standard library).
+
+stackfoundry is a **Claude Code** plugin. It ships a command-line helper in `bin/`, and claude.ai and Cowork don't
+install plugins that do; its work (git, builds, test suites) needs a development environment anyway.
 
 ## How it works
 

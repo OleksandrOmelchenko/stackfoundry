@@ -88,7 +88,7 @@ model-invocable.
 
 ## The helper CLI
 
-`plugins/stackfoundry/bin/stackfoundry` is a POSIX `sh` launcher that finds Python 3.10+ (`python3`, `python`,
+`plugins/stackfoundry/bin/stackfoundry` is a POSIX `sh` launcher that finds Python 3.11+ (`python3`, `python`,
 `py -3`) and runs `scripts/stackfoundry/cli.py` isolated (`-I`). Standard library only, no network, JSON for every
 machine-read file. Mappings that must be deterministic (path → target, change → tests, tracker parsing) live there,
 read from the repo's JSON, never hard-coded and never restated in a skill.

@@ -37,4 +37,5 @@ Values recorded in the repo profile win.
 
 ## Requirements
 
-Claude Code, git, Python 3.10 or newer on `PATH` as `python3`, `python` or `py -3`.
+Claude Code, git, Python 3.11 or newer on `PATH` as `python3`, `python` or `py -3`. Claude Code only: claude.ai and
+Cowork don't install plugins that ship a `bin/` folder.

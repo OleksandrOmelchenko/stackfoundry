@@ -1,4 +1,4 @@
-"""stackfoundry helper CLI. Run through bin/stackfoundry, which picks Python >= 3.10 and isolates it (-I).
+"""stackfoundry helper CLI. Run through bin/stackfoundry, which picks Python >= 3.11 and isolates it (-I).
 
 Every subcommand is read-only except `manifest record|forget` (they write .claude/stackfoundry/manifest.lock.json)
 and `pack render --out` (writes the rulebook it names).

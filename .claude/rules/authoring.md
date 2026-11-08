@@ -41,7 +41,7 @@ paths:
 
 ## Scripts and hooks
 
-- `scripts/stackfoundry/`: Python ≥ 3.10, standard library only, no network, JSON in and out. Each subcommand's
+- `scripts/stackfoundry/`: Python ≥ 3.11, standard library only, no network, JSON in and out. Each subcommand's
   docstring says whether it writes. New subcommand → new test module in `tests/`.
 - Hooks call `sh "${CLAUDE_PLUGIN_ROOT}/bin/stackfoundry" <subcommand>` and fail open when no repo profile exists.
 

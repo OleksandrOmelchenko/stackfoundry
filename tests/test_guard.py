@@ -91,7 +91,7 @@ class GuardTests(unittest.TestCase):
         with TempRepo() as root:
             write(root, {".claude/stackfoundry/guards.json": json.dumps(GUARDS)})
             proc = subprocess.run(["sh", str(LAUNCHER), "guard"], input=event("Bash", command="git push"),
-                                  capture_output=True, text=True, env={**__import__("os").environ,
+                                  capture_output=True, text=True, encoding="utf-8", env={**__import__("os").environ,
                                                                        "CLAUDE_PROJECT_DIR": str(root)})
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual(json.loads(proc.stdout)["hookSpecificOutput"]["permissionDecision"], "ask")

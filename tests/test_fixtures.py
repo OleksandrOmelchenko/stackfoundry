@@ -55,12 +55,12 @@ class ScaffoldTests(unittest.TestCase):
     def test_scaffold_copies_the_fixture_without_its_answer_key_and_commits(self):
         with tempfile.TemporaryDirectory() as ws:
             script = f'SCAFFOLD_LIB="{(FIXTURES / "scaffold-lib.sh").as_posix()}"; . "$SCAFFOLD_LIB"; scaffold vue-spa'
-            proc = subprocess.run(["sh", "-c", script], cwd=ws, capture_output=True, text=True,
+            proc = subprocess.run(["sh", "-c", script], cwd=ws, capture_output=True, text=True, encoding="utf-8",
                                   env={**os.environ, "GIT_CONFIG_NOSYSTEM": "1"})
             self.assertEqual(proc.returncode, 0, proc.stderr)
             self.assertTrue((Path(ws) / "src/components/CartBadge.vue").is_file())
             self.assertFalse((Path(ws) / "EXPECTED.md").exists())
-            log = subprocess.run(["git", "log", "--oneline"], cwd=ws, capture_output=True, text=True).stdout
+            log = subprocess.run(["git", "log", "--oneline"], cwd=ws, capture_output=True, text=True, encoding="utf-8").stdout
             self.assertIn("fixture: vue-spa", log)
 
 

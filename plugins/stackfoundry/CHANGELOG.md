@@ -22,3 +22,23 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 - The `stackfoundry` helper CLI (Python standard library only, no network) and the guard hook (generated files,
   forbidden commands, git-write policy).
 - Eval cases on three fixture repos with planted defects.
+
+### Changed
+
+- Python 3.11 is the minimum (3.10 reached end of life).
+- The stack-researcher writes its pack file itself; init checks it with `stackfoundry pack check` and renders
+  rulebooks with `stackfoundry pack render`.
+- The survey detects Claude Code plugins and marketplaces, flags fixture folders and reports sources outside every
+  manifest; init ignores fixtures and handles `.claude/CLAUDE.md`, the marketplace repo itself and
+  non-interactive runs.
+- The guard hook sets `onFailure: continue`.
+
+### Fixed
+
+- The guard let edits of protected files through when the project path had non-ASCII characters on Windows (the
+  hook event was decoded with the code page instead of UTF-8).
+- JSON files with a byte-order mark were unreadable (guarding silently stopped).
+- Non-ASCII file names dropped out of `change-targets` and `select-tests`.
+- Manifest writes were not atomic; `globs-check` ignored `bin/` folders; `verify-plumbing` misread a marketplace
+  root; `tracker check` rejected non-tracker files; a bad specialist regex crashed `change-targets`; malformed
+  input exited 1 (a verdict) instead of 2.
