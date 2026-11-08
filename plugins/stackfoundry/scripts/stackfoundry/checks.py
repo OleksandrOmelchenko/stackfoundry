@@ -20,7 +20,7 @@ from pathlib import Path
 from . import gitutil
 from .frontmatter import split
 from .globs import match
-from .survey import list_files, load_signals
+
 
 DETECTED = {"Killed", "Timeout"}
 UNDETECTED = {"Survived", "NoCoverage"}
@@ -34,8 +34,17 @@ def rulebooks(paths: list[Path]) -> list[Path]:
     return out
 
 
+def repo_files(root: Path) -> list[str]:
+    """Every tracked or untracked-but-not-ignored file. Unlike the survey, nothing is skipped: a rule may well
+    govern a bin/ or build/ folder, and Claude Code loads it for any file there."""
+    try:
+        return gitutil.paths(["ls-files", "--cached", "--others", "--exclude-standard"], root)
+    except gitutil.GitError:
+        return [p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file() and ".git" not in p.parts]
+
+
 def globs_check(root: Path, files: list[Path]) -> list[dict]:
-    repo_files = list_files(root, load_signals())
+    all_files = repo_files(root)
     results = []
     for f in rulebooks(files):
         fields, _, _ = split(f.read_text(encoding="utf-8", errors="replace"))
@@ -43,7 +52,7 @@ def globs_check(root: Path, files: list[Path]) -> list[dict]:
         if not isinstance(globs, list):
             continue
         for g in globs:
-            hits = sum(1 for rf in repo_files if match(rf, str(g)))
+            hits = sum(1 for rf in all_files if match(rf, str(g)))
             results.append({"file": f.as_posix(), "glob": g, "matches": hits})
     return results
 
@@ -80,7 +89,7 @@ def mutation_summary(report: dict) -> dict:
 
 def main_globs(args) -> int:
     root = Path(args.root).resolve() if args.root else gitutil.repo_root(Path.cwd())
-    results = globs_check(root, [Path(p) for p in args.paths])
+    results = globs_check(root, [p if p.is_absolute() else root / p for p in map(Path, args.paths)])
     dead = [r for r in results if r["matches"] == 0]
     if args.json:
         print(json.dumps(results, indent=2))
@@ -119,7 +128,7 @@ def main_today(args) -> int:
 
 
 def main_mutation(args) -> int:
-    report = json.loads(Path(args.report).read_text(encoding="utf-8"))
+    report = json.loads(Path(args.report).read_text(encoding="utf-8-sig"))
     s = mutation_summary(report)
     if args.json:
         print(json.dumps(s, indent=2))

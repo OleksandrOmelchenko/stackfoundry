@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from pathlib import Path
 
 from . import gitutil
@@ -69,7 +70,13 @@ def specialists(data: dict, root: Path, files: list[str]) -> list[dict]:
     out = []
     for spec in data.get("specialists", []):
         hits: list[str] = []
-        patterns = [re.compile(p) for p in spec.get("contains", [])]
+        patterns = []
+        for p in spec.get("contains", []):
+            try:
+                patterns.append(re.compile(p))
+            except re.error as exc:  # one broken rule must not take the whole mapping down
+                print(f"change-targets: specialist {spec['agent']}: skipping invalid regex {p!r} ({exc})",
+                      file=sys.stderr)
         for f in files:
             if match_any(f, data.get("generated", [])):
                 continue
@@ -90,11 +97,13 @@ def specialists(data: dict, root: Path, files: list[str]) -> list[dict]:
     return out
 
 
-def resolve_files(root: Path, base: str | None, files_arg: str | None, range_arg: str | None = None) -> list[str]:
+def resolve_files(root: Path, base: str | None, files_arg, range_arg: str | None = None) -> list[str]:
+    """`files_arg`: a list of values, each a path or a comma-separated list of paths (both forms are accepted)."""
     if files_arg:
-        return [f.strip().replace("\\", "/") for f in files_arg.split(",") if f.strip()]
+        values = [files_arg] if isinstance(files_arg, str) else files_arg
+        return [f.strip().replace("\\", "/") for v in values for f in v.split(",") if f.strip()]
     if range_arg:  # a commit range exactly, nothing uncommitted (fix-verify commit mode)
-        return [f for f in gitutil.run(["diff", "--name-only", range_arg], root).splitlines() if f]
+        return gitutil.paths(["diff", "--name-only", range_arg], root)
     return gitutil.changed_files(root, base)
 
 

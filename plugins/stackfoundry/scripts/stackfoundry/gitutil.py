@@ -25,25 +25,25 @@ def repo_root(start: Path) -> Path:
     return Path(run(["rev-parse", "--show-toplevel"], start).strip())
 
 
+def paths(args: list[str], root: Path) -> list[str]:
+    """A git command that lists paths, run with -z: without it git quotes and escapes non-ASCII names
+    ("\\320\\220…"), which then match no glob and silently drop out of change sets."""
+    return [p.replace("\\", "/") for p in run([*args, "-z"], root).split("\0") if p]
+
+
 def changed_files(root: Path, base: str | None = None) -> list[str]:
     """Files changed against `base` (merge-base form, `base...HEAD`), or the uncommitted tree plus untracked files."""
     if base:
-        out = run(["diff", "--name-only", f"{base}...HEAD"], root)
-        files = out.splitlines()
+        files = paths(["diff", "--name-only", f"{base}...HEAD"], root)
         # A branch review also covers what is still uncommitted on top of it.
-        files += run(["diff", "--name-only", "HEAD"], root).splitlines()
+        files += paths(["diff", "--name-only", "HEAD"], root)
     else:
         try:
-            files = run(["diff", "--name-only", "HEAD"], root).splitlines()
+            files = paths(["diff", "--name-only", "HEAD"], root)
         except GitError:  # no commit yet
-            files = run(["diff", "--name-only", "--cached"], root).splitlines()
-    files += run(["ls-files", "--others", "--exclude-standard"], root).splitlines()
-    seen: dict[str, None] = {}
-    for f in files:
-        f = f.strip()
-        if f:
-            seen.setdefault(f.replace("\\", "/"), None)
-    return list(seen)
+            files = paths(["diff", "--name-only", "--cached"], root)
+    files += paths(["ls-files", "--others", "--exclude-standard"], root)
+    return list(dict.fromkeys(files))
 
 
 def default_branch(root: Path) -> str | None:
@@ -58,4 +58,4 @@ def default_branch(root: Path) -> str | None:
 
 
 def tracked_files(root: Path) -> list[str]:
-    return [f for f in run(["ls-files"], root).splitlines() if f]
+    return paths(["ls-files"], root)

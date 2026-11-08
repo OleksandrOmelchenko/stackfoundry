@@ -8,19 +8,17 @@ from __future__ import annotations
 import json
 import os
 import re
+import sys
+import tomllib
 from collections import Counter, defaultdict
 from pathlib import Path
 
 from . import REFERENCE, gitutil
 from .globs import match
 
-try:  # Python 3.11+
-    import tomllib
-except ModuleNotFoundError:  # pragma: no cover - exercised on 3.10
-    tomllib = None
-
 MAX_FILES = 200_000
 GENERATED_HEAD_BYTES = 2048
+GENERATED_HEAD_LINES = 5  # a generator stamps the file's header; a marker further down is usually a string in code
 GENERATED_MAX_SIZE = 512 * 1024
 
 
@@ -124,28 +122,25 @@ _PY_REQ = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)")
 def parse_pyproject(text: str) -> tuple[list[str], dict]:
     deps: list[str] = []
     facts: dict = {}
-    if tomllib is not None:
-        try:
-            data = tomllib.loads(text)
-        except Exception:  # noqa: BLE001 - malformed TOML is reported, not fatal
-            return [], {"error": "invalid TOML"}
-        project = data.get("project", {})
-        facts["name"] = project.get("name")
-        for spec in project.get("dependencies", []) or []:
-            m = _PY_REQ.match(spec)
-            if m:
-                deps.append(m.group(1))
-        for group in (project.get("optional-dependencies") or {}).values():
-            deps += [m.group(1) for s in group if (m := _PY_REQ.match(s))]
-        for group in (data.get("dependency-groups") or {}).values():
-            deps += [m.group(1) for s in group if isinstance(s, str) and (m := _PY_REQ.match(s))]
-        poetry = data.get("tool", {}).get("poetry", {})
-        deps += [k for k in (poetry.get("dependencies") or {}) if k != "python"]
-        for grp in (poetry.get("group") or {}).values():
-            deps += list((grp.get("dependencies") or {}).keys())
-        facts["tools"] = sorted((data.get("tool") or {}).keys())
-    else:
-        deps = re.findall(r"^\s*\"([A-Za-z0-9][A-Za-z0-9._-]*)", text, flags=re.M)
+    try:
+        data = tomllib.loads(text)
+    except tomllib.TOMLDecodeError:  # malformed TOML is reported, not fatal
+        return [], {"error": "invalid TOML"}
+    project = data.get("project", {})
+    facts["name"] = project.get("name")
+    for spec in project.get("dependencies", []) or []:
+        m = _PY_REQ.match(spec)
+        if m:
+            deps.append(m.group(1))
+    for group in (project.get("optional-dependencies") or {}).values():
+        deps += [m.group(1) for s in group if (m := _PY_REQ.match(s))]
+    for group in (data.get("dependency-groups") or {}).values():
+        deps += [m.group(1) for s in group if isinstance(s, str) and (m := _PY_REQ.match(s))]
+    poetry = data.get("tool", {}).get("poetry", {})
+    deps += [k for k in (poetry.get("dependencies") or {}) if k != "python"]
+    for grp in (poetry.get("group") or {}).values():
+        deps += list((grp.get("dependencies") or {}).keys())
+    facts["tools"] = sorted((data.get("tool") or {}).keys())
     return [d.lower() for d in deps], facts
 
 
@@ -174,17 +169,25 @@ def parse_go_mod(text: str) -> tuple[list[str], dict]:
 
 
 def parse_cargo(text: str) -> tuple[list[str], dict]:
-    if tomllib is not None:
-        try:
-            data = tomllib.loads(text)
-        except Exception:  # noqa: BLE001
-            return [], {"error": "invalid TOML"}
-        deps: list[str] = []
-        for key in ("dependencies", "dev-dependencies", "build-dependencies"):
-            deps += list((data.get(key) or {}).keys())
-        deps += list(((data.get("workspace") or {}).get("dependencies") or {}).keys())
-        return deps, {"name": (data.get("package") or {}).get("name")}
-    return re.findall(r"^([A-Za-z0-9_-]+)\s*=", text, flags=re.M), {}
+    try:
+        data = tomllib.loads(text)
+    except tomllib.TOMLDecodeError:
+        return [], {"error": "invalid TOML"}
+    deps: list[str] = []
+    for key in ("dependencies", "dev-dependencies", "build-dependencies"):
+        deps += list((data.get(key) or {}).keys())
+    deps += list(((data.get("workspace") or {}).get("dependencies") or {}).keys())
+    return deps, {"name": (data.get("package") or {}).get("name")}
+
+
+def parse_claude_plugin(text: str) -> tuple[list[str], dict]:
+    """A Claude Code plugin manifest (.claude-plugin/plugin.json): the plugin itself is the unit."""
+    try:
+        data = json.loads(text)
+    except ValueError:
+        return [], {"error": "invalid JSON"}
+    deps = [d if isinstance(d, str) else d.get("name", "") for d in data.get("dependencies", []) or []]
+    return [d for d in deps if d], {"name": data.get("name"), "version": data.get("version")}
 
 
 def parse_maven(text: str) -> tuple[list[str], dict]:
@@ -245,6 +248,7 @@ PARSERS = {
     "dart-package": parse_pubspec,
     "mix-project": parse_mix,
     "swift-package": lambda text: ([], {}),
+    "claude-plugin": parse_claude_plugin,
 }
 
 
@@ -325,7 +329,11 @@ def survey(root: Path) -> dict:
         for m in signals["manifests"]:
             if match(f, m["glob"]):
                 deps, facts = PARSERS[m["kind"]](_read(root, f))
-                hints = [{"layer": "language", "tech": m["language"], "evidence": f"manifest {Path(f).name}"}]
+                hints = []
+                if m.get("language"):
+                    hints.append({"layer": "language", "tech": m["language"], "evidence": f"manifest {Path(f).name}"})
+                if m.get("appModel"):
+                    hints.append({"layer": "app-model", "tech": m["appModel"], "evidence": f"manifest {f}"})
                 dep_hints = dependency_hints(m["ecosystem"], deps, signals)
                 if m["kind"] == "dotnet-project":
                     is_test = any(h["tech"] == "dotnet-test-project" for h in dep_hints)
@@ -334,8 +342,13 @@ def survey(root: Path) -> dict:
                     hints = [{"layer": "language", "tech": "typescript",
                               "evidence": "typescript dependency or tsconfig.json beside package.json"}]
                 hints += dep_hints
+                unit_dir = Path(f).parent
+                if unit_dir.name == ".claude-plugin":  # the plugin is the folder holding .claude-plugin/
+                    unit_dir = unit_dir.parent
+                unit_path = unit_dir.as_posix() if unit_dir.as_posix() != "." else "."
                 units.append({
-                    "path": Path(f).parent.as_posix() if Path(f).parent.as_posix() != "." else ".",
+                    "path": unit_path,
+                    "fixture": _is_fixture(unit_path, signals),
                     "manifest": f,
                     "kind": m["kind"],
                     "ecosystem": m["ecosystem"],
@@ -352,7 +365,24 @@ def survey(root: Path) -> dict:
                 hint = {"layer": c["layer"], "tech": c["tech"], "evidence": f"config file {f}"}
                 owner = _owning_unit(units, f)
                 (owner["hints"] if owner else repo_hints).append(hint)
+    # Where the source files live: per unit (nested units excluded), and outside every unit. A product with no
+    # manifest (a script folder, a CLI run by a launcher) shows up only here.
     for u in units:
+        u["languages"] = Counter()
+    loose: Counter = Counter()
+    for f in files:
+        lang = ext_map.get(os.path.splitext(f)[1].lower())
+        if not lang:
+            continue
+        owner = _owning_unit(units, f)
+        if owner:
+            owner["languages"][lang] += 1
+        else:
+            loose[("/".join(f.split("/")[:-1][:3]) or ".", lang)] += 1
+    loose_sources = [{"dir": d, "language": lang, "files": n, "fixture": _is_fixture(d, signals)}
+                     for (d, lang), n in loose.most_common(40)]
+    for u in units:
+        u["languages"] = dict(u["languages"].most_common())
         u["hints"] = dedupe(u["hints"])
         u["isTestProject"] = any(h["tech"] in ("dotnet-test-project",) for h in u["hints"]) or bool(
             re.search(r"(^|[./_-])(tests?|specs?)([./_-]|$)", u["path"], flags=re.I)
@@ -389,7 +419,7 @@ def survey(root: Path) -> dict:
                 head = fh.read(GENERATED_HEAD_BYTES).decode("utf-8", errors="replace")
         except OSError:
             continue
-        if any(mk in head for mk in markers):
+        if any(mk in line for line in head.splitlines()[:GENERATED_HEAD_LINES] for mk in markers):
             generated[Path(f).parent.as_posix()] += 1
 
     solution = [f for f in files if any(match(f, g) for g in signals["solutionFiles"])]
@@ -412,6 +442,7 @@ def survey(root: Path) -> dict:
         "truncated": len(files) >= MAX_FILES,
         "languages": dict(languages.most_common()),
         "units": units,
+        "looseSources": loose_sources,
         "repoHints": dedupe(repo_hints),
         "solutionFiles": solution,
         "infrastructure": {k: dict(v) for k, v in infrastructure.items()},
@@ -421,6 +452,12 @@ def survey(root: Path) -> dict:
         "claude": claude,
         "git": git,
     }
+
+
+def _is_fixture(path: str, signals: dict) -> bool:
+    """Under a folder of test fixtures or samples: evidence that it is test data, not a product to target."""
+    names = {n.lower() for n in signals.get("fixtureDirNames", [])}
+    return any(seg.lower() in names for seg in path.split("/"))
 
 
 def _owning_unit(units: list[dict], f: str) -> dict | None:
@@ -445,7 +482,7 @@ def _claude_inventory(root: Path, files: list[str]) -> dict:
     settings = root / ".claude" / "settings.json"
     if settings.exists():
         try:
-            data = json.loads(settings.read_text(encoding="utf-8"))
+            data = json.loads(settings.read_text(encoding="utf-8-sig"))
             inv["settingsHooks"] = sorted((data.get("hooks") or {}).keys())
             inv["enabledPlugins"] = data.get("enabledPlugins")
         except ValueError:
@@ -456,7 +493,7 @@ def _claude_inventory(root: Path, files: list[str]) -> dict:
 def main(args) -> int:
     root = Path(args.path)
     if not root.is_dir():
-        print(f"survey: {root} is not a directory")
+        print(f"survey: {root} is not a directory", file=sys.stderr)
         return 2
     print(json.dumps(survey(root), indent=2 if args.pretty else None, ensure_ascii=False))
     return 0

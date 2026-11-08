@@ -7,6 +7,7 @@
     ".next", ".nuxt", ".output", ".svelte-kit", ".angular", ".turbo", ".cache", ".gradle", ".idea", ".vs",
     "packages", "Pods", "DerivedData", ".dart_tool", "_build", "deps", ".terraform"
   ],
+  "fixtureDirNames": ["fixtures", "__fixtures__", "test-fixtures", "testdata", "test-data", "samples", "sample-repos"],
   "keepDotDirs": [".github", ".gitlab", ".claude", ".config", ".devcontainer", ".circleci", ".husky", ".githooks"],
   "languagesByExtension": {
     ".cs": "csharp", ".fs": "fsharp", ".vb": "visualbasic", ".xaml": "xaml", ".razor": "razor", ".cshtml": "razor",
@@ -38,7 +39,8 @@
     {"glob": "**/composer.json", "kind": "composer-package", "ecosystem": "composer", "language": "php"},
     {"glob": "**/pubspec.yaml", "kind": "dart-package", "ecosystem": "pub", "language": "dart"},
     {"glob": "**/mix.exs", "kind": "mix-project", "ecosystem": "hex", "language": "elixir"},
-    {"glob": "**/Package.swift", "kind": "swift-package", "ecosystem": "swiftpm", "language": "swift"}
+    {"glob": "**/Package.swift", "kind": "swift-package", "ecosystem": "swiftpm", "language": "swift"},
+    {"glob": "**/.claude-plugin/plugin.json", "kind": "claude-plugin", "ecosystem": "claude-plugins", "language": null, "appModel": "claude-code-plugin"}
   ],
   "solutionFiles": ["**/*.sln", "**/*.slnx", "**/Directory.Build.props", "**/Directory.Packages.props", "**/global.json",
     "**/pnpm-workspace.yaml", "**/lerna.json", "**/nx.json", "**/turbo.json", "**/.nvmrc", "**/.node-version",
@@ -218,7 +220,8 @@
     {"glob": "**/stryker.conf.{js,json,mjs}", "layer": "tooling", "tech": "stryker"},
     {"glob": "**/stryker-config.json", "layer": "tooling", "tech": "stryker-net"},
     {"glob": "**/.editorconfig", "layer": "tooling", "tech": "editorconfig"},
-    {"glob": "**/openapitools.json", "layer": "capability", "tech": "openapi-client-gen"}
+    {"glob": "**/openapitools.json", "layer": "capability", "tech": "openapi-client-gen"},
+    {"glob": "**/.claude-plugin/marketplace.json", "layer": "capability", "tech": "claude-code-marketplace"}
   ],
   "infrastructure": [
     {"glob": ".github/workflows/*.{yml,yaml}", "category": "ci", "tech": "github-actions"},

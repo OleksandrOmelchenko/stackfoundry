@@ -61,7 +61,7 @@ def scan(path: Path, include_counts: bool, exclude: list[str]) -> list[dict]:
 
 
 def main(args) -> int:
-    hits = scan(Path(args.path), args.include_counts, args.exclude or [])
+    hits = [h for p in args.paths for h in scan(Path(p), args.include_counts, args.exclude or [])]
     if args.json:
         print(json.dumps(hits, indent=2))
     else:

@@ -1,6 +1,7 @@
 """stackfoundry helper CLI. Run through bin/stackfoundry, which picks Python >= 3.10 and isolates it (-I).
 
-Every subcommand is read-only except `manifest record|forget` (they write .claude/stackfoundry/manifest.lock.json).
+Every subcommand is read-only except `manifest record|forget` (they write .claude/stackfoundry/manifest.lock.json)
+and `pack render --out` (writes the rulebook it names).
 None makes a network call.
 """
 from __future__ import annotations
@@ -12,7 +13,7 @@ from pathlib import Path
 # -I leaves the script directory off sys.path; add this package's parent explicitly (our own code only).
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from stackfoundry import (backlog, change_targets, checks, guard, manifest, plumbing,  # noqa: E402
+from stackfoundry import (backlog, change_targets, checks, guard, manifest, pack, plumbing,  # noqa: E402
                           select_tests, survey, tracker, volatile)
 from stackfoundry.gitutil import GitError  # noqa: E402
 from stackfoundry.profile import ProfileError  # noqa: E402
@@ -33,7 +34,7 @@ def build() -> argparse.ArgumentParser:
     ):
         c = sub.add_parser(name, help=helptext)
         c.add_argument("--base", help="compare base...HEAD (plus uncommitted); default: uncommitted + untracked")
-        c.add_argument("--files", help="comma-separated paths instead of git")
+        c.add_argument("--files", nargs="+", help="paths instead of git (space- or comma-separated)")
         c.add_argument("--range", help="a commit range (A..B or A...B) exactly, without uncommitted changes")
         c.add_argument("--root", help="repo root (default: git toplevel of the current directory)")
         c.add_argument("--json", action="store_true")
@@ -42,7 +43,7 @@ def build() -> argparse.ArgumentParser:
         c.set_defaults(func=mod.main)
 
     v = sub.add_parser("volatile-facts", help="file:line, dates, SHAs, durations (and counts) in living docs")
-    v.add_argument("path")
+    v.add_argument("paths", nargs="+", help="files or folders")
     v.add_argument("--include-counts", action="store_true")
     v.add_argument("--exclude", action="append", help="glob, relative to path (repeatable)")
     v.add_argument("--strict", action="store_true", help="exit 1 when anything is found")
@@ -67,7 +68,7 @@ def build() -> argparse.ArgumentParser:
     vp.set_defaults(func=plumbing.main)
 
     gc = sub.add_parser("globs-check", help="rulebook paths: globs that match no file in the repo")
-    gc.add_argument("paths", nargs="+", help="rulebook files or folders (e.g. .claude/rules)")
+    gc.add_argument("paths", nargs="*", default=[".claude/rules"], help="rulebook files or folders (default .claude/rules)")
     gc.add_argument("--root")
     gc.add_argument("--json", action="store_true")
     gc.set_defaults(func=checks.main_globs)
@@ -82,10 +83,18 @@ def build() -> argparse.ArgumentParser:
     td.add_argument("--verbose", action="store_true", help="also print which zone was used")
     td.set_defaults(func=checks.main_today)
 
+    pk = sub.add_parser("pack", help="check a researched pack, or render its rulebook")
+    pk.add_argument("action", choices=["check", "render"])
+    pk.add_argument("pack", help="path to .claude/stackfoundry/packs/<id>/pack.json")
+    pk.add_argument("--out", help="render: write the rulebook here instead of stdout")
+    pk.add_argument("--json", action="store_true")
+    pk.set_defaults(func=pack.main)
+
     m = sub.add_parser("manifest", help="record generated files, or diff them against their templates")
     m.add_argument("action", choices=["record", "forget", "diff", "list"])
     m.add_argument("files", nargs="*")
-    m.add_argument("--template", help="plugin-relative template path, or 'research' for a researched pack")
+    m.add_argument("--template", help="plugin-relative template path; 'research' for a pack and its rulebook; "
+                                      "'profile' for profile facts (targets.json, ecosystems.json, guards.json…)")
     m.add_argument("--kind", choices=["generated", "materialized"], default="generated")
     m.add_argument("--root", default=".")
     m.add_argument("--json", action="store_true")
@@ -101,13 +110,15 @@ def build() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     for stream in (sys.stdout, sys.stderr):
         try:
-            stream.reconfigure(encoding="utf-8")  # emoji markers on a Windows console
+            stream.reconfigure(encoding="utf-8", errors="backslashreplace")  # emoji markers on a Windows console
         except (AttributeError, ValueError):
             pass
     args = build().parse_args(argv)
     try:
         return args.func(args)
-    except (ProfileError, GitError, FileNotFoundError) as exc:
+    except (ProfileError, GitError, OSError, ValueError) as exc:
+        # 2 = could not run (missing or malformed input). 1 means "ran and found something"; a crash must never
+        # read as a verdict. ValueError covers JSON and Unicode decode errors.
         print(f"stackfoundry {args.command}: {exc}", file=sys.stderr)
         return 2
 

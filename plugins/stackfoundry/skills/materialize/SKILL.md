@@ -1,6 +1,6 @@
 ---
 name: materialize
-description: Write a team-owned copy of a generic role agent for one target into .claude/agents/, to hand-tune it; orchestrators dispatch it instead and upgrades skip it. Use for /stackfoundry:materialize <target> <role>.
+description: Write a team-owned copy of a generic role agent for one target into .claude/agents/, to hand-tune it; orchestrators dispatch it instead and upgrades skip it. Use for /stackfoundry:materialize [target] [role].
 argument-hint: "<target> <role>"
 disable-model-invocation: true
 ---

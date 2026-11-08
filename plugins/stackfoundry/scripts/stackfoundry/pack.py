@@ -1,0 +1,232 @@
+"""`stackfoundry pack check|render <pack.json>`: validate a researched pack, and render its rulebook.
+
+check   Read-only. Errors exit 1: missing required fields, a citation key with no source, a source without url or
+        access date, HTML-escaped text (a sign the JSON went through a renderer), an id whose prefix contradicts its
+        layer. Warnings: an empty section, a rule with no `where`, no rulebook paths.
+render  Writes the rulebook (`.claude/rules/<id>.md`) to stdout, or to --out. Deterministic: the same pack always
+        gives the same file, so a re-render after an edit to the pack is a clean diff. The layout is the one
+        reference/templates/pack-rulebook.md describes.
+"""
+from __future__ import annotations
+
+import json
+import re
+import sys
+from pathlib import Path
+
+LAYERS = ("language", "app-model", "capability", "tooling")
+ID = re.compile(r"^(language|app-model|capability|tooling)-[a-z0-9-]+$")
+DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+ENTITY = re.compile(r"&(?:gt|lt|amp|quot|apos|#\d+|#x[0-9a-fA-F]+);")
+CITED_SECTIONS = ("rules", "bugCategories", "wiring", "performance", "security")
+
+
+def load(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
+def _strings(node, where=""):
+    if isinstance(node, str):
+        yield where, node
+    elif isinstance(node, dict):
+        for k, v in node.items():
+            yield from _strings(v, f"{where}.{k}" if where else k)
+    elif isinstance(node, list):
+        for i, v in enumerate(node):
+            yield from _strings(v, f"{where}[{i}]")
+
+
+def check(pack: dict) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if pack.get("schemaVersion") != 1:
+        errors.append("schemaVersion must be 1")
+    pid, layer = pack.get("id", ""), pack.get("layer")
+    if not ID.match(pid or ""):
+        errors.append(f"id {pid!r} must look like <layer>-<name>")
+    if layer not in LAYERS:
+        errors.append(f"layer {layer!r} must be one of {', '.join(LAYERS)}")
+    elif pid and not pid.startswith(layer + "-"):
+        errors.append(f"id {pid!r} does not start with its layer {layer!r}")
+    if not DATE.match(str(pack.get("researchedAt", ""))):
+        errors.append("researchedAt must be a YYYY-MM-DD date")
+    if not isinstance(pack.get("versions"), list):
+        errors.append("versions must be a list (empty when the version is not pinned anywhere)")
+    sources = pack.get("sources")
+    if not isinstance(sources, dict) or not sources:
+        errors.append("sources must be a non-empty object")
+        sources = {}
+    for key, src in sources.items():
+        if not isinstance(src, dict) or not str(src.get("url", "")).startswith(("http://", "https://")):
+            errors.append(f"source [{key}] needs an http(s) url")
+        elif not DATE.match(str(src.get("accessed", ""))):
+            errors.append(f"source [{key}] needs an accessed date (YYYY-MM-DD)")
+    if not pack.get("rules"):
+        errors.append("rules must be a non-empty list")
+    for section in CITED_SECTIONS:
+        for i, item in enumerate(pack.get(section, []) or []):
+            where = f"{section}[{i}]"
+            cited = item.get("sources") if isinstance(item, dict) else None
+            if not cited:
+                errors.append(f"{where} cites no source")
+                continue
+            missing = [k for k in cited if k not in sources]
+            if missing:
+                errors.append(f"{where} cites unknown source key(s): {', '.join(missing)}")
+            if section == "rules":
+                for field in ("rule", "why"):
+                    if not item.get(field):
+                        errors.append(f"{where} needs '{field}'")
+                if not item.get("where"):
+                    warnings.append(f"{where} has no 'where' (ground it, or say 'not used here yet')")
+            if section == "bugCategories":
+                for field in ("name", "lookFor", "failure"):
+                    if not item.get(field):
+                        errors.append(f"{where} needs '{field}'")
+    for where, text in _strings(pack):
+        if ENTITY.search(text):
+            errors.append(f"{where}: HTML-escaped text ({ENTITY.search(text).group(0)}); write plain characters")
+    for section in ("bugCategories", "testing"):
+        if not pack.get(section):
+            warnings.append(f"no {section} section")
+    if not pack.get("rulebookPaths"):
+        warnings.append("no rulebookPaths: the rulebook will load in no session")
+    return errors, warnings
+
+
+def _cite(keys) -> str:
+    return f" [{', '.join(keys)}]" if keys else ""
+
+
+def _where(item: dict) -> str:
+    where = item.get("where") or []
+    return f" Here: {'; '.join(where)}." if where else ""
+
+
+def _cell(text) -> str:
+    return str(text or "").replace("|", "\\|").replace("\n", " ")
+
+
+def render(pack: dict) -> str:
+    title = pack.get("title") or pack["id"]
+    layer = pack["layer"]
+    versions = "; ".join(
+        f"{v.get('version')} ({v.get('pinnedIn')})" for v in pack.get("versions", []) or []
+    ) or "not pinned"
+    out: list[str] = [
+        "---",
+        f"description: {title} rulebook ({layer} layer). Researched {pack['researchedAt']}; source pack "
+        f".claude/stackfoundry/packs/{pack['id']}/pack.json.",
+        "paths:",
+    ]
+    out += [f'  - "{g}"' for g in pack.get("rulebookPaths", [])] or ["  []"]
+    out += [
+        "---",
+        "",
+        f"# {title} ({layer})",
+        "",
+        "<!-- Generated by `stackfoundry pack render` from a researched pack. Each rule cites [key] = a source below.",
+        "     Disagree with a rule? Record the repo's way in the pack's repoConvention and re-render, so a refresh keeps",
+        "     your decision. -->",
+        "",
+        f"Applies to: {', '.join(pack.get('targets', [])) or 'see targets.json'}. Versions in use: {versions}.",
+    ]
+
+    out += ["", "## Rules", ""]
+    for r in pack.get("rules", []):
+        span = ""
+        if r.get("since") or r.get("until"):
+            span = " " + " ".join(x for x in (f"Since {r['since']}." if r.get("since") else "",
+                                              f"Until {r['until']}." if r.get("until") else "") if x)
+        out.append(f"- **{r['rule']}** {r['why']}{span}{_where(r)}{_cite(r.get('sources'))}")
+        if r.get("repoConvention"):
+            out.append(f"  This repo: {r['repoConvention']}")
+
+    if pack.get("bugCategories"):
+        out += ["", "## Bug categories", "", "| Category | Look for | Failure |", "|---|---|---|"]
+        for c in pack["bugCategories"]:
+            hint = f" ({c['severityHint']})" if c.get("severityHint") else ""
+            out.append(f"| `{c['name']}`{hint} | {_cell(c['lookFor'])} | {_cell(c['failure'])}{_cite(c.get('sources'))} |")
+
+    if pack.get("wiring"):
+        out += ["", "## Wiring", ""]
+        for w in pack["wiring"]:
+            fail = f" Fails as: {w['failure']}." if w.get("failure") else ""
+            out.append(f"- {w['check']}{fail}{_where(w)}{_cite(w.get('sources'))}")
+
+    t = pack.get("testing") or {}
+    if t:
+        out += ["", "## Testing", ""]
+        if t.get("layers"):
+            out += [t["layers"], ""]
+        if t.get("harness"):
+            out.append(f"- Harness: {'; '.join(t['harness'])}")
+        if t.get("commands"):
+            out.append(f"- Run: {'; '.join(f'`{c}`' for c in t['commands'])}")
+        if t.get("shuffle"):
+            out.append(f"- Shuffled: `{t['shuffle']}`")
+        if t.get("mutation"):
+            out.append(f"- Mutation: {t['mutation']}")
+        for trap in t.get("traps", []) or []:
+            out.append(f"- Trap: {trap}")
+        if t.get("sources"):
+            out.append(f"- Sources:{_cite(t['sources'])}")
+
+    for section, heading in (("performance", "Performance"), ("security", "Security")):
+        if pack.get(section):
+            out += ["", f"## {heading}", ""]
+            out += [f"- {n['note']}{_where(n)}{_cite(n.get('sources'))}" for n in pack[section]]
+
+    u = pack.get("upgrade") or {}
+    if u:
+        out += ["", "## Upgrades", ""]
+        if u.get("pins"):
+            out.append(f"- Pinned in: {'; '.join(u['pins'])}")
+        if u.get("lockStep"):
+            out.append(f"- Moves with: {'; '.join(u['lockStep'])}")
+        for label, key in (("Release notes", "releaseNotes"), ("Migration guides", "migrationGuides")):
+            if u.get(key):
+                out.append(f"- {label}: {' · '.join(u[key])}")
+        if u.get("deprecationsInUse"):
+            out.append(f"- Deprecated APIs still in use: {'; '.join(u['deprecationsInUse'])}")
+
+    out += ["", "## Sources", ""]
+    for key, s in pack.get("sources", {}).items():
+        version = f"{s['version']}, " if s.get("version") else ""
+        out.append(f"- [{key}] {s.get('title') or s['url']}: {s['url']} ({version}accessed {s['accessed']})")
+
+    if pack.get("notReached"):
+        out += ["", "## Not reached", ""] + [f"- {n}" for n in pack["notReached"]]
+    return "\n".join(out) + "\n"
+
+
+def main(args) -> int:
+    path = Path(args.pack)
+    try:
+        pack = load(path)
+    except (OSError, ValueError) as exc:
+        print(f"pack: cannot read {path}: {exc}", file=sys.stderr)
+        return 2
+    errors, warnings = check(pack)
+    if args.action == "check":
+        if args.json:
+            print(json.dumps({"errors": errors, "warnings": warnings}, indent=2))
+        else:
+            for e in errors:
+                print(f"error: {e}")
+            for w in warnings:
+                print(f"warning: {w}")
+            print(f"pack {pack.get('id')}: {len(errors)} error(s), {len(warnings)} warning(s)")
+        return 1 if errors else 0
+    if errors:
+        for e in errors:
+            print(f"pack render: {e}", file=sys.stderr)
+        return 1
+    text = render(pack)
+    if args.out:
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.out).write_text(text, encoding="utf-8", newline="\n")
+        print(f"wrote {args.out}")
+    else:
+        sys.stdout.write(text)
+    return 0

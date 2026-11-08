@@ -70,10 +70,19 @@ def parse(text: str) -> dict:
     return parse_test_design(text) if kind_of(text) == "test-design" else parse_bug_report(text)
 
 
+def is_tracker(text: str) -> bool:
+    """A file with findings, test-design rows or an Open banner. Index READMEs, templates and ledgers such as
+    deferred-upgrades.md are not trackers and have nothing to check."""
+    doc = parse(text)
+    return bool(doc["items"]) or doc["banner"] is not None
+
+
 def check(text: str) -> list[str]:
     doc = parse(text)
     problems: list[str] = []
     items = doc["items"]
+    if not items and doc["banner"] is None:
+        return problems
     ids = [i["id"] for i in items]
     dupes = sorted({i for i in ids if ids.count(i) > 1})
     if dupes:
@@ -112,6 +121,9 @@ def main(args) -> int:
     text = Path(args.file).read_text(encoding="utf-8")
     if args.action == "parse":
         print(json.dumps(parse(text), indent=2, ensure_ascii=False))
+        return 0
+    if not is_tracker(text):
+        print(f"{args.file}: not a tracker (no findings, test-design rows or Open banner); nothing to check")
         return 0
     problems = check(text)
     for p in problems:

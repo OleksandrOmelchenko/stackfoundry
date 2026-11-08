@@ -40,7 +40,7 @@ def decide(event: dict, project: Path) -> dict | None:
     if not guards_path.exists():
         return None
     try:
-        guards = json.loads(guards_path.read_text(encoding="utf-8"))
+        guards = json.loads(guards_path.read_text(encoding="utf-8-sig"))
     except (OSError, ValueError):
         return None
 
@@ -97,7 +97,7 @@ def _decision(kind: str, reason: str) -> dict:
 def check_file(path: Path) -> list[str]:
     """Problems that would make the hook silently ignore a rule (it fails open on them)."""
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8-sig"))
     except FileNotFoundError:
         return [f"{path}: not found"]
     except ValueError as exc:
@@ -137,7 +137,9 @@ def main(args) -> int:
         print("guards.json: ok" if not problems else f"guards.json: {len(problems)} problem(s)")
         return 1 if problems else 0
     try:
-        event = json.loads(sys.stdin.read() or "{}")
+        # Claude Code sends the event as UTF-8 bytes. Text-mode stdin would decode them with the platform code page
+        # (cp1252 on Windows) and mangle non-ASCII paths, so a protected file would no longer match its glob.
+        event = json.loads(sys.stdin.buffer.read().decode("utf-8-sig") or "{}")
         project = Path(os.environ.get("CLAUDE_PROJECT_DIR") or event.get("cwd") or os.getcwd())
         result = decide(event, project)
     except Exception:  # noqa: BLE001 - fail open, never wedge the session

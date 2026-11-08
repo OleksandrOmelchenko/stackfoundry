@@ -15,8 +15,10 @@ SKILL_CAP = 250
 AGENT_CAP = 300
 SKILL_KEYS = {"name", "description", "argument-hint", "disable-model-invocation", "allowed-tools", "model", "paths",
               "when_to_use", "user-invocable", "context", "agent", "version", "license", "effort"}
-AGENT_KEYS = {"name", "description", "tools", "model", "color", "disallowedTools", "effort", "permissionMode",
-              "maxTurns", "skills", "memory", "isolation", "background"}
+# The fields Claude Code honours in a plugin agent (plugins/components docs), and the ones it silently ignores there.
+AGENT_KEYS = {"name", "description", "model", "effort", "maxTurns", "autoCompactWindow", "tools", "disallowedTools",
+              "skills", "memory", "background", "omitClaudeMd", "isolation", "color", "experimental"}
+IGNORED_IN_PLUGIN_AGENTS = {"permissionMode", "hooks", "mcpServers", "initialPrompt"}
 KNOWN_TOOLS = {"Read", "Grep", "Glob", "Bash", "PowerShell", "Edit", "Write", "MultiEdit", "NotebookEdit", "WebSearch",
                "WebFetch", "Agent", "Skill", "TodoWrite", "AskUserQuestion", "SendMessage", "Monitor", "LSP"}
 # Tools whose mention in an agent's body means the grant must include them.
@@ -40,9 +42,15 @@ class Report:
         self.warnings.append(f"{where}: {msg}")
 
 
+def is_plugin_root(base: Path) -> bool:
+    """A plugin root holds .claude-plugin/plugin.json. A marketplace root holds only marketplace.json: it is checked
+    as a repo (its .claude/), and each plugin in it separately."""
+    return (base / ".claude-plugin" / "plugin.json").is_file()
+
+
 def layout(base: Path) -> tuple[Path, Path, Path]:
     """(skills dir, agents dir, plugin root used for ${CLAUDE_PLUGIN_ROOT})."""
-    if (base / "skills").is_dir() or (base / ".claude-plugin").is_dir():
+    if is_plugin_root(base):
         return base / "skills", base / "agents", base
     return base / ".claude" / "skills", base / ".claude" / "agents", base
 
@@ -74,6 +82,7 @@ def _check_links(path: Path, body: str, plugin_root: Path, rep: Report):
 def check(base: Path) -> Report:
     rep = Report()
     skills_dir, agents_dir, plugin_root = layout(base)
+    plugin_mode = is_plugin_root(base)
     skill_names: set[str] = set()
     agent_names: set[str] = set()
     bodies: list[tuple[Path, str]] = []
@@ -98,6 +107,8 @@ def check(base: Path) -> Report:
                 rep.error(f, "description is missing")
             elif len(desc) > SKILL_CAP:
                 rep.error(f, f"description is {len(desc)} characters (cap {SKILL_CAP})")
+            if isinstance(desc, str) and re.search(r"[<>]", desc):
+                rep.warn(f, "description has < or >, which the skill list shows as HTML entities; use [brackets]")
             for key in fields:
                 if key not in SKILL_KEYS:
                     rep.warn(f, f"unknown frontmatter key {key!r}")
@@ -122,7 +133,9 @@ def check(base: Path) -> Report:
             elif len(desc) > AGENT_CAP:
                 rep.error(f, f"description is {len(desc)} characters (cap {AGENT_CAP})")
             for key in fields:
-                if key not in AGENT_KEYS:
+                if key in IGNORED_IN_PLUGIN_AGENTS and plugin_mode:
+                    rep.warn(f, f"{key!r} is ignored in a plugin agent (put hooks and MCP servers at plugin level)")
+                elif key not in AGENT_KEYS and key not in IGNORED_IN_PLUGIN_AGENTS:
                     rep.warn(f, f"unknown frontmatter key {key!r}")
             tools = _tools(fields.get("tools"))
             if not tools:
@@ -150,7 +163,8 @@ def check(base: Path) -> Report:
     for path, body in bodies:
         _check_links(path, body, plugin_root, rep)
         for m in SKILL_REF.finditer(body):
-            if skill_names and m.group(1) not in skill_names:
+            # In a repo, /stackfoundry:* names the installed plugin's skills, not the repo's own.
+            if plugin_mode and skill_names and m.group(1) not in skill_names:
                 rep.error(path, f"/stackfoundry:{m.group(1)} names a skill that does not exist")
         for m in AGENT_REF.finditer(body):
             if m.group(1) not in agent_names and m.group(1) not in ("Explore", "Plan", "general-purpose"):

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 PROFILE_DIR = Path(".claude") / "stackfoundry"
@@ -20,7 +21,7 @@ class ProfileError(ValueError):
 
 def load_json(path: Path) -> dict:
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8-sig"))
     except FileNotFoundError:
         raise
     except (OSError, ValueError) as exc:
@@ -82,6 +83,12 @@ def check_targets(data: dict) -> list[str]:
     for i, spec in enumerate(data.get("specialists", []) or []):
         if not isinstance(spec, dict) or not isinstance(spec.get("agent"), str):
             errors.append(f"specialists[{i}]: needs an 'agent' string")
+            continue
+        for rx in spec.get("contains", []) or []:
+            try:
+                re.compile(rx)
+            except (re.error, TypeError) as exc:
+                errors.append(f"specialists[{i}] ({spec['agent']}): 'contains' regex {rx!r} does not compile ({exc})")
     for key in ("generated", "ignored"):
         if key in data and not _str_list(data[key]):
             errors.append(f"'{key}' must be a list of globs")
