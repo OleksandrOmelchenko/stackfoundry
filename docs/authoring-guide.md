@@ -34,6 +34,7 @@ prior: <the still-relevant findings / design rows / verdicts, quoted>
 gate: <the central gate's result, when the orchestrator ran it>
 concurrency: read-only, do not build | you are the only builder now | run tests --no-build only
 session: <environment facts: the running app's URL for a live repro (else the target's localUrl), a session id a script needs>
+output: <the one file a writing role may write, when it writes a single artefact (stack-researcher: its pack.json)>
 ```
 
 | `mode` | Used by | Meaning |
@@ -83,7 +84,7 @@ reason the code does not show · 🔵 suggestion · 🟢 done well.
 | Agent | Writes? | Tools | Job |
 |---|---|---|---|
 | `surveyor` | no | Read, Grep, Glob, Bash | Runs `stackfoundry survey`, confirms each hint against code, drafts the target map and the questions for the user |
-| `stack-researcher` | no | Read, Grep, Glob, WebSearch, WebFetch | Researches one technology into a pack (`reference/pack-research.md`) and returns it as JSON |
+| `stack-researcher` | its pack file only | Read, Grep, Glob, WebSearch, WebFetch, Write | Researches one technology into a pack (`reference/pack-research.md`) and writes it to the `output:` path its brief names |
 | `bug-hunter` | no | Read, Grep, Glob, Bash | Hunts one category in one target's scope; findings with concrete failures |
 | `fix-verifier` | no | Read, Grep, Glob, Bash | Adversarially verifies one landed fix; one verdict |
 | `web-fix-verifier` | no | Read, Grep, Glob, Bash + browser tools | Same, with a live browser repro for UI targets |

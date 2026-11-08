@@ -1,7 +1,8 @@
 # Researching a pack
 
-`init` and `research-stack` dispatch one `stack-researcher` agent per technology. The researcher returns a pack
-(schema: [`schemas/pack.schema.json`](schemas/pack.schema.json)); the skill grounds it in the repo and writes it.
+`init` and `research-stack` dispatch one `stack-researcher` agent per technology. The researcher writes its pack
+(schema: [`schemas/pack.schema.json`](schemas/pack.schema.json)) to the `output:` path in its brief; the skill
+checks it with `stackfoundry pack check` and renders the rulebook with `stackfoundry pack render`.
 Nothing about a technology is written from memory: training data is stale by construction for versions,
 deprecations and new practices, and a confident stale rule is worse than none.
 
@@ -11,7 +12,8 @@ deprecations and new practices, and a confident stale rule is worse than none.
 - the version(s) in use and where they are pinned (from the survey);
 - the repo evidence: which targets use it, a few representative files (path + symbol), the existing conventions
   (formatter config, analyzer severity files, base classes, existing rulebooks);
-- the risk profile of the targets that use it (exposure, stakes) from the interview.
+- the risk profile of the targets that use it (`exposure:`, `stakes:`) from the interview;
+- `output:`, the one file it writes.
 
 ## Source order
 

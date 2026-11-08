@@ -21,9 +21,11 @@ Writes or refreshes **one** pack under `.claude/stackfoundry/packs/<pack-id>/` a
 
 ## 2. Research
 
-Dispatch `stackfoundry:stack-researcher` with those inputs. With `--refresh`, also hand it the current pack, so it
-reports what changed since `researchedAt` (new releases, deprecations now in use, changed guidance) and keeps every
-`repoConvention` the team recorded.
+Dispatch `stackfoundry:stack-researcher` with those inputs, `exposure:`/`stakes:` of the targets, and
+`output:` a scratch path (a refresh) or `.claude/stackfoundry/packs/<pack-id>/pack.json` (a new pack). With
+`--refresh`, also hand it the current pack, so it reports what changed since `researchedAt` (new releases,
+deprecations now in use, changed guidance) and keeps every `repoConvention` the team recorded. Then
+`stackfoundry pack check <output>`; errors go back to the researcher, never patched by hand.
 
 ## 3. Review the result
 
@@ -34,8 +36,8 @@ reports what changed since `researchedAt` (new releases, deprecations now in use
 
 ## 4. Write
 
-- `.claude/stackfoundry/packs/<pack-id>/pack.json`.
-- The rulebook from `${CLAUDE_PLUGIN_ROOT}/reference/templates/pack-rulebook.md`. Check its state first with
+- `.claude/stackfoundry/packs/<pack-id>/pack.json` (a refresh: move the checked scratch pack into place).
+- The rulebook: `stackfoundry pack render <pack.json> --out .claude/rules/<pack-id>.md`. Check its state first with
   `stackfoundry manifest diff --json`: **edited** by the team → show the regenerated text beside the current one and
   ask (take new · keep mine · merge by hand); untouched or new → write it.
 - New pack: add it to the targets' `packs`, add its row to the `CLAUDE.md` stackfoundry block, and regenerate the

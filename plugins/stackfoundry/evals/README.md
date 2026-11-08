@@ -12,7 +12,7 @@ without the plugin.
 | `security-review-finds-idor` | read-only | security-review-target finds the missing ownership check (and keeps 404) |
 | `debug-reaches-root-cause` | read-only | debug goes from a customer symptom to the pagination slice |
 | `guard-blocks-generated-edit` | Edit, Write | the guard hook denies a hand-edit of a generated file |
-| `check-updates-report-only` | Bash, Write, web | check-updates writes one report and nothing else |
+| `check-updates-report-only` | Bash, Write, WebFetch, WebSearch | check-updates writes one report and nothing else (`--allow-tools Bash Write WebFetch WebSearch`) |
 
 ## Running
 
