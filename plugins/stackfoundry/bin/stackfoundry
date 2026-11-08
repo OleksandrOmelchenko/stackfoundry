@@ -1,0 +1,24 @@
+#!/bin/sh
+# stackfoundry helper CLI launcher. Finds Python >= 3.10 and runs the CLI isolated (-I: no user site, no env
+# overrides, no script directory on sys.path), so a planted module in the user's repo is never imported.
+# Usage: stackfoundry <subcommand> [args]   (stackfoundry --help lists them)
+
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd) || exit 1
+cli="$here/../scripts/stackfoundry/cli.py"
+
+ok() {
+  "$@" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' >/dev/null 2>&1
+}
+
+if ok python3; then
+  exec python3 -I "$cli" "$@"
+elif ok python; then
+  exec python -I "$cli" "$@"
+elif ok py -3; then
+  exec py -3 -I "$cli" "$@"
+fi
+
+echo "stackfoundry: Python 3.10 or newer is required (tried python3, python, py -3)." >&2
+# Exit 0 when called as a hook, so a missing Python never blocks the session; the CLI's own callers see the message.
+[ "${1:-}" = "guard" ] && exit 0
+exit 127
