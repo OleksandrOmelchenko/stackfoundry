@@ -1,0 +1,10 @@
+<Window x:Class="Shop.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Labels" Width="360" Height="160">
+  <StackPanel Margin="16">
+    <TextBox Text="{Binding Barcode, UpdateSourceTrigger=PropertyChanged}" />
+    <Button Content="Print" Command="{Binding PrintCommand}" Margin="0,8,0,0" />
+    <TextBlock Text="{Binding Status}" Margin="0,8,0,0" />
+  </StackPanel>
+</Window>

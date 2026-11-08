@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "docsRoot": "docs",
+  "timezone": "UTC",
+  "defaultBranch": "main",
+  "targets": [
+    {
+      "name": "api",
+      "summary": "Orders API; customers read their own orders through a gateway that sets X-Customer-Id.",
+      "paths": ["app/**"],
+      "testPaths": ["tests/**"],
+      "packs": ["language-python", "app-model-fastapi", "capability-pydantic", "tooling-pytest"],
+      "exposure": "authenticated",
+      "stakes": ["pii"],
+      "gate": {"test": ["python -m pytest -q"]},
+      "tests": [{"name": "pytest", "kind": "unit", "command": "python -m pytest -q", "paths": ["tests/**"]}],
+      "profile": ".claude/stackfoundry/targets/api.md"
+    }
+  ],
+  "generated": ["app/generated/**"],
+  "ignored": ["docs/**", "**/*.md"]
+}

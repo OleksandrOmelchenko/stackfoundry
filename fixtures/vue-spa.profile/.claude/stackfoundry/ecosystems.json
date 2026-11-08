@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "deferredFile": "docs/plans/deferred-upgrades.md",
+  "ecosystems": [
+    {
+      "id": "web-npm",
+      "kind": "packages",
+      "pack": "language-typescript",
+      "pins": [{"file": "package.json", "policy": "exact"}],
+      "lockFiles": ["package-lock.json"],
+      "discover": ["npm outdated --json", "npm view <package> version"],
+      "apply": "npm install <package>@<version> --save-exact",
+      "afterApply": ["npm install"],
+      "gateTargets": ["web"],
+      "sources": ["https://vitest.dev/blog/", "https://vite.dev/blog/", "https://blog.vuejs.org/"]
+    }
+  ]
+}

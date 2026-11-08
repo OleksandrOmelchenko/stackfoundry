@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "generated": [
+    {"glob": "app/generated/**", "regenerate": "Regenerate it with `python -m app.codegen` from docs/specifications/orders.md"}
+  ],
+  "git": {"writes": "ask"}
+}
