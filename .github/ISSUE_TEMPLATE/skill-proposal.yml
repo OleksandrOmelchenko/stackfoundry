@@ -1,0 +1,22 @@
+name: Skill or agent proposal
+description: Propose a new skill, agent or role.
+labels: [proposal]
+body:
+  - type: textarea
+    id: job
+    attributes:
+      label: The job it does
+      description: One sentence, in the words a user would type to trigger it.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why no existing skill covers it
+    validations:
+      required: true
+  - type: textarea
+    id: facts
+    attributes:
+      label: Facts it needs from the repo profile
+      description: Which `targets.json` / pack fields it reads. Procedure lives in the plugin, facts in the repo.

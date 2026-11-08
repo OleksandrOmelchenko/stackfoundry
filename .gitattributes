@@ -1,0 +1,13 @@
+# Normalize every text file to LF in the repo and on checkout, on every OS.
+# Shell scripts and hooks break with CRLF, and the plugin runs on macOS, Linux and Windows alike.
+* text=auto eol=lf
+
+*.sh text eol=lf
+.githooks/* text eol=lf
+plugins/stackfoundry/bin/* text eol=lf
+
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.zip binary

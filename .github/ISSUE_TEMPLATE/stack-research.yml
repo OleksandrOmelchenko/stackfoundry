@@ -1,0 +1,23 @@
+name: Stack research gap
+description: init or research-stack produced a weak or wrong pack for a technology.
+labels: [research]
+body:
+  - type: input
+    id: tech
+    attributes:
+      label: Technology and layer
+      description: e.g. "wpf (app model)", "efcore (capability)", "pytest (tooling)".
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: What the pack got wrong or missed
+      description: Quote the pack line and the source that contradicts it (URL + version).
+    validations:
+      required: true
+  - type: textarea
+    id: signal
+    attributes:
+      label: Detection
+      description: Was the technology detected correctly? Which file proves it is used?

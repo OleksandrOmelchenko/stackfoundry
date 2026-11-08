@@ -1,0 +1,29 @@
+name: Bug
+description: A skill, agent, hook or script did the wrong thing.
+labels: [bug]
+body:
+  - type: input
+    id: component
+    attributes:
+      label: Component
+      description: The skill, agent, hook or CLI subcommand (e.g. `bug-hunt`, `test-writer`, `stackfoundry survey`).
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: stack
+    attributes:
+      label: Your repo's stack
+      description: Languages and app models from `.claude/stackfoundry/targets.json` (no proprietary code, please).
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: stackfoundry plugin version, `claude --version`, OS.
+    validations:
+      required: true

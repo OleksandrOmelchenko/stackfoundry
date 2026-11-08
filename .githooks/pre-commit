@@ -1,0 +1,47 @@
+#!/bin/sh
+# stackfoundry pre-commit: unit tests, plugin plumbing, manifest validation.
+# Enable once per clone:  git config core.hooksPath .githooks
+# Bypass once (discouraged): git commit --no-verify
+set -u
+
+root=$(git rev-parse --show-toplevel) || exit 1
+cd "$root" || exit 1
+
+pick_python() {
+  for c in python3 python; do
+    if command -v "$c" >/dev/null 2>&1 && "$c" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' >/dev/null 2>&1; then
+      echo "$c"; return 0
+    fi
+  done
+  if command -v py >/dev/null 2>&1 && py -3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' >/dev/null 2>&1; then
+    echo "py -3"; return 0
+  fi
+  return 1
+}
+
+fail=0
+
+if py=$(pick_python); then
+  echo "pre-commit: unit tests"
+  $py -m unittest discover -s tests -t . -q || fail=1
+  if [ -f plugins/stackfoundry/scripts/stackfoundry/cli.py ]; then
+    echo "pre-commit: plugin plumbing"
+    sh plugins/stackfoundry/bin/stackfoundry verify-plumbing plugins/stackfoundry || fail=1
+  fi
+else
+  echo "pre-commit: no Python >= 3.10 found; skipping unit tests and plumbing checks" >&2
+fi
+
+if command -v claude >/dev/null 2>&1; then
+  echo "pre-commit: manifest validation"
+  claude plugin validate --strict . >/dev/null || { claude plugin validate --strict .; fail=1; }
+  claude plugin validate --strict plugins/stackfoundry >/dev/null || { claude plugin validate --strict plugins/stackfoundry; fail=1; }
+else
+  echo "pre-commit: 'claude' not on PATH; skipping manifest validation (CI still runs it)" >&2
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo "pre-commit: failed. Fix the errors above and commit again." >&2
+  exit 1
+fi
+exit 0

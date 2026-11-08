@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Plugin eval output and scratch state
+**/evals/results/
+.testagent/
+fixtures/**/_build/
+
+# Claude Code local state
+.claude/settings.local.json
+.claude/worktrees/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
