@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "generated": [
+    {"glob": "web/src/api-client/**", "regenerate": "Regenerate it from the running API's OpenAPI document with the repo's client-generation script"},
+    {"glob": "src/Data/Entities/**", "regenerate": "Change the schema or the scaffolding template, then re-run the scaffold"}
+  ],
+  "commands": [
+    {"pattern": "(?i)\\b(sqlcmd|psql|mysql)\\b.*\\b(insert|update|delete|drop|alter|truncate)\\b", "decision": "deny",
+     "reason": "No direct writes to the database: schema and data changes go through migrations"},
+    {"pattern": "(?i)\\b(kubectl|helm)\\b.*\\b(apply|delete|upgrade|install)\\b", "decision": "ask",
+     "reason": "Cluster changes are the owner's call"}
+  ],
+  "git": {"writes": "ask", "reason": "Commits, pushes and PRs happen only when the user asks in that turn"}
+}

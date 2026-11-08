@@ -26,7 +26,7 @@ paths:
   `.claude/stackfoundry/` (schemas in `reference/schemas/`). It never names a framework rule, a path or a command of
   its own. If the profile lacks a fact the skill needs, the skill says which field is missing and points at
   `/stackfoundry:sync`, rather than guessing.
-- **Link, don't restate.** Shared rules live in `reference/` (rulebook templates, role briefs, tracker formats) and
+- **Link, don't restate.** Shared rules live in `reference/` (rulebook templates, schemas, tracker formats) and
   are linked as `${CLAUDE_PLUGIN_ROOT}/reference/…`. A second copy drifts.
 - **No volatile facts**: no counts of code things, `file:line`, "as of" dates, SHAs or durations.
 - **Neutral examples.** Example targets are `api`, `desktop`, `web`, `worker`; never a real project's names.

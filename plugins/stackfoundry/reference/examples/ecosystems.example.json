@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "deferredFile": "docs/plans/deferred-upgrades.md",
+  "ecosystems": [
+    {
+      "id": "dotnet-platform",
+      "kind": "platform",
+      "pack": "language-csharp",
+      "pins": [
+        {"file": "global.json", "anchor": "sdk.version", "policy": "floor"},
+        {"file": "**/*.csproj", "anchor": "<TargetFramework>", "policy": "exact"},
+        {"file": ".github/workflows/*.yml", "anchor": "dotnet-version:", "policy": "exact"}
+      ],
+      "discover": ["dotnet --list-sdks", "dotnet sdk check"],
+      "apply": "Move every chain member together, then hand package families to the nuget ecosystem",
+      "gateTargets": ["api", "desktop", "shared"],
+      "chains": [{"name": ".NET major", "members": ["global.json sdk.version", "every <TargetFramework>", "CI dotnet-version", "the hosting runtime tag"]}],
+      "sources": ["https://learn.microsoft.com/dotnet/core/whats-new/", "https://learn.microsoft.com/dotnet/core/compatibility/"]
+    },
+    {
+      "id": "nuget",
+      "kind": "packages",
+      "pack": "language-csharp",
+      "pins": [{"file": "Directory.Packages.props", "anchor": "<PackageVersion Include=", "policy": "exact"}],
+      "lockFiles": ["**/packages.lock.json"],
+      "discover": ["dotnet list package --outdated", "dotnet list package --vulnerable --include-transitive", "dotnet list package --deprecated"],
+      "apply": "Edit the PackageVersion in Directory.Packages.props",
+      "afterApply": ["dotnet restore --force-evaluate"],
+      "gateTargets": ["api", "desktop", "shared"],
+      "traps": ["A package that compiles and passes can still fail at first use when it moves a source generator: run the registration tests"]
+    },
+    {
+      "id": "web-npm",
+      "kind": "packages",
+      "pack": "language-typescript",
+      "pins": [{"file": "web/package.json", "policy": "exact"}],
+      "lockFiles": ["web/package-lock.json"],
+      "discover": ["npm outdated --json --prefix web", "npm audit --json --prefix web"],
+      "apply": "npm install <pkg>@<version> --save-exact --prefix web",
+      "gateTargets": ["web", "web-ssr"]
+    },
+    {
+      "id": "actions",
+      "kind": "ci",
+      "pack": "tooling-github-actions",
+      "pins": [{"file": ".github/workflows/*.yml", "anchor": "uses:", "policy": "digest"}],
+      "discover": ["gh api repos/<owner>/<action>/releases/latest --jq .tag_name"],
+      "apply": "Replace the full SHA and its version comment",
+      "gateTargets": []
+    }
+  ]
+}

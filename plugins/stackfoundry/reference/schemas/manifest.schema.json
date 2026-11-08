@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/OleksandrOmelchenko/stackfoundry/schemas/manifest.schema.json",
+  "title": "stackfoundry manifest (.claude/stackfoundry/manifest.lock.json)",
+  "description": "Written by `stackfoundry manifest record`. What init generated, from which template and version, and the hash it had when written, so upgrade can tell untouched files from edited ones.",
+  "type": "object",
+  "required": ["schemaVersion", "pluginVersion", "files"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "pluginVersion": {"type": "string"},
+    "files": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["template", "templateVersion", "sha256", "kind"],
+        "properties": {
+          "template": {"type": "string", "description": "Plugin-relative template path, or 'research' for a file generated from a researched pack."},
+          "templateVersion": {"type": "string"},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "Of the content with line endings normalized to LF."},
+          "kind": {"enum": ["generated", "materialized"]}
+        }
+      }
+    }
+  }
+}

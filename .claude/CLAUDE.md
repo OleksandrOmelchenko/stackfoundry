@@ -8,7 +8,7 @@ the architecture.
 ## Layout
 
 - `plugins/stackfoundry/skills/<name>/SKILL.md`: skills. `agents/<name>.md`: generic role agents.
-- `plugins/stackfoundry/reference/`: the method (layers, schemas, research procedure, role briefs, rulebook and
+- `plugins/stackfoundry/reference/`: the method (layers, schemas, research procedure, examples, rulebook and
   tracker templates). Skills read it through `${CLAUDE_PLUGIN_ROOT}/reference/…`.
 - `plugins/stackfoundry/bin/stackfoundry` + `scripts/stackfoundry/`: the helper CLI (Python 3.10+, standard library
   only, no network). `hooks/hooks.json`: the guard hooks.

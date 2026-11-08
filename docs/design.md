@@ -43,7 +43,7 @@ The reference is `plugins/stackfoundry/reference/layers.md`.
 
 ## No shipped technology content
 
-The plugin ships the **method**: the layer taxonomy, the schemas, the research procedure, the role briefs and the
+The plugin ships the **method**: the layer taxonomy, the schemas, the research procedure, the role agents and the
 rulebook and tracker templates. It ships no rules about any particular technology. `init` researches each detected
 technology from current official sources (release notes, migration guides, security advisories, framework docs) and
 writes the pack into the repo with every claim citing a URL, a version and an access date. `tech-radar` re-researches

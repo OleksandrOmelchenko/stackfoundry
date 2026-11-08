@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "docsRoot": "docs",
+  "timezone": "Europe/Madrid",
+  "defaultBranch": "main",
+  "targets": [
+    {
+      "name": "api",
+      "summary": "Public REST API for the storefront; anonymous browsing, signed-in checkout.",
+      "paths": ["src/Api/**"],
+      "testPaths": ["tests/Api.Tests/**", "tests/Integration.Tests/Api/**"],
+      "packs": ["language-csharp", "app-model-aspnet-core", "capability-efcore", "tooling-xunit"],
+      "exposure": "public",
+      "stakes": ["money", "pii", "auth"],
+      "gate": {
+        "build": ["dotnet build src/Api -c Release"],
+        "test": ["dotnet test tests/Api.Tests -c Release", "dotnet test tests/Integration.Tests -c Release"],
+        "preconditions": ["a container runtime for the integration suite's database"]
+      },
+      "tests": [
+        {"name": "unit", "kind": "unit", "command": "dotnet test tests/Api.Tests -c Release",
+         "paths": ["tests/Api.Tests/**"], "shuffle": "dotnet test tests/Api.Tests -c Release -- --seed <n>"},
+        {"name": "integration", "kind": "integration", "command": "dotnet test tests/Integration.Tests -c Release",
+         "paths": ["tests/Integration.Tests/**"], "covers": ["src/Api/**", "src/Shared/**"]}
+      ],
+      "profile": ".claude/stackfoundry/targets/api.md"
+    },
+    {
+      "name": "desktop",
+      "summary": "WPF label-printing client used by staff in the shop.",
+      "paths": ["src/Desktop/**"],
+      "testPaths": ["tests/Desktop.Tests/**"],
+      "packs": ["language-csharp", "app-model-wpf", "capability-mvvm-toolkit", "tooling-xunit"],
+      "exposure": "staff",
+      "stakes": ["data-integrity"],
+      "gate": {"build": ["dotnet build src/Desktop -c Release"], "test": ["dotnet test tests/Desktop.Tests -c Release"]},
+      "tests": [{"name": "unit", "kind": "unit", "command": "dotnet test tests/Desktop.Tests -c Release"}],
+      "profile": ".claude/stackfoundry/targets/desktop.md"
+    },
+    {
+      "name": "web",
+      "summary": "Vue components of the server-rendered storefront.",
+      "paths": ["web/**"],
+      "testPaths": ["web/**/*.spec.ts", "web/src/test/**"],
+      "packs": ["language-typescript", "app-model-vue-spa", "capability-i18n", "tooling-vitest"],
+      "exposure": "public",
+      "stakes": ["pii"],
+      "webUi": true,
+      "gate": {"build": ["npm run build --prefix web"], "test": ["npm test --prefix web"], "lint": ["npm run lint --prefix web"]},
+      "tests": [{"name": "vitest", "kind": "component", "command": "npm test --prefix web",
+                 "affectedCommand": "npx --prefix web vitest related --run <files>"}],
+      "profile": ".claude/stackfoundry/targets/web.md"
+    },
+    {
+      "name": "web-ssr",
+      "summary": "The server-rendering layer of the same app: pages, middleware, server routes.",
+      "paths": ["web/pages/**", "web/middleware/**", "web/server/**", "web/nuxt.config.ts"],
+      "packs": ["language-typescript", "app-model-nuxt-ssr", "tooling-vitest"],
+      "exposure": "public",
+      "stakes": ["availability"],
+      "webUi": true,
+      "gate": {"build": ["npm run build --prefix web"], "test": ["npm run test:ssr --prefix web"]},
+      "tests": [{"name": "ssr", "kind": "ssr", "command": "npm run test:ssr --prefix web"}],
+      "profile": ".claude/stackfoundry/targets/web-ssr.md"
+    },
+    {
+      "name": "shared",
+      "summary": "Library used by api and desktop.",
+      "paths": ["src/Shared/**"],
+      "packs": ["language-csharp", "tooling-xunit"],
+      "exposure": "internal",
+      "gate": {"build": ["dotnet build -c Release"], "test": ["dotnet test -c Release"]},
+      "tests": [{"name": "all", "kind": "unit", "command": "dotnet test -c Release"}],
+      "profile": ".claude/stackfoundry/targets/shared.md"
+    }
+  ],
+  "rules": [
+    {"glob": "src/Shared/**", "targets": ["shared", "api", "desktop"], "note": "a shared change reaches every consumer"}
+  ],
+  "specialists": [
+    {"agent": "security-reviewer", "why": "authentication and authorization code", "paths": ["src/Api/Auth/**"]},
+    {"agent": "security-reviewer", "why": "touches money or personal data", "contains": ["(?i)\\b(payment|invoice|refund|email|address)\\b"], "scope": ["src/**"]}
+  ],
+  "generated": ["web/src/api-client/**", "src/Data/Entities/**"],
+  "ignored": ["docs/**", "**/*.md"],
+  "fullRunTriggers": ["Directory.Packages.props", "Directory.Build.props", "global.json", "tests/Common/**"]
+}
