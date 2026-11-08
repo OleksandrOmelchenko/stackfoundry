@@ -1,6 +1,6 @@
 """stackfoundry helper CLI. Run through bin/stackfoundry, which picks Python >= 3.10 and isolates it (-I).
 
-Every subcommand is read-only except `manifest record` (writes .claude/stackfoundry/manifest.lock.json).
+Every subcommand is read-only except `manifest record|forget` (they write .claude/stackfoundry/manifest.lock.json).
 None makes a network call.
 """
 from __future__ import annotations
@@ -12,8 +12,8 @@ from pathlib import Path
 # -I leaves the script directory off sys.path; add this package's parent explicitly (our own code only).
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from stackfoundry import (backlog, change_targets, guard, manifest, plumbing, select_tests,  # noqa: E402
-                          survey, tracker, volatile)
+from stackfoundry import (backlog, change_targets, checks, guard, manifest, plumbing,  # noqa: E402
+                          select_tests, survey, tracker, volatile)
 from stackfoundry.gitutil import GitError  # noqa: E402
 from stackfoundry.profile import ProfileError  # noqa: E402
 
@@ -34,6 +34,7 @@ def build() -> argparse.ArgumentParser:
         c = sub.add_parser(name, help=helptext)
         c.add_argument("--base", help="compare base...HEAD (plus uncommitted); default: uncommitted + untracked")
         c.add_argument("--files", help="comma-separated paths instead of git")
+        c.add_argument("--range", help="a commit range (A..B or A...B) exactly, without uncommitted changes")
         c.add_argument("--root", help="repo root (default: git toplevel of the current directory)")
         c.add_argument("--json", action="store_true")
         if name == "select-tests":
@@ -65,8 +66,24 @@ def build() -> argparse.ArgumentParser:
     vp.add_argument("--json", action="store_true")
     vp.set_defaults(func=plumbing.main)
 
+    gc = sub.add_parser("globs-check", help="rulebook paths: globs that match no file in the repo")
+    gc.add_argument("paths", nargs="+", help="rulebook files or folders (e.g. .claude/rules)")
+    gc.add_argument("--root")
+    gc.add_argument("--json", action="store_true")
+    gc.set_defaults(func=checks.main_globs)
+
+    mc = sub.add_parser("mutation-check", help="judge a mutation-testing-elements JSON report (zero kills = broken)")
+    mc.add_argument("report")
+    mc.add_argument("--json", action="store_true")
+    mc.set_defaults(func=checks.main_mutation)
+
+    td = sub.add_parser("today", help="today's date (YYYY-MM-DD) in targets.json's timezone, for report names")
+    td.add_argument("--root")
+    td.add_argument("--verbose", action="store_true", help="also print which zone was used")
+    td.set_defaults(func=checks.main_today)
+
     m = sub.add_parser("manifest", help="record generated files, or diff them against their templates")
-    m.add_argument("action", choices=["record", "diff", "list"])
+    m.add_argument("action", choices=["record", "forget", "diff", "list"])
     m.add_argument("files", nargs="*")
     m.add_argument("--template", help="plugin-relative template path, or 'research' for a researched pack")
     m.add_argument("--kind", choices=["generated", "materialized"], default="generated")
@@ -75,6 +92,8 @@ def build() -> argparse.ArgumentParser:
     m.set_defaults(func=manifest.main)
 
     g = sub.add_parser("guard", help="PreToolUse hook entry (reads the hook event on stdin)")
+    g.add_argument("--check", action="store_true", help="validate guards.json instead of reading a hook event")
+    g.add_argument("--root", help="repo root for --check (default: CLAUDE_PROJECT_DIR or the current directory)")
     g.set_defaults(func=guard.main)
     return p
 

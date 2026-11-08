@@ -13,7 +13,7 @@ section with nothing grounded is dropped rather than left empty.
 | `profile.md` | `.claude/stackfoundry/profile.md` |
 | `target.md` | `.claude/stackfoundry/targets/<target>.md` |
 | `pack-rulebook.md` | `.claude/rules/<pack-id>.md` |
-| `code-writer-skill.md` | `.claude/skills/<app-model>-code-writer/SKILL.md` |
+| `code-writer-skill.md` | `.claude/skills/<app-model>-code-writer/SKILL.md` (`<app-model>` = the bare id: `app-model-wpf` → `wpf`) |
 | `claude-md-block.md` | the `<!-- stackfoundry:begin -->` … `<!-- stackfoundry:end -->` block in the root `CLAUDE.md` |
 | `materialized-agent.md` | `.claude/agents/<target>-<role>.md` |
 

@@ -46,8 +46,9 @@ The reference is `plugins/stackfoundry/reference/layers.md`.
 The plugin ships the **method**: the layer taxonomy, the schemas, the research procedure, the role agents and the
 rulebook and tracker templates. It ships no rules about any particular technology. `init` researches each detected
 technology from current official sources (release notes, migration guides, security advisories, framework docs) and
-writes the pack into the repo with every claim citing a URL, a version and an access date. `tech-radar` re-researches
-packs older than the refresh window or behind the version the repo now uses.
+writes the pack into the repo with every claim citing a URL, a version and an access date. `tech-radar` flags packs
+older than the refresh window or behind the version the repo now uses, and `act-on-radar` routes them to
+`research-stack`.
 
 Why: a shipped rule about a framework is stale the day the framework ships its next major, and it reads as
 authoritative. A researched rule carries its source and date, so its age is visible and refreshable.
@@ -79,10 +80,11 @@ per role, instead of one per role × target, is also what keeps the listing smal
 
 ### Skills that are slash-only
 
-Skills a person starts on purpose (`init`, `sync`, `upgrade`, the plan modes, the `act-on-*` skills, `quality-sweep`,
-`github-prs`, `cleanup-merged`, `schedule`) set `disable-model-invocation: true`. That keeps their descriptions out of
-the skill listing, which gets a fixed share of the context window, and leaves room for the skills Claude should pick
-on its own.
+Entry points a person starts on purpose (`init`, `upgrade`, `materialize`, `configure-guards`, `elaborate-plan`, the
+`act-on-*` skills, `github-prs`, `schedule`) set `disable-model-invocation: true`. That keeps their descriptions out
+of the skill listing, which gets a fixed share of the context window. A skill another skill invokes cannot be
+slash-only (the `Skill` tool refuses it), so `sync`, `bump-all`, `quality-sweep` and `cleanup-merged` stay
+model-invocable.
 
 ## The helper CLI
 

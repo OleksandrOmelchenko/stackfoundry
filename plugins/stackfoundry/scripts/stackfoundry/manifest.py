@@ -5,7 +5,7 @@
      "files": {"<repo-relative path>": {"template": "<plugin-relative path or 'research'>", "templateVersion": "1",
                                         "sha256": "<hex>", "kind": "generated|materialized"}}}
 
-`record` writes the manifest (the one writing subcommand here). `diff` and `list` are read-only.
+`record` and `forget` write the manifest (the only writing actions here). `diff` and `list` are read-only.
 Template versions come from a `templateVersion:` line in the template's frontmatter (default "1").
 """
 from __future__ import annotations
@@ -64,6 +64,15 @@ def record(root: Path, files: list[str], template: str, kind: str) -> dict:
     return data
 
 
+def forget(root: Path, files: list[str]) -> dict:
+    """Drop entries (an un-materialized agent, a file the team now owns outright). Writes the manifest."""
+    data = load(root)
+    for rel in files:
+        data["files"].pop(rel.replace("\\", "/"), None)
+    (root / MANIFEST).write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    return data
+
+
 def diff(root: Path) -> list[dict]:
     """Per recorded file: deleted | edited | untouched, plus whether its template has a newer version."""
     data = load(root)
@@ -98,6 +107,10 @@ def main(args) -> int:
     if args.action == "record":
         data = record(root, args.files, args.template or "", args.kind)
         print(f"recorded {len(args.files)} file(s); manifest holds {len(data['files'])}")
+        return 0
+    if args.action == "forget":
+        data = forget(root, args.files)
+        print(f"forgot {len(args.files)} file(s); manifest holds {len(data['files'])}")
         return 0
     if args.action == "list":
         print(json.dumps(load(root), indent=2))

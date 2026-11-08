@@ -60,6 +60,23 @@ benchmark form of the oracle leak (`testing.md` §1): if the rule was wrong, say
 - **Verdict vocabulary**, exactly one per comparison: **Faster**, **Slower**, **Same**, **Unstable**,
   **Contaminated**.
 
+## 4b. Load benchmarks (databases, services under concurrency)
+
+§1, §3 and §4 apply; §2 is for micro-benchmarks. In addition:
+
+- **A disposable target only**: a container or a throwaway database or service named in the target profile's
+  `benchmarks.disposableTarget`. Never a developer's database, a shared one or production.
+- **Production parity**: the same isolation level and settings, the real transaction path (the code that runs in
+  production, not a copy), realistic data volume with fresh statistics.
+- **Seed once, restore before every cell** of the matrix, so cells do not inherit each other's state.
+- **Warm up**, then measure in a closed loop (a fixed number of concurrent workers, each issuing the next operation
+  when the previous one finishes); variants rotate so no variant always runs first.
+- **Invariants gate every cell**: after each cell, check what must be true (no lost update, no double charge, counts
+  add up). A cell whose invariants fail is a **correctness finding**, never a result to compare. Prove the
+  invariants work: a deliberately broken variant must fail them in a dry run.
+- **Retries count inside the latency**, and failed operations are counted and reported, never dropped.
+- Noise is wider than for micro-benchmarks: use the threshold the harness pack gives for load runs.
+
 ## 5. Reports
 
 `{{docsRoot}}/performance-reports/<date>-<topic>-benchmarks.md`: the pre-registration quoted, the environment and

@@ -68,6 +68,24 @@ class GuardTests(unittest.TestCase):
             self.assertIsNone(self.run_guard(root, event("Bash", command="git push"), guards=None))
             self.assertIsNone(self.run_guard(root, "garbage", guards=GUARDS))
 
+    def test_check_reports_rules_the_hook_would_silently_skip(self):
+        with TempRepo() as root:
+            write(root, {".claude/stackfoundry/guards.json": json.dumps(GUARDS)})
+            self.assertEqual(run_cli(["guard", "--check", "--root", str(root)]).returncode, 0)
+            bad = {"schemaVersion": 1, "commands": [{"pattern": "(unclosed", "decision": "block"}],
+                   "git": {"writes": "maybe"}}
+            write(root, {".claude/stackfoundry/guards.json": json.dumps(bad)})
+            proc = run_cli(["guard", "--check", "--root", str(root)])
+        self.assertEqual(proc.returncode, 1)
+        for needle in ("does not compile", "deny or ask", "give a reason", "git.writes"):
+            self.assertIn(needle, proc.stdout)
+
+    def test_forget_drops_a_manifest_entry(self):
+        from stackfoundry import manifest
+        with TempRepo({"a.md": "x\n"}) as root:
+            manifest.record(root, ["a.md"], "reference/detect-signals.json", "materialized")
+            self.assertEqual(manifest.forget(root, ["a.md"])["files"], {})
+
     @unittest.skipUnless(shutil.which("sh"), "sh not available")
     def test_the_launcher_runs_the_guard(self):
         with TempRepo() as root:

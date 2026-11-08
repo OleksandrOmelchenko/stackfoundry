@@ -10,6 +10,14 @@
     "docsRoot": {"type": "string", "default": "docs", "description": "Where trackers live, relative to the repo root."},
     "timezone": {"type": "string", "description": "IANA zone used to date reports (e.g. Europe/Madrid). Empty = the machine's."},
     "defaultBranch": {"type": "string"},
+    "ci": {
+      "type": "object",
+      "description": "The CI provider, read by fix-ci and the CI tooling pack.",
+      "properties": {
+        "provider": {"type": "string", "description": "e.g. github-actions, gitlab-ci, azure-pipelines"},
+        "cli": {"type": "string", "description": "The read-only command that shows a failed run's log (e.g. gh run view <id> --log-failed)."}
+      }
+    },
     "targets": {
       "type": "array",
       "minItems": 1,
@@ -55,6 +63,22 @@
                 "coverage": {"type": "string", "description": "Command that produces a coverage report."},
                 "mutation": {"type": "string", "description": "Command that runs the mutation lane, when one exists."}
               }
+            }
+          },
+          "localUrl": {"type": "string", "description": "Where the running app is served locally, for live repros (web-fix-verifier). Starting it is the gate preconditions' business."},
+          "benchmarks": {
+            "type": "object",
+            "description": "Set on a benchmark project's target. Read by write-benchmarks, run-benchmarks and the benchmark agents.",
+            "properties": {
+              "kind": {"enum": ["micro", "load"]},
+              "harness": {"type": "string", "description": "The tooling pack of the harness (e.g. tooling-benchmarkdotnet)."},
+              "build": {"type": "string"},
+              "dryRun": {"type": "string", "description": "Proves the benchmarks run; measures nothing."},
+              "run": {"type": "string", "description": "A measured run; <filter> and <runs> placeholders allowed."},
+              "compare": {"type": "string", "description": "Compares run directories or a baseline."},
+              "preflight": {"type": "string", "description": "Read-only quiet-machine check, when the harness has one."},
+              "resultsDir": {"type": "string"},
+              "disposableTarget": {"type": "string", "description": "Load benchmarks: the throwaway database or service they run against. Never a developer's or a shared one."}
             }
           },
           "profile": {"type": "string", "description": "Path of targets/<name>.md, relative to the repo root."}

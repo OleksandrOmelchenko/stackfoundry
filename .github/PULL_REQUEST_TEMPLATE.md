@@ -10,5 +10,5 @@
 - [ ] Skill descriptions stay ≤ 250 characters, agent descriptions ≤ 300 (`.claude/rules/authoring.md`)
 - [ ] No technology content shipped in the plugin: facts come from the repo profile or from web research at run time
 - [ ] No volatile facts in living text (counts, `file:line`, dates, SHAs)
-- [ ] `CHANGELOG.md` updated under `Unreleased`
+- [ ] `plugins/stackfoundry/CHANGELOG.md` updated under `Unreleased`
 - [ ] Evals run for changed skills, or listed as not run

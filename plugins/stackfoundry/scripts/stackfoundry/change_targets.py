@@ -90,9 +90,11 @@ def specialists(data: dict, root: Path, files: list[str]) -> list[dict]:
     return out
 
 
-def resolve_files(root: Path, base: str | None, files_arg: str | None) -> list[str]:
+def resolve_files(root: Path, base: str | None, files_arg: str | None, range_arg: str | None = None) -> list[str]:
     if files_arg:
         return [f.strip().replace("\\", "/") for f in files_arg.split(",") if f.strip()]
+    if range_arg:  # a commit range exactly, nothing uncommitted (fix-verify commit mode)
+        return [f for f in gitutil.run(["diff", "--name-only", range_arg], root).splitlines() if f]
     return gitutil.changed_files(root, base)
 
 
@@ -126,7 +128,7 @@ def render_markdown(result: dict, specs: list[dict], base: str | None) -> str:
 def main(args) -> int:
     root = Path(args.root).resolve() if args.root else gitutil.repo_root(Path.cwd())
     data = load_targets(root)
-    files = resolve_files(root, args.base, args.files)
+    files = resolve_files(root, args.base, args.files, args.range)
     result = classify(data, files)
     specs = specialists(data, root, files)
     if args.json:

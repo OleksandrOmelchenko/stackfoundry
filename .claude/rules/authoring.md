@@ -48,4 +48,4 @@ paths:
 ## After adding, renaming or removing a skill or agent
 
 Run `sh plugins/stackfoundry/bin/stackfoundry verify-plumbing plugins/stackfoundry` and
-`claude plugin validate --strict plugins/stackfoundry`. Update every skill that dispatches it, and `CHANGELOG.md`.
+`claude plugin validate --strict plugins/stackfoundry`. Update every skill that dispatches it, and `plugins/stackfoundry/CHANGELOG.md`.

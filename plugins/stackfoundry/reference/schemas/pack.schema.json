@@ -75,6 +75,11 @@
         "sources": {"type": "array", "items": {"type": "string"}}
       }
     },
+    "wiring": {
+      "type": "array",
+      "description": "How the layer's plumbing must resolve (registrations, routes, config keys, resources, job graphs): the checklist of code-verifier.",
+      "items": {"type": "object", "required": ["check", "sources"], "properties": {"check": {"type": "string"}, "failure": {"type": "string"}, "where": {"$ref": "#/$defs/where"}, "sources": {"$ref": "#/$defs/cite"}}}
+    },
     "performance": {"type": "array", "items": {"type": "object", "required": ["note", "sources"], "properties": {"note": {"type": "string"}, "where": {"$ref": "#/$defs/where"}, "sources": {"$ref": "#/$defs/cite"}}}},
     "security": {"type": "array", "items": {"type": "object", "required": ["note", "sources"], "properties": {"note": {"type": "string"}, "where": {"$ref": "#/$defs/where"}, "sources": {"$ref": "#/$defs/cite"}}}},
     "upgrade": {

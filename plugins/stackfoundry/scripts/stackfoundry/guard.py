@@ -94,7 +94,48 @@ def _decision(kind: str, reason: str) -> dict:
                                    "permissionDecisionReason": f"stackfoundry guard: {reason}"}}
 
 
-def main(_args) -> int:
+def check_file(path: Path) -> list[str]:
+    """Problems that would make the hook silently ignore a rule (it fails open on them)."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return [f"{path}: not found"]
+    except ValueError as exc:
+        return [f"{path}: invalid JSON ({exc}); the hook ignores the whole file"]
+    problems = []
+    if data.get("schemaVersion") != 1:
+        problems.append("schemaVersion must be 1")
+    for i, g in enumerate(data.get("generated", [])):
+        if not isinstance(g, dict) or not isinstance(g.get("glob"), str):
+            problems.append(f"generated[{i}]: needs a 'glob'")
+    for i, c in enumerate(data.get("commands", [])):
+        if not isinstance(c, dict) or not isinstance(c.get("pattern"), str):
+            problems.append(f"commands[{i}]: needs a 'pattern'")
+            continue
+        try:
+            re.compile(c["pattern"])
+        except re.error as exc:
+            problems.append(f"commands[{i}]: pattern does not compile ({exc}); the hook skips it")
+        if c.get("decision", "deny") not in ("deny", "ask"):
+            problems.append(f"commands[{i}]: decision must be deny or ask")
+        if not c.get("reason"):
+            problems.append(f"commands[{i}]: give a reason that says what to do instead")
+        if any(t not in SHELL_TOOLS for t in c.get("tools", [])):
+            problems.append(f"commands[{i}]: tools may only be Bash and PowerShell")
+    writes = (data.get("git") or {}).get("writes", "allow")
+    if writes not in ("allow", "ask", "deny"):
+        problems.append("git.writes must be allow, ask or deny")
+    return problems
+
+
+def main(args) -> int:
+    if getattr(args, "check", False):
+        root = Path(args.root or os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd())
+        problems = check_file(root / GUARDS)
+        for p in problems:
+            print(f"guards.json: {p}")
+        print("guards.json: ok" if not problems else f"guards.json: {len(problems)} problem(s)")
+        return 1 if problems else 0
     try:
         event = json.loads(sys.stdin.read() or "{}")
         project = Path(os.environ.get("CLAUDE_PROJECT_DIR") or event.get("cwd") or os.getcwd())

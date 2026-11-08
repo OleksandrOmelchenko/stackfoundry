@@ -134,8 +134,13 @@ def check(base: Path) -> Report:
                 for t in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
                     if t in tools:
                         rep.error(f, f"described as read-only but granted {t}")
+            # Tool use is instructed in the `## Tooling` section; prose elsewhere may name a tool without using it.
+            in_tooling = False
             for line in body.splitlines():
-                if NEGATION.search(line):
+                if line.startswith("## "):
+                    in_tooling = line[3:].strip().lower().startswith("tooling")
+                    continue
+                if not in_tooling or NEGATION.search(line):
                     continue
                 for t in GATED:
                     if f"`{t}`" in line and t not in tools:

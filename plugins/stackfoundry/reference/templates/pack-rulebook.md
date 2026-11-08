@@ -27,6 +27,10 @@ Applies to: {{targets}}. Versions in use: {{version — where pinned}}.
 |---|---|---|
 {{one row per bugCategory}}
 
+## Wiring
+
+{{one bullet per wiring check: what must resolve, the failure when it does not, where. Read by code-verifier.}}
+
 ## Testing
 
 {{testing.layers}}

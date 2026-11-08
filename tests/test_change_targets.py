@@ -97,6 +97,10 @@ class CliTests(unittest.TestCase):
             proc = run_cli(["change-targets", "--json", "--root", str(root), "--base", "main"])
             self.assertEqual(set(json.loads(proc.stdout)["targets"]), {"api", "web"})
 
+            # A commit range is exactly that range: the untracked web/b.ts is not part of it.
+            proc = run_cli(["change-targets", "--json", "--root", str(root), "--range", "main..feature"])
+            self.assertEqual(set(json.loads(proc.stdout)["targets"]), {"api"})
+
             proc = run_cli(["select-tests", "--json", "--root", str(root), "--base", "main"])
             self.assertEqual(proc.returncode, 0, proc.stderr)
             p = json.loads(proc.stdout)

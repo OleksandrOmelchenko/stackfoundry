@@ -66,7 +66,7 @@ def render(p: dict) -> str:
 def main(args) -> int:
     root = Path(args.root).resolve() if args.root else gitutil.repo_root(Path.cwd())
     data = load_targets(root)
-    files = resolve_files(root, args.base, args.files)
+    files = resolve_files(root, args.base, args.files, args.range)
     p = plan(data, files, args.mode)
     print(json.dumps(p, indent=2) if args.json else render(p), end="" if not args.json else "\n")
     return 0

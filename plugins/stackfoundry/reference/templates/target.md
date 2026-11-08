@@ -33,6 +33,13 @@ Preconditions: {{e.g. services that lock build output must be stopped; a contain
 Shuffled run (assurance gate): `{{shuffle command}}`. Coverage: `{{coverage command}}`. Mutation lane:
 {{command, or "none yet: /stackfoundry:setup-mutation"}}.
 
+Local URL for live repros: {{localUrl, or "not served locally"}}.
+
+## Benchmarks
+
+{{only on a benchmark project's target: kind (micro | load), harness pack, build / dry-run / measured-run / compare
+commands, the read-only preflight, the results folder, and for load benchmarks the disposable target they run against}}
+
 ## Oracle sources
 
 Where an expected value may come from for this target, in precedence order: {{specs folder, rulebooks, generated

@@ -69,8 +69,9 @@ def follow_ups(docs: Path, root: Path, lint: list[str]) -> list[dict]:
 
 
 def bugs(docs: Path, root: Path) -> list[dict]:
+    """Open findings of bug reports and open gaps of threat models (same finding format)."""
     out = []
-    for p in _docs(docs / "bug-reports"):
+    for p in _docs(docs / "bug-reports") + _docs(docs / "security"):
         text = p.read_text(encoding="utf-8", errors="replace")
         lines = text.splitlines()
         for item in parse_bug_report(text)["items"]:
