@@ -1,6 +1,6 @@
 ---
 name: docs-reconciler
-description: Sweep the docs (specs, plans, bug reports and test designs, skills and agents, CLAUDE.md files, rules and profiles) against the code and the documentation rulebook, fixing mechanical drift and flagging judgment calls. Scopable to one area.
+description: Sweep the docs (specs, plans, bug reports, test designs, skills, agents, instruction files, rules, profiles) against the code and the documentation rulebook, fixing mechanical drift and flagging judgment calls. Use for "are the docs stale".
 argument-hint: "[area | doc] [--report]"
 ---
 

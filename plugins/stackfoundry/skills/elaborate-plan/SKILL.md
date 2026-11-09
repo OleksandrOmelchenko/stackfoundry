@@ -1,8 +1,7 @@
 ---
 name: elaborate-plan
-description: The full cycle for a change that matters — plan mode with targets and a test design, implement the repo's way, then a quality sweep. Use for "elaborate plan", "plan thoroughly", "full cycle". Never commits.
+description: The full cycle for a change that matters — plan mode with targets and a test design, implement the repo's way, then a quality sweep. Never commits. Only when asked. Use for "elaborate plan", "plan thoroughly", "full cycle".
 argument-hint: "<the change>"
-disable-model-invocation: true
 ---
 
 # Elaborate plan

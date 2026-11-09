@@ -1,8 +1,7 @@
 ---
 name: configure-guards
-description: View and edit the guard hook's rules in .stackfoundry/guards.json — generated-file globs, denied or ask-first commands, the git write policy — testing each rule on sample hook events before saving.
+description: View and edit the guard hook's rules in .stackfoundry/guards.json — generated-file globs, denied or ask-first commands, the git write policy — tested on sample events before saving. Use for "block edits to X" or "show the guards".
 argument-hint: "[show | generated | commands | git | audit]"
-disable-model-invocation: true
 ---
 
 # Configure guards

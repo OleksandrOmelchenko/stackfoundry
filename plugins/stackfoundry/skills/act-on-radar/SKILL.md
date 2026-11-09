@@ -1,8 +1,7 @@
 ---
 name: act-on-radar
-description: Act on the newest tech-radar report — ask once, then route each item to a plan, a spike, a bump, a pack refresh or a recorded rejection with its revisit condition. Never edits product code. Use after tech-radar.
+description: Act on the newest tech-radar report — ask once, then route each item to a plan, spike, bump, pack refresh or recorded rejection. Never edits product code. Only when asked. Use for "act on the radar", after tech-radar.
 argument-hint: "[report path]"
-disable-model-invocation: true
 ---
 
 # Act on the radar

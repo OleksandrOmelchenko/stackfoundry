@@ -1,8 +1,7 @@
 ---
 name: schedule
-description: Register stackfoundry's unattended skills (check-updates, tech-radar, stackfoundry-radar, flaky-watch, report-only docs-reconciler) as scheduled tasks with a proposed cadence; shows claude -p and GitHub Actions alternatives. Asks first.
+description: Register the unattended skills (check-updates, tech-radar, stackfoundry-radar, flaky-watch, docs-reconciler) as scheduled tasks with a cadence; shows headless and CI alternatives. Asks first. Use for "run the radar every week".
 argument-hint: "[skill ...]"
-disable-model-invocation: true
 ---
 
 # Schedule the unattended skills

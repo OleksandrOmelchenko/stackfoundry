@@ -100,13 +100,15 @@ per role, instead of one per role × target, is also what keeps the listing smal
 `/stackfoundry:materialize <target> <role>` writes a dedicated agent into the repo when a team wants to hand-tune one
 (a security-weighted auth server, say). The manifest records it, and `upgrade` leaves it alone.
 
-### Skills that are slash-only
+### Every skill starts from plain language
 
-Entry points a person starts on purpose (`init`, `upgrade`, `materialize`, `configure-guards`, `elaborate-plan`, the
-`act-on-*` skills, `github-prs`, `schedule`) set `disable-model-invocation: true`. That keeps their descriptions out
-of the skill listing, which gets a fixed share of the context window. A skill another skill invokes cannot be
-slash-only (the `Skill` tool refuses it), so `sync`, `bump-all`, `quality-sweep` and `cleanup-merged` stay
-model-invocable.
+A user says "set up stackfoundry in this repo" or "find bugs in the API", not a skill name, and only Claude Code has
+a slash form for plugin skills. So no plugin skill sets `disable-model-invocation: true`, and every description ends
+in a `Use for "…"` (or `Use when`/`to`/`after`/`before`) clause in the words a user would type. `verify-plumbing`
+enforces both. Entry points a person starts on purpose (`init`, `upgrade`, `materialize`, `elaborate-plan`, the
+`act-on-*` skills, `github-prs`, `schedule`) say "Only when asked." so they are not picked mid-task, and each
+confirms before it writes. The cost is that their descriptions now count against the skill listing's share of the
+context window.
 
 ## The helper CLI
 

@@ -1,7 +1,6 @@
 ---
 name: upgrade
-description: Take a new stackfoundry plugin version's template changes into the files init generated here — replace untouched files, ask about edited ones, skip materialized ones, leave deleted ones deleted.
-disable-model-invocation: true
+description: Take a new stackfoundry version's template changes into the files init generated here — replace untouched files, ask about edited ones, skip materialized and deleted ones. Only when asked. Use for "update stackfoundry's files in this repo".
 ---
 
 # Upgrade

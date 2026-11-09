@@ -1,6 +1,6 @@
 ---
 name: write-tests
-description: Write real behavioural tests for one target on its existing harness, every expected value cited, keeping only tests that pass the assurance gate. Sweep, area, diff or a test design; --full runs the whole design-write-review-fix loop.
+description: Write real behavioural tests for one target on its existing harness, every expected value cited, keeping only tests that pass the assurance gate; --full runs the design-write-review-fix loop. Use for "write tests for X".
 argument-hint: "<target> [<area> | diff [--base <ref>] | --design <doc>] [--full]"
 ---
 

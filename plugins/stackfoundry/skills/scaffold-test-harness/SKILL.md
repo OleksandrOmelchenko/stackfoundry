@@ -1,6 +1,6 @@
 ---
 name: scaffold-test-harness
-description: Set up a minimal test harness for a target that has none or a thin one — framework from the researched tooling pack, base fixture, fake at the network edge, shuffle and coverage commands — proven by one test that can fail. Asks before writing.
+description: Set up a minimal test harness for a target with none or a thin one — framework from its tooling pack, base fixture, network-edge fake, shuffle and coverage commands — proven by one test that can fail. Asks first. Use for "X has no tests".
 argument-hint: "<target>"
 ---
 

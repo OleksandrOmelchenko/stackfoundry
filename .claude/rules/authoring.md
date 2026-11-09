@@ -13,8 +13,10 @@ paths:
 - **Description = trigger contract**: what it does and when to use it, in the words a user would type. Skills aim at
   ~200 characters, **250 hard cap**; agents **≤ 300**. Mechanics and rationale go in the body. `verify-plumbing`
   enforces the caps.
-- Skills a person starts on purpose set `disable-model-invocation: true` (see `docs/design.md`, "Skills that are
-  slash-only"). Skills Claude should pick on its own leave it unset.
+- Every skill starts from plain language (`docs/design.md`, "Every skill starts from plain language"): the
+  description ends in a `Use for "…"` clause, and no skill sets `disable-model-invocation: true`. An entry point a
+  person starts on purpose says "Only when asked." and confirms before it writes. `verify-plumbing` enforces
+  both.
 - Agents carry `tools:`, which must cover every tool the body tells it to call (`Agent` to dispatch, `WebSearch` /
   `WebFetch` to research, `Edit`/`Write` only for writers and fixers). Read-only roles never get `Edit`/`Write`.
   `model: haiku` only for leaf runners that run a command and summarize.

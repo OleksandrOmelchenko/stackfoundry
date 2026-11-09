@@ -1,6 +1,6 @@
 ---
 name: sync
-description: Re-survey the repo and update the stackfoundry profile — new or removed projects, new frameworks and tools, pinned majors that moved, new generated folders. Shows one diff, asks once, applies.
+description: Re-survey the repo and update the stackfoundry profile — new or removed projects, frameworks and tools, pinned majors that moved, new generated folders. Shows one diff, asks once, applies. Use for "resync stackfoundry" or "I added a project".
 argument-hint: "[--targets a,b]"
 ---
 

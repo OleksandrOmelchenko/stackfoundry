@@ -1,6 +1,6 @@
 ---
 name: prune-comments
-description: Delete comments that are no longer true or useful and shorten wordy ones; edits comments only, never code. Defaults to the uncommitted tree. Harsh mode for "drop most of the comments, they are useless".
+description: Delete comments that are no longer true or useful and shorten wordy ones; edits comments only, never code. Defaults to the uncommitted tree. Use for "prune the comments"; harsh mode for "drop most of the comments".
 argument-hint: "[path | diff | commit <sha> | all] [harsh]"
 ---
 

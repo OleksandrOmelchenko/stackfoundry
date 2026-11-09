@@ -89,7 +89,7 @@
       "rule": "Keep `disable-model-invocation: true` off skills that are scheduled or preloaded into agents; use it only for skills a person starts on purpose.",
       "why": "The flag also blocks preloading into subagents and running from a session-scoped scheduled task, so a scheduled skill carrying it never runs.",
       "where": ["plugins/stackfoundry/skills/schedule/SKILL.md (registers check-updates, tech-radar, stackfoundry-radar, flaky-watch, docs-reconciler: none set the flag)"],
-      "repoConvention": ".claude/rules/authoring.md: slash-only skills set disable-model-invocation: true (init, upgrade, schedule, configure-guards, materialize, act-on-*, github-prs, elaborate-plan).",
+      "repoConvention": ".claude/rules/authoring.md: no plugin skill sets it; every skill starts from a plain request, and person-started ones say \"Only when asked.\" in the description (verify-plumbing enforces both).",
       "sources": ["skills"]
     },
     {
@@ -156,7 +156,7 @@
     {
       "name": "silently-ignored-frontmatter",
       "lookFor": "Frontmatter keys Claude Code ignores (unknown keys, hooks/mcpServers/permissionMode/initialPrompt in plugin agents), and YAML that may not parse (unquoted colons, brackets in argument-hint).",
-      "failure": "If the YAML does not parse the skill loads with no fields set, so a slash-only skill loses disable-model-invocation and Claude can start a repo-writing skill on its own; ignored agent fields drop a guard without any error.",
+      "failure": "If the YAML does not parse the skill loads with no fields set, so the skill loses its description and plain-language trigger; ignored agent fields drop a guard without any error.",
       "severityHint": "blocker",
       "sources": ["skills", "sub-agents"]
     },

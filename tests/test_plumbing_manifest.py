@@ -31,13 +31,33 @@ class PlumbingTests(unittest.TestCase):
                                         "Dispatch `Agent` with subagent_type: \"ghost\". [a](missing.md)\n",
             "agents/hunter.md": GOOD_AGENT.replace("Read, Grep, WebSearch", "Read, Grep, Edit"),
             "skills/No_Caps/SKILL.md": "---\nname: No_Caps\ndescription: x\n---\n# No caps\n",
+            "skills/slashonly/SKILL.md": GOOD_SKILL.replace("name: good", "name: slashonly").replace(
+                "---\n#", "disable-model-invocation: true\n---\n#", 1),
+            "skills/silent/SKILL.md": GOOD_SKILL.replace("name: good", "name: silent").replace(
+                "Does a thing. Use when asked.", "Does a thing, used for the release."),
         }
         with TempRepo(files) as root:
-            errors = " | ".join(check(root).errors)
+            report = check(root)
+        errors = " | ".join(report.errors)
         for needle in ("reference/x.md does not exist", "does not match the folder", "251 characters",
                        "/stackfoundry:nope", "'ghost'", "missing.md", "read-only but granted Edit",
                        "lacks it", "single hyphens", "portable-form preamble"):
             self.assertIn(needle, errors)
+        def errors_for(skill):
+            return " | ".join(e for e in report.errors if f"{skill}{'/'}SKILL.md" in e.replace("\\", "/"))
+        self.assertIn("slash-only", errors_for("slashonly"))
+        self.assertNotIn("plain-language trigger", errors_for("slashonly"))
+        self.assertIn("plain-language trigger", errors_for("silent"))
+        self.assertNotIn("plain-language trigger", errors_for("good"))
+
+    def test_plain_language_rules_apply_only_to_the_plugin(self):
+        """A repo's own .claude/skills may stay slash-only; the trigger rule is the plugin's."""
+        files = {".claude/skills/own/SKILL.md": "---\nname: own\ndescription: Release it.\n"
+                                                "disable-model-invocation: true\n---\n# Own\n"}
+        with TempRepo(files) as root:
+            errors = " | ".join(check(root).errors)
+        self.assertNotIn("slash-only", errors)
+        self.assertNotIn("plain-language trigger", errors)
 
     def test_the_shipped_plugin_is_clean(self):
         proc = run_cli(["verify-plumbing", str(manifest.PLUGIN_ROOT)])

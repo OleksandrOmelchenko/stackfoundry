@@ -1,6 +1,6 @@
 ---
 name: skill-agent-author
-description: Author or restructure a skill, subagent or path-scoped rule in this repo's .claude/ — one file each, its frontmatter and description cap, and where a rule belongs. Use to create, rename or split one.
+description: Author or restructure a skill, subagent or path-scoped rule in this repo — one file each, its frontmatter and description cap, and where a rule belongs. Only when asked. Use to create, rename or split one.
 ---
 
 # Skill and agent author
@@ -52,8 +52,10 @@ material elsewhere. Some files here are stackfoundry's; `stackfoundry manifest l
 - Agents carry `tools:`, which must cover every tool the body tells the agent to call (`Agent` to dispatch,
   `WebSearch`/`WebFetch` to research, `Edit`/`Write` only for writers and fixers). Read-only roles never get
   `Edit`/`Write`. `model: haiku` only for a leaf runner that runs a command and summarizes.
-- Skills may carry `argument-hint:` and `disable-model-invocation: true` (slash-only, for a skill a person starts on
-  purpose; it also keeps the description out of the listing budget).
+- Every skill must start from a plain request, so its description ends in a `Use for "…"` (or `Use when`/`to`/
+  `after`/`before`) clause in the words a user would type. Don't set `disable-model-invocation: true`: it makes the
+  skill slash-only in Claude Code and unreachable by plain language. A skill a person should start on purpose says
+  "Only when asked." in its description and confirms before it writes. Skills may carry `argument-hint:`.
 
 ## The body
 

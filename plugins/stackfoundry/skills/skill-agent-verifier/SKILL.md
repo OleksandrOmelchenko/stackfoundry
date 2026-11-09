@@ -1,6 +1,6 @@
 ---
 name: skill-agent-verifier
-description: Audit skill, agent and rulebook plumbing — frontmatter, description caps, tool grants, path references, rules' paths globs, CLAUDE.md shape, orphans, volatile facts — plus a live load probe. Run after adding, renaming or removing one.
+description: Audit skill, agent and rulebook plumbing — frontmatter, description caps, tool grants, path references, rules' globs, instruction-file shape, orphans, volatile facts — plus a live load probe. Use after adding, renaming or removing one.
 argument-hint: "[category | probe | skill or agent name]"
 ---
 

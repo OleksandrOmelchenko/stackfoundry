@@ -1,8 +1,7 @@
 ---
 name: act-on-updates
-description: Act on the latest dependency report — bumps to bump-all, migrations to plan-feature, deferrals, dated decisions, watch items, machine commands — ask once, then dispatch. Use after check-updates.
+description: Act on the latest dependency report — bumps to bump-all, migrations to plan-feature, deferrals, decisions, watch items — ask once, then dispatch. Only when asked. Use for "act on the updates", after check-updates.
 argument-hint: "[report path]"
-disable-model-invocation: true
 ---
 
 # Act on updates

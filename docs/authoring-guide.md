@@ -108,32 +108,31 @@ reason the code does not show · 🔵 suggestion · 🟢 done well.
 
 ### Skills (`plugins/stackfoundry/skills/`)
 
-`dmi` = `disable-model-invocation: true` (slash-only).
-
 | Family | Skills |
 |---|---|
-| Core | `init` (dmi), `research-stack`, `sync`, `upgrade` (dmi), `materialize` (dmi), `configure-guards` (dmi), `write-code`, `skill-agent-author`, `skill-agent-verifier` |
+| Core | `init`, `research-stack`, `sync`, `upgrade`, `materialize`, `configure-guards`, `write-code`, `skill-agent-author`, `skill-agent-verifier` |
 | Tests | `design-tests`, `write-tests`, `review-tests`, `fix-tests`, `run-tests`, `scaffold-test-harness`, `setup-mutation` |
 | Bugs and review | `bug-hunt`, `fix-verify`, `review-changes`, `quality-review`, `change-targets`, `quality-sweep`, `performance-review`, `security-review-target`, `threat-model` |
 | Reactive | `debug`, `fix-ci` |
 | Docs and backlog | `backlog`, `plan-feature`, `implement-plan`, `retire-plan`, `docs-reconciler` |
-| Work modes | `with-plan`, `plan-execute`, `implement-only`, `elaborate-plan` (dmi), `ask-me`, `prune-comments` |
-| Git | `github-prs` (dmi), `cleanup-merged` |
+| Work modes | `with-plan`, `plan-execute`, `implement-only`, `elaborate-plan`, `ask-me`, `prune-comments` |
+| Git | `github-prs`, `cleanup-merged` |
 | Benchmarks | `write-benchmarks`, `run-benchmarks` |
-| Dependencies and radar | `check-updates`, `act-on-updates` (dmi), `bump-all`, `bump`, `check-formats`, `tech-radar`, `act-on-radar` (dmi), `radar-digest`, `stackfoundry-radar`, `flaky-watch`, `schedule` (dmi) |
+| Dependencies and radar | `check-updates`, `act-on-updates`, `bump-all`, `bump`, `check-formats`, `tech-radar`, `act-on-radar`, `radar-digest`, `stackfoundry-radar`, `flaky-watch`, `schedule` |
 
-**A skill cannot `Skill`-invoke a dmi skill.** So dmi is only for entry points no other skill chains into; a skill
-another skill calls (`bump-all`, `cleanup-merged`, `quality-sweep`, `sync`) stays model-invocable. Naming a dmi
-skill to the user (`run /stackfoundry:init first`) is fine.
+**Every skill starts from plain language** (`docs/design.md`, "Every skill starts from plain language"). Never set
+`disable-model-invocation: true`; end the description with a `Use for "…"` clause, and add "Only when asked." for
+an entry point a person starts on purpose. `verify-plumbing` rejects a plugin skill that breaks either rule. When
+naming a skill to the user, give the plain request first and the slash form second ("say *set up stackfoundry*, or
+`/stackfoundry:init`").
 
 ## Skill body shape
 
 ```markdown
 ---
 name: <folder name>
-description: <what + when, ≤ 250 chars>
+description: <what + when, ≤ 250 chars, ending in Use for "<plain request>">
 argument-hint: "<args>"            # when it takes arguments
-disable-model-invocation: true     # slash-only skills only
 ---
 
 # <Title>

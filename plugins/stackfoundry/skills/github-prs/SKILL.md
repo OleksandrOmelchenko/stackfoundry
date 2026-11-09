@@ -1,8 +1,7 @@
 ---
 name: github-prs
-description: Land the repo's open pull requests — a read-only merge report with conflicts and a recommended landing order and method, one confirmation, then land in order and hand off to cleanup-merged. Use for "merge all PRs".
+description: Land the open pull requests — a read-only merge report with conflicts and a landing order, one confirmation, then land in order and hand off to cleanup-merged. Only when asked. Use for "merge all PRs" or "land the open PRs".
 argument-hint: "merge [all | <PR number> ...]"
-disable-model-invocation: true
 ---
 
 # GitHub PRs

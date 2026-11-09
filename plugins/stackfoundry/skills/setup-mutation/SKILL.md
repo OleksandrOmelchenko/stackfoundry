@@ -1,6 +1,6 @@
 ---
 name: setup-mutation
-description: Add a mutation-testing lane to one target's suite — tool from its researched tooling pack, scoped to domain logic, proven by a small run whose report has killed mutants — and record it in targets.json. Asks first.
+description: Add a mutation-testing lane to one target's suite — tool from its tooling pack, scoped to domain logic, proven by a small run with killed mutants — recorded in targets.json. Asks first. Use for "set up mutation testing".
 argument-hint: "<target> [<suite name>]"
 ---
 

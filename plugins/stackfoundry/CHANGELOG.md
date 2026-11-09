@@ -25,6 +25,9 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 
 ### Changed
 
+- Every skill starts from a plain request, in every assistant: no skill is slash-only any more, every description
+  ends in a plain-language trigger, and `verify-plumbing` enforces both for plugin skills. Entry points a person
+  starts on purpose (init, upgrade, materialize, the act-on skills, github-prs, schedule) say "Only when asked."
 - Python 3.11 is the minimum (3.10 reached end of life).
 - The stack-researcher writes its pack file itself; init checks it with `stackfoundry pack check` and renders
   rulebooks with `stackfoundry pack render`.

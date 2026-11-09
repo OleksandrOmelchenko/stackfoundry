@@ -1,8 +1,7 @@
 ---
 name: init
-description: Set up stackfoundry in this repo — survey it, agree the target map, research each technology from current sources, and write grounded rulebooks, target profiles, code-writer skills, trackers and guards.
+description: Set up stackfoundry in this repo — survey it, agree the target map, research each technology from current sources, write grounded rulebooks, profiles, code-writer skills, trackers and guards. Only when asked. Use for "set up stackfoundry".
 argument-hint: "[--new] [--targets a,b] [answers for a non-interactive run]"
-disable-model-invocation: true
 ---
 
 # Init

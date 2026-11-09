@@ -31,6 +31,8 @@ SKILL_REF = re.compile(r"/stackfoundry:([a-z0-9-]+)")
 # Agent Skills (agentskills.io): lowercase letters, digits and single hyphens, at most 64 characters.
 PORTABLE_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 AGENT_REF = re.compile(r"subagent_type\s*[:=]\s*[\"'](?:stackfoundry:)?([a-z0-9-]+)[\"']")
+# The plain-language trigger every plugin skill's description carries, so a request in words starts it.
+TRIGGER = re.compile(r"\bUse (?:for|when|to|after|before)\b")
 
 
 class Report:
@@ -122,6 +124,12 @@ def check(base: Path) -> Report:
                     rep.warn(f, f"unknown frontmatter key {key!r}")
             if "disable-model-invocation" in fields and not isinstance(fields["disable-model-invocation"], bool):
                 rep.error(f, "disable-model-invocation must be true or false")
+            if plugin_mode and fields.get("disable-model-invocation") is True:
+                rep.error(f, "disable-model-invocation: true makes the skill slash-only; every plugin skill must start "
+                             "from a plain request (say \"Only when asked.\" in the description instead)")
+            if plugin_mode and isinstance(desc, str) and desc.strip() and not TRIGGER.search(desc):
+                rep.error(f, "description has no plain-language trigger (end it with Use for \"...\", Use when, "
+                             "Use to, Use after or Use before)")
             bodies.append((f, body))
 
     if agents_dir.is_dir():

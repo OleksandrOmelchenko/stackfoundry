@@ -1,8 +1,7 @@
 ---
 name: materialize
-description: Write a team-owned copy of a generic role agent for one target, for each assistant the repo uses, to hand-tune it; orchestrators dispatch it instead and upgrades skip it. Use for /stackfoundry:materialize [target] [role].
+description: Write a team-owned copy of a generic role agent for one target, in each assistant's format, to hand-tune it; orchestrators then dispatch it and upgrades skip it. Only when asked. Use for "customize the bug hunter for X".
 argument-hint: "<target> <role>"
-disable-model-invocation: true
 ---
 
 # Materialize a role agent for one target
