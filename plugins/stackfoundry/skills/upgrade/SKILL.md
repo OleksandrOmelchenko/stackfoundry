@@ -12,6 +12,11 @@ description: Take a new stackfoundry version's template changes into the files i
 > every agent you dispatch as `pluginRoot:` in the brief.
 > Tool names are Claude Code's; in another assistant use its equivalent
 > (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+> **Repo extensions.** Before step 1, Read `.stackfoundry/extensions/skills/<this skill's name>.md` in the repo
+> if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
+> its sections at the headings they name, and its `## Target:` sections only for that target.
+> Its `## Rules` win where they conflict with this file, never over the fixed contract
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
 
 After the plugin updates (`claude plugin update stackfoundry@stackfoundry`, or the other assistant's update), the plugin's skills and agents are new, but the files `init`
 generated in this repo still come from the old templates. This skill brings them forward without losing the team's

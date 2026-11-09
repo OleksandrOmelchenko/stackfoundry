@@ -12,6 +12,11 @@ description: Author or restructure a skill, subagent or path-scoped rule in this
 > every agent you dispatch as `pluginRoot:` in the brief.
 > Tool names are Claude Code's; in another assistant use its equivalent
 > (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+> **Repo extensions.** Before step 1, Read `.stackfoundry/extensions/skills/<this skill's name>.md` in the repo
+> if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
+> its sections at the headings they name, and its `## Target:` sections only for that target.
+> Its `## Rules` win where they conflict with this file, never over the fixed contract
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
 
 Write a skill, agent or rule as **one file that is the whole truth**, grounded in this repo, discoverable by its
 description, and in the place Claude Code actually loads it from.
@@ -38,7 +43,11 @@ material elsewhere. Some files here are stackfoundry's; `stackfoundry manifest l
   file of its own.
 - **Code-writer skills** (`.claude/skills/<app-model>-code-writer/`) are generated; an edit is kept, and
   `/stackfoundry:upgrade` proposes a merge instead of overwriting it.
-- **Materialized agents** (`.claude/agents/<target>-<role>.md`) are the team's (`/stackfoundry:materialize`).
+- **Materialized agents** (canonical `.stackfoundry/agents/<target>-<role>.md`, copied into each assistant's agent
+  folder) are the team's (`/stackfoundry:materialize`).
+- **A change to a plugin skill or agent** (a step, a rule, a category) is a repo extension in
+  `.stackfoundry/extensions/`, never an edit of the installed plugin or a same-named copy in `.claude/skills/`: the
+  plugin reads the extension every run and upgrades keep it (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
 - **Do not hand-write a role-per-target agent.** The plugin's role agents read the target profile; a fact the role
   is missing belongs in `.stackfoundry/targets/<target>.md`, a narrow reviewer that a path or a pattern
   should call in belongs in `targets.json` → `specialists`, and a hand-tuned role is `/stackfoundry:materialize`.

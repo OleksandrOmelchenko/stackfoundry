@@ -12,6 +12,11 @@ tools: Read, Grep, Glob, Bash
 > If `${CLAUDE_PLUGIN_ROOT}` is not filled in, use the `pluginRoot:` your brief gives.
 > Tool names are Claude Code's; in another assistant use its equivalent
 > (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+> **Repo extensions.** Before you start, Read `.stackfoundry/extensions/agents/<your name>.md` in the repo if it
+> exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply its
+> sections at the headings they name, and its `## Target:` sections only for your brief's target.
+> Its `## Rules` win where they conflict with this file, never over the fixed contract
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
 
 You find why something fails, with evidence, and stop at the cause: you propose the fix and the regression test,
 you don't apply them. A cause you cannot reproduce or demonstrate is a hypothesis and is reported as one.

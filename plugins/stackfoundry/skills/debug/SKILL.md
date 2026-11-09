@@ -13,6 +13,11 @@ argument-hint: "<error | stack trace | log excerpt | failing command | symptom> 
 > every agent you dispatch as `pluginRoot:` in the brief.
 > Tool names are Claude Code's; in another assistant use its equivalent
 > (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+> **Repo extensions.** Before step 1, Read `.stackfoundry/extensions/skills/<this skill's name>.md` in the repo
+> if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
+> its sections at the headings they name, and its `## Target:` sections only for that target.
+> Its `## Rules` win where they conflict with this file, never over the fixed contract
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
 
 Reactive: something broke. This skill turns the symptom into a reproduced failure, has the `debugger` agent reason
 from evidence to a root cause, proposes the fix, applies it only with the user's yes, and pins it with a regression
@@ -67,7 +72,8 @@ run). Ask only for what is missing and needed: the exact command, or when it las
 
 - `Bash`: `stackfoundry change-targets`, `stackfoundry backlog`, the reproduction and gate commands, `git log`/
   `git show`/`git diff`, `git bisect` (with the user's yes), `stackfoundry tracker check`.
-- `Agent` with `subagent_type: "stackfoundry:debugger"`, one per suspected target in a single message.
+- `Agent` with `subagent_type: "stackfoundry:debugger"`, one per suspected target in a single message; a target with
+  `materialized.debugger` in `targets.json` gets that repo agent instead (`subagent_type` is its bare name).
 - `Read`/`Grep` for profiles and code; `Edit` for the approved fix; `Write`/`Edit` for the bug report and index.
 - `Skill` → `stackfoundry:design-tests`, `stackfoundry:write-tests`, `stackfoundry:fix-verify`,
   `stackfoundry:fix-tests`. `AskUserQuestion` for the fix, the bisect and stopping a service.

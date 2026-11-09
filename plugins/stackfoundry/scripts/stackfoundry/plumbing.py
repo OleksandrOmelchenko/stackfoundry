@@ -9,8 +9,10 @@ import json
 import re
 from pathlib import Path
 
-from . import preamble
+from . import PLUGIN_ROOT, preamble
 from .frontmatter import split
+
+MATERIALIZED = Path(".stackfoundry") / "agents"
 
 SKILL_CAP = 250
 AGENT_CAP = 300
@@ -54,10 +56,11 @@ def is_plugin_root(base: Path) -> bool:
 
 
 def layout(base: Path) -> tuple[Path, Path, Path]:
-    """(skills dir, agents dir, plugin root used for ${CLAUDE_PLUGIN_ROOT})."""
+    """(skills dir, agents dir, plugin root used for ${CLAUDE_PLUGIN_ROOT}). In a repo, ${CLAUDE_PLUGIN_ROOT} in a
+    materialized agent or a repo skill means the installed plugin (this CLI's), never the repo root."""
     if is_plugin_root(base):
         return base / "skills", base / "agents", base
-    return base / ".claude" / "skills", base / ".claude" / "agents", base
+    return base / ".claude" / "skills", base / ".claude" / "agents", PLUGIN_ROOT
 
 
 def _tools(value) -> list[str]:
@@ -132,8 +135,12 @@ def check(base: Path) -> Report:
                              "Use to, Use after or Use before)")
             bodies.append((f, body))
 
-    if agents_dir.is_dir():
-        for f in sorted(agents_dir.glob("*.md")):
+    agent_files = sorted(agents_dir.glob("*.md")) if agents_dir.is_dir() else []
+    if not plugin_mode and (base / MATERIALIZED).is_dir():
+        # The canonical team agents; .claude/agents holds Claude Code's copies of them.
+        agent_files += sorted((base / MATERIALIZED).glob("*.md"))
+    if agent_files:
+        for f in agent_files:
             fields, body, errs = split(f.read_text(encoding="utf-8"))
             for e in errs:
                 rep.error(f, f"frontmatter: {e}")

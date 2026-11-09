@@ -1,7 +1,8 @@
 """The portable-form preamble every skill and agent carries right under its title.
 
 It is what lets one SKILL.md or agent file work in every assistant: the helper CLI by path (no `bin/` on PATH),
-the plugin root when `${CLAUDE_PLUGIN_ROOT}` is not substituted, and where the tool-name equivalents are.
+the plugin root when `${CLAUDE_PLUGIN_ROOT}` is not substituted, where the tool-name equivalents are, and the
+repo extension the team may have written for this skill or agent (reference/extensions.md).
 `verify-plumbing` checks that each file carries the current text exactly.
 """
 from __future__ import annotations
@@ -16,17 +17,30 @@ _TOOLS = (
     "> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).\n"
 )
 
+_EXT_RULE = (
+    "> Its `## Rules` win where they conflict with this file, never over the fixed contract\n"
+    "> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).\n"
+)
+
 SKILL = (
     _CLI
     + "> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to\n"
     "> every agent you dispatch as `pluginRoot:` in the brief.\n"
     + _TOOLS
+    + "> **Repo extensions.** Before step 1, Read `.stackfoundry/extensions/skills/<this skill's name>.md` in the repo\n"
+    "> if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply\n"
+    "> its sections at the headings they name, and its `## Target:` sections only for that target.\n"
+    + _EXT_RULE
 )
 
 AGENT = (
     _CLI
     + "> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, use the `pluginRoot:` your brief gives.\n"
     + _TOOLS
+    + "> **Repo extensions.** Before you start, Read `.stackfoundry/extensions/agents/<your name>.md` in the repo if it\n"
+    "> exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply its\n"
+    "> sections at the headings they name, and its `## Target:` sections only for your brief's target.\n"
+    + _EXT_RULE
 )
 
 

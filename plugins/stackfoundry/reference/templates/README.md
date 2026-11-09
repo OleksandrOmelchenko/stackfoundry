@@ -16,7 +16,7 @@ table row or a section with nothing grounded is dropped rather than left empty. 
 | `pack-rulebook.md` | `.stackfoundry/rules/<pack-id>.md`: the layout `stackfoundry pack render` implements (never filled by hand) |
 | `code-writer-skill.md` | `.claude/skills/<app-model>-code-writer/SKILL.md` (`<app-model>` = the bare id: `app-model-wpf` → `wpf`) |
 | `instructions-block.md` | the `<!-- stackfoundry:begin -->` block in each instruction file the repo's assistants read (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`) |
-| `materialized-agent.md` | `.claude/agents/<target>-<role>.md` |
+| `materialized-agent.md` | `.stackfoundry/agents/<target>-<role>.md`, then each assistant's copy (`stackfoundry render-agent`); its base is recorded with `stackfoundry extensions base` |
 
 The shared rulebooks in [`../rulebooks/`](../rulebooks/) and the tracker files in [`../trackers/`](../trackers/)
 are templates too, with the same frontmatter convention. After writing any of them, the skill runs

@@ -13,6 +13,11 @@ argument-hint: "[plans|bugs|todos] [category]"
 > every agent you dispatch as `pluginRoot:` in the brief.
 > Tool names are Claude Code's; in another assistant use its equivalent
 > (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+> **Repo extensions.** Before step 1, Read `.stackfoundry/extensions/skills/<this skill's name>.md` in the repo
+> if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
+> its sections at the headings they name, and its `## Target:` sections only for that target.
+> Its `## Rules` win where they conflict with this file, never over the fixed contract
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
 
 `stackfoundry backlog` does the mechanical part. Under the docs root (`targets.json` → `docsRoot`, default `docs`)
 it reads every plan's and spec's line-3 `**Category:**`, the `## Follow-ups` bullets of each spec, every open

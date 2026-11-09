@@ -16,10 +16,22 @@ class PlumbingTests(unittest.TestCase):
     def test_a_clean_plugin_passes(self):
         files = {".claude-plugin/plugin.json": "{}", "skills/good/SKILL.md": GOOD_SKILL,
                  "agents/hunter.md": GOOD_AGENT, "reference/x.md": "x", "reference/clients.md": "x",
-                 "scripts/stackfoundry.sh": "", "scripts/stackfoundry.ps1": ""}
+                 "reference/extensions.md": "x", "scripts/stackfoundry.sh": "", "scripts/stackfoundry.ps1": ""}
         with TempRepo(files) as root:
             rep = check(root)
         self.assertEqual(rep.errors, [])
+
+    def test_a_repo_resolves_the_plugin_root_to_the_installed_plugin(self):
+        """A materialized agent's ${CLAUDE_PLUGIN_ROOT} links point into the plugin, not the repo."""
+        agent = GOOD_AGENT.replace("name: hunter", "name: api-hunter")
+        files = {".stackfoundry/agents/api-hunter.md": agent + "\nSee ${CLAUDE_PLUGIN_ROOT}/reference/extensions.md "
+                                                               "and ${CLAUDE_PLUGIN_ROOT}/reference/nope.md.\n"}
+        with TempRepo(files) as root:
+            report = check(root)
+        errors = " | ".join(report.errors)
+        self.assertIn("api-hunter", report.agents)
+        self.assertNotIn("reference/extensions.md does not exist", errors)
+        self.assertIn("reference/nope.md does not exist", errors)
 
     def test_each_defect_is_reported(self):
         files = {

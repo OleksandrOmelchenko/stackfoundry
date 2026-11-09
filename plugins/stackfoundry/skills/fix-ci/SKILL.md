@@ -13,6 +13,11 @@ argument-hint: "[<run id | run URL> | pr <number> | <branch>]"
 > every agent you dispatch as `pluginRoot:` in the brief.
 > Tool names are Claude Code's; in another assistant use its equivalent
 > (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+> **Repo extensions.** Before step 1, Read `.stackfoundry/extensions/skills/<this skill's name>.md` in the repo
+> if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
+> its sections at the headings they name, and its `## Target:` sections only for that target.
+> Its `## Rules` win where they conflict with this file, never over the fixed contract
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
 
 Turns a red CI run into a cause and, where the cause is ours, a local fix. It reads the run, classifies every
 failing job, and routes each class to the skill that owns it. It never re-runs CI in a loop and never pushes.
@@ -68,7 +73,8 @@ Actions that is `gh`. No CLI available or authenticated → ask the user to past
 
 - `Bash`: `gh run list`/`gh run view --log-failed`/`gh pr checks` (or the provider's CLI), `stackfoundry
   change-targets`, the local gate and reproduction commands, `git log`/`git show`.
-- `Agent` with `subagent_type: "stackfoundry:code-verifier"` for workflow edits.
+- `Agent` with `subagent_type: "stackfoundry:code-verifier"` for workflow edits; a target with
+  `materialized.code-verifier` in `targets.json` gets that repo agent instead (`subagent_type` is its bare name).
 - `Skill` → `stackfoundry:fix-tests`, `stackfoundry:debug`.
 - `Read`/`Grep` for workflows and profiles; `Edit` for the fix or the workflow change. `AskUserQuestion` before a
   re-run or stopping a service.
