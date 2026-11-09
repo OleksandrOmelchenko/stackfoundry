@@ -6,6 +6,8 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-09
+
 ### Added
 
 - Marketplace and plugin manifests, repository setup (CI, pre-commit hook, issue and PR templates).

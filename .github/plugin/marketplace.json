@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "Casts a repo-grounded swarm of specialists for each stack in your repo, for Claude Code, Codex, GitHub Copilot, Cursor and Gemini CLI: code writers, verifiers, test designers and writers, bug hunters, fix verifiers, security and performance reviewers, dependency bumpers and a scheduled tech radar.",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "plugins": [
     {
       "name": "stackfoundry",
       "description": "Studies your repo, researches each language and app model from current sources, and generates grounded rulebooks and target profiles that drive generic role agents and orchestrator skills.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "source": "./plugins/stackfoundry"
     }
   ]
