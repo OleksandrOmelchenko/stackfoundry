@@ -6,7 +6,8 @@ offer) and `output` (where the result goes). Everything after that frontmatter i
 which may begin with its own frontmatter.
 
 Placeholders are `{{name}}`. A placeholder the filler cannot ground in the repo is left out, never invented; a
-section with nothing grounded is dropped rather than left empty.
+table row or a section with nothing grounded is dropped rather than left empty. The template's own frontmatter
+(`templateVersion`, `output`) is stripped: the output starts at the skeleton.
 
 | Template | Output |
 |---|---|

@@ -27,7 +27,8 @@ read in this run and names where in the repo it applies.
 - `versions:` the versions in use and where each is pinned;
 - `evidence:` the targets that use it and representative files (path + symbol);
 - `exposure:` and `stakes:` of those targets (`targets.json`);
-- `output:` the one file you write, `.claude/stackfoundry/packs/<pack-id>/pack.json`.
+- `output:` the one file you write (init and research-stack use `.stackfoundry-staging/packs/<pack-id>/pack.json`,
+  outside the protected `.claude/`).
 
 On a refresh the brief also carries the current pack: return the new pack and, in your note, what changed since
 its `researchedAt` (new releases, deprecations now in use, changed guidance). A missing field is reported in one

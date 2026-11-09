@@ -18,11 +18,13 @@ and agent reads. It **never overwrites** existing `.claude/` content or docs: it
 - `.claude/stackfoundry/targets.json` already exists → this is not a first run: offer `/stackfoundry:sync` (repo
   changed) or `/stackfoundry:upgrade` (plugin changed) and stop unless the user asks to start over.
 - `--new`, or a survey with no manifests and no source: the **interview-first** path (step 2b).
+- **Can this session write under `.claude/`?** Claude Code protects that folder: every write there is prompted
+  (interactive), routed to a classifier (`auto` mode) or allowed only in `bypassPermissions` mode; allow rules such as
+  `Edit(.claude/**)` do not change that. Check now, before any research is spent: write
+  `.claude/stackfoundry/.write-probe` and delete it. If it is refused, stop here and say how to rerun (Tooling).
 - **Non-interactive run** (`claude -p`, a scheduled task, CI): nobody answers questions. Take answers from the
   arguments; where none is given, choose the option this skill recommends (or the most conservative one) and list
-  every such choice under "Decisions made without the user" in the report. Writes under `.claude/` need an explicit
-  permission grant there (see Tooling); if they are refused, stop at step 4 and report what would have been written,
-  rather than routing around the refusal.
+  every such choice under "Decisions made without the user" in the report. Never route around a refused write.
 
 ## 1. Survey
 
@@ -47,8 +49,9 @@ Show one table: target · paths · stack (packs by layer) · exposure · stakes 
 2. Ambiguous app models and the exposure and stakes of each target (who can reach it; money, personal data, auth,
    data integrity).
 3. Working agreements: the git-write policy (`ask` recommended), the generated folders and how each is
-   regenerated, commands that must never run (direct database writes, deploys), the docs root, the plan categories,
-   the time zone for report dates.
+   regenerated, commands that must never run (direct database writes, deploys), the docs root (the plugin setting
+   `${user_config.docsRoot}`, else `docs`, unless the repo already keeps docs elsewhere), the plan categories, the
+   time zone for report dates.
 4. Roles to enable per target (default: all), and how to treat existing `.claude/` content (keep side by side
    recommended).
 
@@ -61,10 +64,12 @@ come later (`/stackfoundry:scaffold-test-harness` once code exists).
 Collect the unique packs across all targets. Dispatch one `stackfoundry:stack-researcher` per pack **in one
 message** (batches of about six when there are many). Each brief carries `pack:`, `versions:` (where each is pinned),
 `evidence:` (the targets and files using it), `exposure:` and `stakes:` of those targets, and
-`output: .claude/stackfoundry/packs/<pack-id>/pack.json`, the one file the researcher writes. Follow
+`output: .stackfoundry-staging/packs/<pack-id>/pack.json`, the one file the researcher writes. The staging folder is
+outside the protected `.claude/`, so research is saved even if a later write is refused; step 4 moves each checked
+pack into `.claude/stackfoundry/packs/` and deletes the staging folder. Follow
 `${CLAUDE_PLUGIN_ROOT}/reference/pack-research.md`. When the researchers finish:
 
-- `stackfoundry pack check <output>` for each pack; send errors back to the same researcher (`SendMessage` when the
+- `stackfoundry pack check <output>` for each pack (researchers have no shell, so the check is yours); send errors back to the same researcher (`SendMessage` when the
   host has it, else a new dispatch with the file and the errors), never patch the facts yourself;
 - read each pack; reject a rule with no source or no grounding, and say so;
 - collect the questions and conflicts (docs vs repo convention) into one `AskUserQuestion` round;
@@ -79,12 +84,12 @@ Then write:
 |---|---|---|
 | `.claude/stackfoundry/profile.md` | `reference/templates/profile.md` + the interview | `reference/templates/profile.md` |
 | `.claude/stackfoundry/targets.json`, `ecosystems.json`, `guards.json` | the agreed map; schemas in `reference/schemas/` | `profile` |
-| `.claude/stackfoundry/packs/<pack-id>/pack.json` | written by its researcher (step 3) | `research` |
+| `.claude/stackfoundry/packs/<pack-id>/pack.json` | moved from `.stackfoundry-staging/` (step 3), then the staging folder is deleted | `research` |
 | `.claude/stackfoundry/targets/<target>.md` | `reference/templates/target.md` | that template |
 | `.claude/rules/<pack-id>.md` | `stackfoundry pack render <pack.json> --out <rule>`, never by hand | `research` |
 | `.claude/rules/testing.md`, `dependency-bumps.md`, `documentation.md` (+ `benchmarking.md` when a benchmark harness exists) | `reference/rulebooks/`, placeholders filled from the profile | that rulebook |
 | `.claude/skills/<app-model>-code-writer/SKILL.md` per app model (bare id: `app-model-wpf` → `wpf`) | `reference/templates/code-writer-skill.md` | that template |
-| tracker READMEs and templates under the docs root, only where missing | `reference/trackers/` | that tracker |
+| under the docs root, only where missing: `bug-reports/README.md`, `test-designs/README.md`, `plans/README.md`, `plans/_template.md`, `plans/deferred-upgrades.md`, `specifications/README.md`, `security/README.md`, and the reports README in `dependency-reports/`, `radar/` (plus `radar/decisions.md`), `performance-reports/` and `reports/` | `reference/trackers/` (strip each template's own frontmatter) | that tracker |
 | the stackfoundry block in `CLAUDE.md` | `reference/templates/claude-md-block.md`, between its markers | that template (the block alone is hashed) |
 | `.claude/settings.json`: `extraKnownMarketplaces.stackfoundry` (GitHub `OleksandrOmelchenko/stackfoundry`) and `enabledPlugins["stackfoundry@stackfoundry"]` | merged into the existing JSON | `profile` |
 
@@ -131,6 +136,6 @@ what is ready to commit.
 - `Bash` for `stackfoundry survey|pack|manifest|verify-plumbing|globs-check|change-targets|guard` and the gate
   commands (`run_in_background` for long suites). `Read`/`Write`/`Edit` for the files.
 - `Skill` → `stackfoundry:skill-agent-verifier` for the load probe.
-- Non-interactive runs: Claude Code treats files under `.claude/` as sensitive, and accept-edits mode does not cover
-  them. Grant them explicitly, for example
-  `claude -p "/stackfoundry:init …" --permission-mode acceptEdits --allowedTools "Edit(./.claude/**)" "Write(./.claude/**)" …`.
+- Non-interactive runs: `.claude/` is a protected path, and neither `acceptEdits` nor an allow rule covers it.
+  Use `--permission-mode auto` (a classifier reviews each protected write), or `bypassPermissions` only in an
+  isolated, disposable clone. Interactive sessions simply prompt.

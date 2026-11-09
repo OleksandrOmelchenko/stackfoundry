@@ -1,7 +1,9 @@
 """Read-only git helpers. Nothing here writes to the repository."""
 from __future__ import annotations
 
+import os
 import subprocess
+from functools import lru_cache
 from pathlib import Path
 
 
@@ -9,10 +11,27 @@ class GitError(RuntimeError):
     pass
 
 
+@lru_cache(maxsize=1)
+def git_exe() -> str:
+    """git's absolute path, from absolute PATH entries only. A bare "git" on Windows can resolve to a git.exe in the
+    current directory, which here is the user's repo: a file planted there must never run."""
+    exts = [""]
+    if os.name == "nt":
+        exts = [e.lower() for e in os.environ.get("PATHEXT", ".COM;.EXE;.BAT;.CMD").split(";") if e]
+    for d in os.environ.get("PATH", "").split(os.pathsep):
+        if not d or not os.path.isabs(d):
+            continue
+        for ext in exts:
+            candidate = os.path.join(d, "git" + ext)
+            if os.path.isfile(candidate) and (os.name == "nt" or os.access(candidate, os.X_OK)):
+                return candidate
+    raise GitError("git is not on PATH")
+
+
 def run(args: list[str], cwd: Path) -> str:
     try:
         proc = subprocess.run(
-            ["git", *args], cwd=str(cwd), capture_output=True, text=True, encoding="utf-8", errors="replace",
+            [git_exe(), *args], cwd=str(cwd), capture_output=True, text=True, encoding="utf-8", errors="replace",
         )
     except FileNotFoundError as exc:  # git not installed
         raise GitError("git is not on PATH") from exc

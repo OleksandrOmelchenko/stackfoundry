@@ -10,6 +10,7 @@ render  Writes the rulebook (`.claude/rules/<id>.md`) to stdout, or to --out. De
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -224,8 +225,11 @@ def main(args) -> int:
         return 1
     text = render(pack)
     if args.out:
-        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-        Path(args.out).write_text(text, encoding="utf-8", newline="\n")
+        out = Path(args.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        tmp = out.with_name(f".{out.name}.tmp")
+        tmp.write_text(text, encoding="utf-8", newline="\n")
+        os.replace(tmp, out)  # atomic: an interrupted render never leaves a truncated rulebook
         print(f"wrote {args.out}")
     else:
         sys.stdout.write(text)

@@ -32,6 +32,12 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   manifest; init ignores fixtures and handles `.claude/CLAUDE.md`, the marketplace repo itself and
   non-interactive runs.
 - The guard hook sets `onFailure: continue`.
+- init checks it can write under `.claude/` before spending anything on research, and researchers write their packs
+  to `.stackfoundry-staging/` (outside the protected folder), which init moves into place.
+- The guard reads the nearest `guards.json` above the edited file (worktrees and nested repos), normalizes paths,
+  and sees git commands inside quotes (`sh -c 'git push'`).
+- The CLI runs git by its absolute path from `PATH`, never a `git` in the repo; `pack render --out` writes atomically;
+  every subcommand's help says whether it writes; the survey keeps fixture folders out of its repo-wide counts.
 
 ### Fixed
 

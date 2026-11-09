@@ -4,6 +4,9 @@ Decisions:
   - an Edit/Write/MultiEdit/NotebookEdit of a file under a `generated` glob   -> deny, with how to regenerate it;
   - a Bash/PowerShell command matching a `commands` pattern                    -> that entry's decision (deny | ask);
   - a git write (commit, push, reset…) while `git.writes` is "ask" or "deny"   -> ask or deny.
+The guards that apply are the nearest `.claude/stackfoundry/guards.json` above the file being edited (or above the
+command's working directory), so a linked worktree or a nested repo is guarded by its own profile. Paths are
+normalized first, so `gen/../gen/x` or a relative path still meets the globs.
 No profile, an unreadable profile, an unexpected event or any internal error -> no opinion (exit 0, no output):
 a guard must never wedge a session. Writes nothing.
 """
@@ -20,8 +23,10 @@ from .profile import GUARDS
 
 EDIT_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
 SHELL_TOOLS = {"Bash", "PowerShell"}
+# A command can start after a separator, a parenthesis, whitespace or an opening quote (sh -c 'git push').
+_START = r"""(?:^|[;&|(\s'"`])"""
 GIT_WRITE = re.compile(
-    r"(?:^|[;&|(\s])git(?:\s+-C\s+\S+)?\s+("
+    _START + r"git(?:\s+-C\s+\S+)?\s+("
     r"commit|push|merge|rebase|reset|revert|cherry-pick|clean|am|apply|restore|"
     r"tag(?!\s+(?:-l|--list|-n|--contains|--points-at))(?=\s|$)|"
     r"stash\s+(?:drop|pop|clear|push|save)|stash(?=\s*(?:$|[;&|]))|"
@@ -29,24 +34,48 @@ GIT_WRITE = re.compile(
     r"checkout\s+(?:--\s|-f\b|-b\b|-B\b|\.)|switch\s+(?:-[cC]\b|--discard-changes)"
     r")\b"
 )
-GH_WRITE = re.compile(r"(?:^|[;&|(\s])gh\s+(?:pr\s+(?:create|merge|close|edit|review|comment)|release\s+(?:create|delete|edit)|"
+GH_WRITE = re.compile(_START + r"gh\s+(?:pr\s+(?:create|merge|close|edit|review|comment)|release\s+(?:create|delete|edit)|"
                       r"repo\s+(?:create|delete|edit)|issue\s+(?:create|close|edit|comment))\b")
+
+
+def _absolute(raw: str, base: Path) -> Path:
+    p = Path(raw)
+    return Path(os.path.normpath(p if p.is_absolute() else base / p))
+
+
+def _governing_root(start: Path) -> Path | None:
+    """The nearest folder at or above `start` that holds a guards.json."""
+    for d in (start, *start.parents):
+        if (d / GUARDS).is_file():
+            return d
+    return None
 
 
 def decide(event: dict, project: Path) -> dict | None:
     tool = event.get("tool_name", "")
     tool_input = event.get("tool_input") or {}
-    guards_path = project / GUARDS
-    if not guards_path.exists():
-        return None
-    try:
-        guards = json.loads(guards_path.read_text(encoding="utf-8-sig"))
-    except (OSError, ValueError):
-        return None
+    base = Path(event.get("cwd") or project)
 
     if tool in EDIT_TOOLS:
         raw = tool_input.get("file_path") or tool_input.get("notebook_path")
-        rel = _relative(raw, project)
+        if not raw:
+            return None
+        target = _absolute(raw, base)
+        root = _governing_root(target.parent)
+    elif tool in SHELL_TOOLS:
+        target = None
+        root = _governing_root(Path(os.path.normpath(base))) or _governing_root(project)
+    else:
+        return None
+    if root is None:
+        return None
+    try:
+        guards = json.loads((root / GUARDS).read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError):
+        return None
+
+    if target is not None:
+        rel = _relative(str(target), root)
         if rel is None:
             return None
         for g in guards.get("generated", []):
@@ -78,7 +107,7 @@ def _relative(raw: str | None, project: Path) -> str | None:
         return None
     p = Path(raw)
     if not p.is_absolute():
-        return raw.replace("\\", "/")
+        return os.path.normpath(raw).replace("\\", "/")
     a, b = str(p.resolve()), str(project.resolve())
     if os.name == "nt":
         a_cmp, b_cmp = a.lower(), b.lower()

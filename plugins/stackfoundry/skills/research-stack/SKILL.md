@@ -22,7 +22,8 @@ Writes or refreshes **one** pack under `.claude/stackfoundry/packs/<pack-id>/` a
 ## 2. Research
 
 Dispatch `stackfoundry:stack-researcher` with those inputs, `exposure:`/`stakes:` of the targets, and
-`output:` a scratch path (a refresh) or `.claude/stackfoundry/packs/<pack-id>/pack.json` (a new pack). With
+`output: .stackfoundry-staging/packs/<pack-id>/pack.json` (outside the protected `.claude/`, so the research
+survives a refused write). With
 `--refresh`, also hand it the current pack, so it reports what changed since `researchedAt` (new releases,
 deprecations now in use, changed guidance) and keeps every `repoConvention` the team recorded. Then
 `stackfoundry pack check <output>`; errors go back to the researcher, never patched by hand.
@@ -36,7 +37,8 @@ deprecations now in use, changed guidance) and keeps every `repoConvention` the 
 
 ## 4. Write
 
-- `.claude/stackfoundry/packs/<pack-id>/pack.json` (a refresh: move the checked scratch pack into place).
+- `.claude/stackfoundry/packs/<pack-id>/pack.json`: move the checked pack in from `.stackfoundry-staging/`, then
+  delete the staging folder.
 - The rulebook: `stackfoundry pack render <pack.json> --out .claude/rules/<pack-id>.md`. Check its state first with
   `stackfoundry manifest diff --json`: **edited** by the team → show the regenerated text beside the current one and
   ask (take new · keep mine · merge by hand); untouched or new → write it.

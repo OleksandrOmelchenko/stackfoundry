@@ -18,7 +18,7 @@ from .globs import match
 
 MAX_FILES = 200_000
 GENERATED_HEAD_BYTES = 2048
-GENERATED_HEAD_LINES = 5  # a generator stamps the file's header; a marker further down is usually a string in code
+COMMENT_START = ("//", "#", "/*", "*", "<!--", "--", '"""', "'''", ";", "'", "%")
 GENERATED_MAX_SIZE = 512 * 1024
 
 
@@ -388,15 +388,19 @@ def survey(root: Path) -> dict:
             re.search(r"(^|[./_-])(tests?|specs?)([./_-]|$)", u["path"], flags=re.I)
         )
 
+    # Fixture folders are reported once, as roots; their contents stay out of the repo-wide counts below.
+    fixture_roots = sorted({_fixture_root(f, signals) for f in files if _is_fixture(f, signals)})
+    product_files = [f for f in files if not _is_fixture(f, signals)]
+
     infrastructure: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
-    for f in files:
+    for f in product_files:
         for i in signals["infrastructure"]:
             if match(f, i["glob"]):
                 infrastructure[i["category"]][i["tech"]].append(f)
 
     test_dirs = Counter()
     test_files = 0
-    for f in files:
+    for f in product_files:
         parts = f.split("/")
         for depth, part in enumerate(parts[:-1]):
             if part.lower() in signals["testDirNames"]:
@@ -408,7 +412,7 @@ def survey(root: Path) -> dict:
     generated = Counter()
     exts = set(signals["generatedScanExtensions"])
     markers = signals["generatedMarkers"]
-    for f in files:
+    for f in product_files:
         if os.path.splitext(f)[1].lower() not in exts:
             continue
         p = root / f
@@ -419,7 +423,7 @@ def survey(root: Path) -> dict:
                 head = fh.read(GENERATED_HEAD_BYTES).decode("utf-8", errors="replace")
         except OSError:
             continue
-        if any(mk in line for line in head.splitlines()[:GENERATED_HEAD_LINES] for mk in markers):
+        if any(mk in line for line in _leading_comment(head) for mk in markers):
             generated[Path(f).parent.as_posix()] += 1
 
     solution = [f for f in files if any(match(f, g) for g in signals["solutionFiles"])]
@@ -448,16 +452,36 @@ def survey(root: Path) -> dict:
         "infrastructure": {k: dict(v) for k, v in infrastructure.items()},
         "tests": {"dirs": dict(test_dirs.most_common(40)), "fileCount": test_files},
         "generatedDirs": dict(generated.most_common(50)),
+        "fixtureRoots": fixture_roots,
         "docs": {"root": "docs" if any(f.startswith("docs/") for f in files) else None, "sections": docs},
         "claude": claude,
         "git": git,
     }
 
 
+def _leading_comment(head: str) -> list[str]:
+    """The file's header: lines up to the first line of code. A generator stamps its marker there; the same words
+    further down are usually a string in code (a test, a linter rule), not a sign the file is generated."""
+    lines = []
+    for line in head.splitlines():
+        s = line.strip()
+        if s and not s.startswith(COMMENT_START):
+            break
+        lines.append(s)
+    return lines
+
+
 def _is_fixture(path: str, signals: dict) -> bool:
     """Under a folder of test fixtures or samples: evidence that it is test data, not a product to target."""
     names = {n.lower() for n in signals.get("fixtureDirNames", [])}
     return any(seg.lower() in names for seg in path.split("/"))
+
+
+def _fixture_root(path: str, signals: dict) -> str:
+    names = {n.lower() for n in signals.get("fixtureDirNames", [])}
+    parts = path.split("/")
+    i = next(i for i, seg in enumerate(parts) if seg.lower() in names)
+    return "/".join(parts[: i + 1])
 
 
 def _owning_unit(units: list[dict], f: str) -> dict | None:

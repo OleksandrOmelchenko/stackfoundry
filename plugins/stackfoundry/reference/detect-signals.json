@@ -19,7 +19,7 @@
     ".ex": "elixir", ".exs": "elixir", ".erl": "erlang", ".clj": "clojure", ".hs": "haskell", ".lua": "lua",
     ".c": "c", ".h": "c", ".cpp": "cpp", ".cc": "cpp", ".hpp": "cpp", ".sql": "sql", ".ps1": "powershell",
     ".psm1": "powershell", ".sh": "shell", ".bicep": "bicep", ".tf": "terraform", ".scss": "scss", ".css": "css",
-    ".html": "html", ".proto": "protobuf", ".graphql": "graphql", ".gql": "graphql"
+    ".html": "html", ".md": "markdown", ".proto": "protobuf", ".graphql": "graphql", ".gql": "graphql"
   },
   "manifests": [
     {"glob": "**/*.csproj", "kind": "dotnet-project", "ecosystem": "nuget", "language": "csharp"},
@@ -40,7 +40,7 @@
     {"glob": "**/pubspec.yaml", "kind": "dart-package", "ecosystem": "pub", "language": "dart"},
     {"glob": "**/mix.exs", "kind": "mix-project", "ecosystem": "hex", "language": "elixir"},
     {"glob": "**/Package.swift", "kind": "swift-package", "ecosystem": "swiftpm", "language": "swift"},
-    {"glob": "**/.claude-plugin/plugin.json", "kind": "claude-plugin", "ecosystem": "claude-plugins", "language": null, "appModel": "claude-code-plugin"}
+    {"glob": "**/.claude-plugin/plugin.json", "kind": "claude-plugin", "ecosystem": null, "language": null, "appModel": "claude-code-plugin"}
   ],
   "solutionFiles": ["**/*.sln", "**/*.slnx", "**/Directory.Build.props", "**/Directory.Packages.props", "**/global.json",
     "**/pnpm-workspace.yaml", "**/lerna.json", "**/nx.json", "**/turbo.json", "**/.nvmrc", "**/.node-version",

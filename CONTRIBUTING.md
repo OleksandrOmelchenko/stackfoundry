@@ -29,17 +29,20 @@ python -m unittest discover -s tests -t .
 sh plugins/stackfoundry/bin/stackfoundry verify-plumbing plugins/stackfoundry
 claude plugin validate --strict .
 claude plugin validate --strict plugins/stackfoundry
-claude plugin details stackfoundry --plugin-dir plugins/stackfoundry   # projected token cost of the listing
+claude --plugin-dir plugins/stackfoundry plugin details stackfoundry   # projected token cost of the listing
 ```
 
 ## Evals
 
-Evals live in `plugins/stackfoundry/evals/<case>/` and run against the fixture repos that
-`fixtures/<name>/scaffold.py` builds:
+Evals live in `plugins/stackfoundry/evals/<case>/`. Each case's `scaffold.sh` copies a fixture repo from
+`fixtures/` (through `fixtures/scaffold-lib.sh`) into the empty eval workspace:
 
 ```sh
-claude plugin eval plugins/stackfoundry --scaffold --case "init-*"
+cd plugins/stackfoundry
+claude plugin eval . --scaffold --runs 1 --no-publish --tag read-only
 ```
+
+`plugins/stackfoundry/evals/README.md` lists the cases, the tools each needs, and what a run needs to sign in.
 
 Each case runs in fresh `claude -p` sessions with and without the plugin, so it spends real tokens. Run the cases for
 what you changed and say in the PR which ones you did not run.
