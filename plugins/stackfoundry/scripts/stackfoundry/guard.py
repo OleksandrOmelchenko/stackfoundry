@@ -1,14 +1,22 @@
-"""`stackfoundry guard`: the PreToolUse hook. Reads the hook event on stdin and `.stackfoundry/guards.json`.
+"""`stackfoundry guard`: the pre-tool hook of every assistant. Reads the hook event on stdin and
+`.stackfoundry/guards.json`.
 
 Decisions:
-  - an Edit/Write/MultiEdit/NotebookEdit of a file under a `generated` glob   -> deny, with how to regenerate it;
-  - a Bash/PowerShell command matching a `commands` pattern                    -> that entry's decision (deny | ask);
-  - a git write (commit, push, reset…) while `git.writes` is "ask" or "deny"   -> ask or deny.
+  - an edit or write of a file under a `generated` glob                      -> deny, with how to regenerate it;
+  - a shell command matching a `commands` pattern                            -> that entry's decision (deny | ask);
+  - a git write (commit, push, reset…) while `git.writes` is "ask" or "deny" -> ask or deny.
 The guards that apply are the nearest `.stackfoundry/guards.json` above the file being edited (or above the
 command's working directory), so a linked worktree or a nested repo is guarded by its own profile. Paths are
 normalized first, so `gen/../gen/x` or a relative path still meets the globs.
-No profile, an unreadable profile, an unexpected event or any internal error -> no opinion (exit 0, no output):
-a guard must never wedge a session. Writes nothing.
+
+Each assistant sends a different event and expects a different answer (reference/clients.md). `--client` names it;
+without it the event's shape tells. One adapter per assistant turns the event into a call (an edit of some paths,
+or a shell command) and turns the decision into that assistant's answer. Where an assistant cannot ask (Codex,
+Gemini, Cursor's pre-edit hook), an ask becomes a deny whose reason says to get the user's go-ahead.
+
+No profile, an unreadable profile, an unexpected event or any internal error -> no opinion: a guard must never wedge
+a session. For most assistants that is no output; Cursor blocks on empty output, so it gets an explicit allow.
+Writes nothing.
 """
 from __future__ import annotations
 
@@ -16,13 +24,13 @@ import json
 import os
 import re
 import sys
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from .globs import match
 from .profile import GUARDS
 
-EDIT_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
-SHELL_TOOLS = {"Bash", "PowerShell"}
+CLIENTS = ("claude-code", "codex", "copilot", "cursor", "gemini")
 # A command can start after a separator, a parenthesis, whitespace or an opening quote (sh -c 'git push').
 _START = r"""(?:^|[;&|(\s'"`])"""
 GIT_WRITE = re.compile(
@@ -36,7 +44,106 @@ GIT_WRITE = re.compile(
 )
 GH_WRITE = re.compile(_START + r"gh\s+(?:pr\s+(?:create|merge|close|edit|review|comment)|release\s+(?:create|delete|edit)|"
                       r"repo\s+(?:create|delete|edit)|issue\s+(?:create|close|edit|comment))\b")
+# apply_patch envelopes (Codex, Copilot) name every file they touch on these lines.
+PATCH_FILE = re.compile(r"^\*\*\* (?:Add File|Update File|Delete File|Move to): (.+?)\s*$", re.M)
+SHELL_LABELS = {"Bash", "PowerShell"}
 
+
+@dataclass
+class Call:
+    kind: str                      # "edit" or "shell"
+    base: Path                     # where relative paths and the command resolve
+    paths: list[str] = field(default_factory=list)
+    command: str = ""
+    shell: str = "Bash"            # Bash or PowerShell: what a `commands[].tools` filter names
+    can_ask: bool = True           # False where the assistant has no ask for this event
+
+
+# --- reading the event ---------------------------------------------------------------------------------------------
+
+def detect(event: dict) -> str:
+    if "toolName" in event or "toolArgs" in event:
+        return "copilot"
+    if "cursor_version" in event or event.get("hook_event_name") in ("preToolUse", "beforeShellExecution"):
+        return "cursor"
+    if event.get("hook_event_name") == "BeforeTool":
+        return "gemini"
+    if "turn_id" in event or event.get("tool_name") == "apply_patch":
+        return "codex"
+    return "claude-code"
+
+
+def _args(value) -> dict:
+    """Tool arguments that may arrive as an object or as a JSON string."""
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+        except ValueError:
+            return {}
+        return parsed if isinstance(parsed, dict) else {}
+    return {}
+
+
+def _patch_paths(args: dict) -> list[str]:
+    paths: list[str] = []
+    for value in args.values():
+        if isinstance(value, str):
+            paths += PATCH_FILE.findall(value)
+    return paths
+
+
+def _path_keys(args: dict, *keys: str) -> list[str]:
+    return [args[k] for k in keys if isinstance(args.get(k), str) and args[k]]
+
+
+def normalize(event: dict, client: str, project: Path) -> Call | None:
+    base = Path(event.get("cwd") or project)
+    if client in ("claude-code", "codex"):
+        tool, args = event.get("tool_name", ""), _args(event.get("tool_input"))
+        if tool in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
+            return Call("edit", base, _path_keys(args, "file_path", "notebook_path"))
+        if tool == "apply_patch":
+            return Call("edit", base, _patch_paths(args), can_ask=False)
+        if tool in SHELL_LABELS:
+            return Call("shell", base, command=args.get("command") or "", shell=tool, can_ask=client != "codex")
+        return None
+    if client == "copilot":
+        tool, args = str(event.get("toolName", "")), _args(event.get("toolArgs"))
+        if tool in ("create", "edit", "str_replace_editor", "write"):
+            return Call("edit", base, _path_keys(args, "path", "file_path", "filePath"))
+        if tool == "apply_patch":
+            return Call("edit", base, _patch_paths(args))
+        if tool in ("bash", "powershell"):
+            return Call("shell", base, command=args.get("command") or "",
+                        shell="PowerShell" if tool == "powershell" else "Bash")
+        return None
+    if client == "cursor":
+        roots = event.get("workspace_roots") or []
+        base = Path(event.get("cwd") or (roots[0] if roots else project))
+        if event.get("hook_event_name") == "beforeShellExecution":
+            return Call("shell", base, command=event.get("command") or "")
+        tool, args = event.get("tool_name", ""), _args(event.get("tool_input"))
+        if tool in ("Write", "Edit", "MultiEdit", "Delete"):
+            return Call("edit", base, _path_keys(args, "file_path", "path", "target_file"), can_ask=False)
+        if tool == "Shell":
+            return Call("shell", Path(args.get("working_directory") or base), command=args.get("command") or "",
+                        can_ask=False)
+        return None
+    if client == "gemini":
+        tool, args = event.get("tool_name", ""), _args(event.get("tool_input"))
+        if tool in ("write_file", "replace"):
+            return Call("edit", base, _path_keys(args, "file_path"), can_ask=False)
+        if tool == "run_shell_command":
+            where = args.get("dir_path")
+            return Call("shell", _absolute(where, base) if where else base, command=args.get("command") or "",
+                        can_ask=False)
+        return None
+    return None
+
+
+# --- deciding ------------------------------------------------------------------------------------------------------
 
 def _absolute(raw: str, base: Path) -> Path:
     p = Path(raw)
@@ -51,58 +158,54 @@ def _governing_root(start: Path) -> Path | None:
     return None
 
 
-def decide(event: dict, project: Path) -> dict | None:
-    tool = event.get("tool_name", "")
-    tool_input = event.get("tool_input") or {}
-    base = Path(event.get("cwd") or project)
-
-    if tool in EDIT_TOOLS:
-        raw = tool_input.get("file_path") or tool_input.get("notebook_path")
-        if not raw:
-            return None
-        target = _absolute(raw, base)
-        root = _governing_root(target.parent)
-    elif tool in SHELL_TOOLS:
-        target = None
-        root = _governing_root(Path(os.path.normpath(base))) or _governing_root(project)
-    else:
-        return None
-    if root is None:
-        return None
+def _load(root: Path) -> dict | None:
     try:
-        guards = json.loads((root / GUARDS).read_text(encoding="utf-8-sig"))
+        data = json.loads((root / GUARDS).read_text(encoding="utf-8-sig"))
     except (OSError, ValueError):
         return None
+    return data if isinstance(data, dict) else None
 
-    if target is not None:
-        rel = _relative(str(target), root)
-        if rel is None:
-            return None
-        for g in guards.get("generated", []):
-            if match(rel, g["glob"]):
-                how = g.get("regenerate") or "regenerate it from its source"
-                return _decision("deny", f"{rel} is generated ({g['glob']}); never hand-edit it. {how}.")
+
+def verdict(call: Call, project: Path) -> tuple[str, str] | None:
+    """(deny | ask, reason) or None for no opinion."""
+    if call.kind == "edit":
+        for raw in call.paths:
+            target = _absolute(raw, call.base)
+            root = _governing_root(target.parent)
+            guards = _load(root) if root else None
+            if not guards:
+                continue
+            rel = _relative(str(target), root)
+            if rel is None:
+                continue
+            for g in guards.get("generated", []):
+                if match(rel, g["glob"]):
+                    how = g.get("regenerate") or "regenerate it from its source"
+                    return "deny", f"{rel} is generated ({g['glob']}); never hand-edit it. {how}."
         return None
 
-    if tool in SHELL_TOOLS:
-        cmd = tool_input.get("command") or ""
-        for c in guards.get("commands", []):
-            if c.get("tools") and tool not in c["tools"]:
-                continue
-            try:
-                if re.search(c["pattern"], cmd):
-                    # The guard only ever denies or asks: a rule cannot use it to pre-approve a command.
-                    decision = c.get("decision", "deny")
-                    if decision not in ("deny", "ask"):
-                        decision = "ask"
-                    return _decision(decision, c.get("reason", "blocked by the repo's guards.json"))
-            except re.error:
-                continue
-        policy = (guards.get("git") or {}).get("writes", "allow")
-        if policy in ("ask", "deny") and (GIT_WRITE.search(cmd) or GH_WRITE.search(cmd)):
-            reason = (guards.get("git") or {}).get(
-                "reason", "git and GitHub writes are the user's call in this repo; run one only when asked for it")
-            return _decision(policy, reason)
+    root = _governing_root(Path(os.path.normpath(call.base))) or _governing_root(project)
+    guards = _load(root) if root else None
+    if not guards:
+        return None
+    cmd = call.command
+    for c in guards.get("commands", []):
+        if c.get("tools") and call.shell not in c["tools"]:
+            continue
+        try:
+            if re.search(c["pattern"], cmd):
+                # The guard only ever denies or asks: a rule cannot use it to pre-approve a command.
+                decision = c.get("decision", "deny")
+                if decision not in ("deny", "ask"):
+                    decision = "ask"
+                return decision, c.get("reason", "blocked by the repo's guards.json")
+        except re.error:
+            continue
+    policy = (guards.get("git") or {}).get("writes", "allow")
+    if policy in ("ask", "deny") and (GIT_WRITE.search(cmd) or GH_WRITE.search(cmd)):
+        reason = (guards.get("git") or {}).get(
+            "reason", "git and GitHub writes are the user's call in this repo; run one only when asked for it")
+        return policy, reason
     return None
 
 
@@ -122,9 +225,34 @@ def _relative(raw: str | None, project: Path) -> str | None:
     return a[len(b.rstrip("\\/")) + 1:].replace("\\", "/")
 
 
-def _decision(kind: str, reason: str) -> dict:
-    return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": kind,
-                                   "permissionDecisionReason": f"stackfoundry guard: {reason}"}}
+# --- answering -----------------------------------------------------------------------------------------------------
+
+def answer(client: str, event: dict, decided: tuple[str, str] | None, can_ask: bool = True) -> str | None:
+    """The text to print, or None for no output."""
+    if decided is None:
+        return json.dumps({"permission": "allow"}) if client == "cursor" else None
+    kind, reason = decided
+    if kind == "ask" and not can_ask:
+        kind, reason = "deny", f"needs the user's go-ahead first (this assistant's hook cannot ask): {reason}"
+    reason = f"stackfoundry guard: {reason}"
+    if client in ("claude-code", "codex"):
+        return json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": kind,
+                                                  "permissionDecisionReason": reason}})
+    if client == "copilot":
+        return json.dumps({"permissionDecision": kind, "permissionDecisionReason": reason})
+    if client == "cursor":
+        return json.dumps({"permission": kind, "user_message": reason, "agent_message": reason})
+    if client == "gemini":
+        return json.dumps({"decision": "deny", "reason": reason})
+    return None
+
+
+def decide(event: dict, project: Path, client: str | None = None) -> str | None:
+    client = client or detect(event)
+    call = normalize(event, client, project)
+    if call is None:
+        return answer(client, event, None)
+    return answer(client, event, verdict(call, project), call.can_ask)
 
 
 def check_file(path: Path) -> list[str]:
@@ -153,12 +281,18 @@ def check_file(path: Path) -> list[str]:
             problems.append(f"commands[{i}]: decision must be deny or ask")
         if not c.get("reason"):
             problems.append(f"commands[{i}]: give a reason that says what to do instead")
-        if any(t not in SHELL_TOOLS for t in c.get("tools", [])):
+        if any(t not in SHELL_LABELS for t in c.get("tools", [])):
             problems.append(f"commands[{i}]: tools may only be Bash and PowerShell")
     writes = (data.get("git") or {}).get("writes", "allow")
     if writes not in ("allow", "ask", "deny"):
         problems.append("git.writes must be allow, ask or deny")
     return problems
+
+
+def _project_dir(event: dict) -> Path:
+    roots = event.get("workspace_roots") or []
+    return Path(os.environ.get("CLAUDE_PROJECT_DIR") or os.environ.get("GEMINI_PROJECT_DIR")
+                or (roots[0] if roots else None) or event.get("cwd") or os.getcwd())
 
 
 def main(args) -> int:
@@ -169,14 +303,18 @@ def main(args) -> int:
             print(f"guards.json: {p}")
         print("guards.json: ok" if not problems else f"guards.json: {len(problems)} problem(s)")
         return 1 if problems else 0
+    client = getattr(args, "client", None)
+    if client == "auto":
+        client = None
     try:
-        # Claude Code sends the event as UTF-8 bytes. Text-mode stdin would decode them with the platform code page
+        # Hook events arrive as UTF-8 bytes. Text-mode stdin would decode them with the platform code page
         # (cp1252 on Windows) and mangle non-ASCII paths, so a protected file would no longer match its glob.
         event = json.loads(sys.stdin.buffer.read().decode("utf-8-sig") or "{}")
-        project = Path(os.environ.get("CLAUDE_PROJECT_DIR") or event.get("cwd") or os.getcwd())
-        result = decide(event, project)
+        if not isinstance(event, dict):
+            event = {}
+        out = decide(event, _project_dir(event), client)
     except Exception:  # noqa: BLE001 - fail open, never wedge the session
-        return 0
-    if result:
-        print(json.dumps(result))
+        out = json.dumps({"permission": "allow"}) if client == "cursor" else None
+    if out:
+        print(out)
     return 0

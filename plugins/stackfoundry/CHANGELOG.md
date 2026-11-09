@@ -45,6 +45,10 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   - every skill and agent carries a portable-form preamble (the CLI by path, the plugin root where `${CLAUDE_PLUGIN_ROOT}`
     is not substituted, and `reference/clients.md` for tool equivalents), checked by `verify-plumbing` along with the
     Agent Skills name rules.
+- The guard answers every assistant's pre-tool hook: `stackfoundry guard` recognizes a Claude Code, Codex, Copilot,
+  Cursor or Gemini CLI event (or takes `--client`), reads the files an edit or an `apply_patch` touches, and answers
+  in that assistant's format. Where an assistant cannot ask, an ask becomes a deny that says to get the user's
+  go-ahead; Cursor, which blocks on empty output, gets an explicit allow when the guard has no opinion.
 - The guard reads the nearest `guards.json` above the edited file (worktrees and nested repos), normalizes paths,
   and sees git commands inside quotes (`sh -c 'git push'`).
 - The CLI runs git by its absolute path from `PATH`, never a `git` in the repo; `pack render --out` writes atomically;

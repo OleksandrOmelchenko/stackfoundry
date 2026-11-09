@@ -17,6 +17,10 @@ foreach ($candidate in @(@('python3'), @('python'), @('py', '-3'))) {
 }
 
 [Console]::Error.WriteLine('stackfoundry: Python 3.11 or newer is required (tried python3, python, py -3).')
-# Exit 0 when called as a hook, so a missing Python never blocks the session; the CLI's own callers see the message.
-if ($args.Count -gt 0 -and $args[0] -eq 'guard') { exit 0 }
+# As a hook, a missing Python must never block the session: exit 0 with no opinion. Cursor blocks on empty output,
+# so it gets an explicit allow; the CLI's own callers see the message and 127.
+if ($args.Count -gt 0 -and $args[0] -eq 'guard') {
+    if ($args -contains 'cursor' -or $args -contains '--client=cursor') { '{"permission": "allow"}' }
+    exit 0
+}
 exit 127

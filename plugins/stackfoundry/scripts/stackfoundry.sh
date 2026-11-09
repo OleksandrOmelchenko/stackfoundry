@@ -20,6 +20,10 @@ elif ok py -3; then
 fi
 
 echo "stackfoundry: Python 3.11 or newer is required (tried python3, python, py -3)." >&2
-# Exit 0 when called as a hook, so a missing Python never blocks the session; the CLI's own callers see the message.
-[ "${1:-}" = "guard" ] && exit 0
+# As a hook, a missing Python must never block the session: exit 0 with no opinion. Cursor blocks on empty output,
+# so it gets an explicit allow; the CLI's own callers see the message and 127.
+if [ "${1:-}" = "guard" ]; then
+  case " $* " in *" cursor "*|*"--client=cursor"*) echo '{"permission": "allow"}' ;; esac
+  exit 0
+fi
 exit 127
