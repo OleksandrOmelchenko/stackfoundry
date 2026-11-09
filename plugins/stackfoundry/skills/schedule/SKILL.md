@@ -1,6 +1,6 @@
 ---
 name: schedule
-description: Register the unattended skills (check-updates, tech-radar, stackfoundry-radar, flaky-watch, docs-reconciler) as scheduled tasks with a cadence; shows headless and CI alternatives. Asks first. Use for "run the radar every week".
+description: Register the unattended skills (check-updates, tech-radar, stackfoundry-radar, flaky-watch, docs-reconciler) as scheduled tasks; shows headless and CI alternatives. Asks first. Use for "schedule background checks", "run the radar weekly".
 argument-hint: "[skill ...]"
 ---
 

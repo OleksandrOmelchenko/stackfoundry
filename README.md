@@ -77,9 +77,29 @@ Every skill starts from a plain request. A few to begin with:
 | Why is CI failing? | `fix-ci` |
 | Review my changes | `review-changes` |
 | Security review of the API | `security-review-target` |
-| What's outdated? | `check-updates` |
-| What's new in our stack? | `tech-radar` |
 | What's left in the backlog? | `backlog` |
+| Keep me posted on our stack | `schedule` (next section) |
+
+### Keep watching your stack
+
+Some skills are made to run on their own: each run writes one dated report and never changes code. Ask:
+
+```text
+Schedule stackfoundry's background checks
+```
+
+`schedule` proposes a cadence for each one, asks once, and registers them as scheduled tasks; outside the Claude
+desktop app it prints the cron, Task Scheduler or GitHub Actions setup instead. Each also runs on demand.
+
+| Check | What each report gives you | Then say |
+|---|---|---|
+| `tech-radar` | news about your stack: new releases, deprecations that hit code you use, security advisories, new tools and practices, each with its source | "act on the radar" |
+| `check-updates` | every pinned dependency, SDK, CI action and image that is outdated, majors flagged | "act on the updates" |
+| `stackfoundry-radar` | whether the plugin, or the files it generated in your repo, are behind | "update stackfoundry's files in this repo" |
+| `flaky-watch` | tests that both passed and failed across shuffled runs, with their seeds | "fix the flaky tests" |
+| `docs-reconciler` (report only) | docs that drifted from the code | "fix the stale docs" |
+
+"Radar summary" digests the last few reports: what was acted on, and what keeps coming back.
 
 ## How it works
 

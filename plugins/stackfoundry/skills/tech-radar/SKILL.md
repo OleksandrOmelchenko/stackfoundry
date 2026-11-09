@@ -1,6 +1,6 @@
 ---
 name: tech-radar
-description: Scheduled read-only radar over every researched pack — new releases, deprecations hitting code in use, advisories, new tools and practices, Claude Code features, stale packs — cited and routed in one dated report. Use for "what's new".
+description: Scheduled read-only radar over every researched pack — new releases, deprecations hitting code in use, advisories, new tools and practices, stale packs — cited, in one dated report. Use for "what's new" or "news about our stack".
 argument-hint: "[pack-id ...]"
 ---
 

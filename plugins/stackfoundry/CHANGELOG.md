@@ -36,6 +36,10 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 - Every skill starts from a plain request, in every assistant: no skill is slash-only any more, every description
   ends in a plain-language trigger, and `verify-plumbing` enforces both for plugin skills. Entry points a person
   starts on purpose (init, upgrade, materialize, the act-on skills, github-prs, schedule) say "Only when asked."
+- The scheduled checks are visible: the README's "Keep watching your stack" lists what each unattended report gives
+  (stack news from tech-radar, outdated pins, plugin drift, flaky tests, doc drift) and its follow-up request;
+  walkthrough groups them under "Stay current", says a schedulable skill can run on a timer, and offers
+  "Schedule it". tech-radar answers "news about our stack", schedule answers "schedule background checks".
 - Python 3.11 is the minimum (3.10 reached end of life).
 - The stack-researcher writes its pack file itself; init checks it with `stackfoundry pack check` and renders
   rulebooks with `stackfoundry pack render`.
