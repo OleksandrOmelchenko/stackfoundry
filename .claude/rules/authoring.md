@@ -21,6 +21,9 @@ paths:
   `WebFetch` to research, `Edit`/`Write` only for writers and fixers). Read-only roles never get `Edit`/`Write`.
   `model: haiku` only for leaf runners that run a command and summarize.
 - Bodies end with a `## Tooling` section naming the actual tools and how they are used.
+- `##`/`###` headings are the anchors repo extensions attach to (`reference/extensions.md`). Renaming or removing
+  one orphans teams' extensions: do it only when the step changed, and log it under "Changed (extension anchors)"
+  in the CHANGELOG, old → new. Renumbering is free.
 
 ## Content
 

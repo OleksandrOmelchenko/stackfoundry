@@ -165,6 +165,13 @@ argument-hint: "<args>"            # when it takes arguments
 - Agents are dispatched with `subagent_type: "stackfoundry:<agent>"`; when a target has a materialized agent
   (`targets.json` → `materialized`), that repo agent is dispatched instead.
 - Other skills are invoked with `Skill` → `stackfoundry:<skill>`, or named to the user as `/stackfoundry:<skill>`.
+- **Step headings are a public interface.** Teams anchor repo extensions to them (`## After: Verify`,
+  `plugins/stackfoundry/reference/extensions.md`), matched without the number, so renumbering is free but renaming
+  or removing a `##`/`###` heading orphans those anchors. Do it only when the step really changed, and list each
+  rename under **Changed (extension anchors)** in the CHANGELOG (old → new) so `upgrade` can re-anchor.
+- The fixed contract extensions may not change (confirmations, guards, git policy, brief fields, report shape,
+  severity and verdict words, tracker markers) lives in `reference/extensions.md`; a change to any of these is a
+  breaking change for the plugin itself.
 - An unattended skill (check-updates, tech-radar, stackfoundry-radar, flaky-watch, report-only docs-reconciler)
   asks nothing, installs nothing, writes exactly one report, never writes git, and ends with a `git status`
   comparison listing any side effect.

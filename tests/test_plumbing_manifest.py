@@ -75,6 +75,13 @@ class PlumbingTests(unittest.TestCase):
         self.assertIn("'ghost', which is not a skill", errors)
         self.assertNotIn("leaves out good", errors)
 
+    def test_a_repo_check_includes_its_extensions(self):
+        files = {".stackfoundry/extensions/skills/backlog.md": "---\nextends: backlog\n---\n## After: No such step\nx\n"}
+        with TempRepo(files) as root:
+            errors = " | ".join(check(root).errors)
+        self.assertIn("extension .stackfoundry/extensions/skills/backlog.md", errors)
+        self.assertIn("matches no heading of backlog", errors)
+
     def test_plain_language_rules_apply_only_to_the_plugin(self):
         """A repo's own .claude/skills may stay slash-only; the trigger rule is the plugin's."""
         files = {".claude/skills/own/SKILL.md": "---\nname: own\ndescription: Release it.\n"

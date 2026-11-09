@@ -67,13 +67,33 @@ new · keep mine · merge by hand (you produce the merged text and show it befor
   manifest's version and hash move forward.
 - Each instruction file's block (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`) is regenerated between its markers only.
 
-## 4. Verify and report
+## 4. Repo extensions
+
+The team's changes to plugin skills and agents (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`) are never
+rewritten by an upgrade; this step makes sure they still fit the new plugin.
+
+1. `stackfoundry extensions check`. For each orphaned anchor (a heading the new version renamed or removed), show the
+   section, the nearest current heading the check names and the changelog's "Changed (extension anchors)" line, and
+   ask where it goes now (`AskUserQuestion`: the nearest heading, another heading, drop the section). Edit only the
+   section heading the user picked.
+2. `stackfoundry extensions list --json`: for every `replace` file and materialized agent marked behind the plugin,
+   run `stackfoundry extensions merge <file>`.
+   - `merged`: report it. For a materialized agent, re-render each assistant's copy
+     (`stackfoundry render-agent <file> --client <assistant> --write`) and re-record them in the manifest.
+   - `conflict`: show each conflict hunk from `<file>.merge.md` and ask per hunk: keep the repo's · take the
+     plugin's · a merge you write and show. Write the settled text to `<file>.merge.md`, then
+     `stackfoundry extensions merge <file> --resolved`.
+3. `extend` files: nothing to merge; the plugin's new text reaches the team through them on the next run.
+4. `stackfoundry extensions check` again; it must pass.
+
+## 5. Verify and report
 
 `stackfoundry verify-plumbing .`, then `/stackfoundry:skill-agent-verifier`. Report: replaced, merged, kept, skipped,
-and anything the changelog says needs a manual step. Do not commit.
+the extensions re-anchored or merged, and anything the changelog says needs a manual step. Do not commit.
 
 ## Tooling
-- `Bash` for `stackfoundry manifest diff|record`, `verify-plumbing`, `change-targets`.
+- `Bash` for `stackfoundry manifest diff|record`, `extensions check|list|merge`, `render-agent`, `verify-plumbing`,
+  `change-targets`.
 - `Read` the templates through `${CLAUDE_PLUGIN_ROOT}/reference/templates/`, `rulebooks/` and `trackers/`;
   `Write`/`Edit` the files.
 - `AskUserQuestion` once (one question per edited file, four per call).

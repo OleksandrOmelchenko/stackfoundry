@@ -9,7 +9,7 @@ import json
 import re
 from pathlib import Path
 
-from . import PLUGIN_ROOT, preamble
+from . import PLUGIN_ROOT, extensions, preamble
 from .frontmatter import split
 
 MATERIALIZED = Path(".stackfoundry") / "agents"
@@ -185,6 +185,8 @@ def check(base: Path) -> Report:
                         rep.error(f, f"body tells it to use `{t}` but the grant lacks it: {line.strip()[:90]}")
             bodies.append((f, body))
 
+    # In a repo, a team agent may dispatch the installed plugin's agents (`stackfoundry:<role>`).
+    known_agents = agent_names | ({p.stem for p in (plugin_root / "agents").glob("*.md")} if not plugin_mode else set())
     for path, body in bodies:
         _check_links(path, body, plugin_root, rep)
         for m in SKILL_REF.finditer(body):
@@ -192,9 +194,15 @@ def check(base: Path) -> Report:
             if plugin_mode and skill_names and m.group(1) not in skill_names:
                 rep.error(path, f"/stackfoundry:{m.group(1)} names a skill that does not exist")
         for m in AGENT_REF.finditer(body):
-            if m.group(1) not in agent_names and m.group(1) not in ("Explore", "Plan", "general-purpose"):
+            if m.group(1) not in known_agents and m.group(1) not in ("Explore", "Plan", "general-purpose"):
                 rep.error(path, f"subagent_type {m.group(1)!r} names an agent that does not exist")
     _check_walkthrough(skills_dir, skill_names, plugin_mode, rep)
+    if not plugin_mode:
+        ext = extensions.check(base, plugin_root)
+        for e in ext.errors:
+            rep.errors.append(f"extension {e}")
+        for w in ext.warnings:
+            rep.warnings.append(f"extension {w}")
     rep.skills = sorted(skill_names)  # type: ignore[attr-defined]
     rep.agents = sorted(agent_names)  # type: ignore[attr-defined]
     return rep

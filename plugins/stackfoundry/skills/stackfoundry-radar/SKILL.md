@@ -52,8 +52,10 @@ before starting and compare at the end.
    `claude plugin marketplace update stackfoundry`, then `claude plugin update stackfoundry@stackfoundry`, and a
    restart of Claude Code.
 3. **Repo < installed**, or `manifest diff` shows an outdated template: suggest `/stackfoundry:upgrade`, listing the
-   files it would replace (untouched) and the ones it would only propose (edited by the team), and noting that
-   materialized agents are skipped.
+   files it would replace (untouched) and the ones it would only propose (edited by the team).
+   **Repo extensions**: `stackfoundry extensions check --json` (read-only). List each extension whose anchor the
+   installed plugin no longer has, and each `replace` file or materialized agent behind the plugin, with the skill or
+   agent it changes; `/stackfoundry:upgrade` re-anchors and merges them.
 4. **Changelog entries that change detection, layers or pack research** (a new detectable technology, a new field
    in `targets.json` or `ecosystems.json`): suggest `/stackfoundry:sync` so the profile picks them up.
 5. **Claude Code**: releases newer than the installed one, and features since the last report that matter to this
@@ -71,7 +73,7 @@ the machine's date when the zone database is missing, said in the report). Same-
 1. **Versions**: latest · installed · repo-generated · Claude Code installed · Claude Code latest.
 2. **What changed** between installed and latest (changelog, cited by version).
 3. **Repo files behind the installed plugin** (from `manifest diff`): path · state · template version recorded →
-   current.
+   current. Then **extensions that need attention**: file · what it changes · orphaned anchor or behind.
 4. **Claude Code features** worth knowing, each with its version and link.
 5. **Steps**, in order: update the plugin → `/stackfoundry:upgrade` → `/stackfoundry:sync`, only the ones that
    apply, each with its reason.
