@@ -20,7 +20,7 @@ As detailed as is known. Name code by path + symbol.
 
 ## Affected areas
 
-Targets (from `.claude/stackfoundry/targets.json`) and the files or modules it touches.
+Targets (from `.stackfoundry/targets.json`) and the files or modules it touches.
 
 ## Verification
 

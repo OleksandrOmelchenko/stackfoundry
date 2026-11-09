@@ -6,6 +6,14 @@ argument-hint: "[<target>] [diff [--base <ref>] | commit <range> | --report <bug
 
 # Fix verify
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 The convergent counterpart of `bug-hunt`: it takes fixes that already landed and decides whether each one holds,
 one `fix-verifier` per fix, each trying to break it before it may say CONFIRMED. It then keeps the bug report a
 live tracker by flipping the markers from the verdicts. Read-only on code. Report format:
@@ -13,12 +21,12 @@ live tracker by flipping the markers from the verdicts. Read-only on code. Repor
 
 ## Inputs
 
-- **Target**: a `name` from `.claude/stackfoundry/targets.json`. Absent → `stackfoundry change-targets` over the
+- **Target**: a `name` from `.stackfoundry/targets.json`. Absent → `stackfoundry change-targets` over the
   mode's change set; every touched code target is verified.
 - **Mode**: **diff** (default: the uncommitted tree, or `--base <ref>`) · **commit `<range>`** (that range) ·
   **`--report <path>`** (every ✅ and ⚠️ item of that bug report, checked against the code).
-- **Effort**: the user's words win; otherwise the plugin's `defaultEffort` setting
-  (`${user_config.defaultEffort}`). quick → one vote · standard → a second skeptical vote on fixes touching the
+- **Effort**: the user's words win; otherwise the repo's `defaultEffort`
+  (`stackfoundry config defaultEffort`). quick → one vote · standard → a second skeptical vote on fixes touching the
   target's `stakes` · thorough → three votes on those.
 
 ## Verdicts

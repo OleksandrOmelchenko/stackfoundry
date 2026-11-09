@@ -6,6 +6,14 @@ argument-hint: "[diff [--base <ref>] | commit <sha> | <paths>]"
 
 # Quality review
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Answers one question about a change: **is it written the way this repository writes things, and did it duplicate
 something that already exists?** Not bugs (`/stackfoundry:bug-hunt`), not speed
 (`/stackfoundry:performance-review`), not security (`/stackfoundry:security-review-target`). The conventions are

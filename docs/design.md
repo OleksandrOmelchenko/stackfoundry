@@ -57,10 +57,10 @@ authoritative. A researched rule carries its source and date, so its age is visi
 
 | Plugin | Repo (written by `init`) |
 |---|---|
-| orchestrator skills | `.claude/stackfoundry/profile.md`: the product, users, risk surfaces, compliance regime, git policy |
-| generic role agents | `.claude/stackfoundry/targets.json`: targets, paths, packs, gates, harness, test dirs, exposure, path rules, specialists |
-| reference (method) | `.claude/stackfoundry/targets/<target>.md`: stack facts, categories, oracle sources, traps |
-| helper CLI and hooks | `.claude/stackfoundry/ecosystems.json`, `guards.json`, `packs/<layer>-<tech>/` |
+| orchestrator skills | `.stackfoundry/profile.md`: the product, users, risk surfaces, compliance regime, git policy |
+| generic role agents | `.stackfoundry/targets.json`: targets, paths, packs, gates, harness, test dirs, exposure, path rules, specialists |
+| reference (method) | `.stackfoundry/targets/<target>.md`: stack facts, categories, oracle sources, traps |
+| helper CLI and hooks | `.stackfoundry/ecosystems.json`, `guards.json`, `packs/<layer>-<tech>/` |
 | | `.claude/rules/<layer>-<tech>.md`, `.claude/skills/<app-model>-code-writer/` |
 | | tracker scaffolds under the docs root; `manifest.lock.json` |
 
@@ -88,15 +88,17 @@ model-invocable.
 
 ## The helper CLI
 
-`plugins/stackfoundry/bin/stackfoundry` is a POSIX `sh` launcher that finds Python 3.11+ (`python3`, `python`,
-`py -3`) and runs `scripts/stackfoundry/cli.py` isolated (`-I`). Standard library only, no network, JSON for every
+`plugins/stackfoundry/scripts/stackfoundry.sh` is a POSIX `sh` launcher that finds Python 3.11+ (`python3`, `python`,
+`py -3`) and runs `scripts/stackfoundry/cli.py` isolated (`-I`); `stackfoundry.ps1` does the same on Windows without
+`sh`. Skills call it by path through their preamble, not from a `bin/` on `PATH`, which only Claude Code provides and
+which keeps a plugin off claude.ai and Cowork. Standard library only, no network, JSON for every
 machine-read file. Mappings that must be deterministic (path → target, change → tests, tracker parsing) live there,
 read from the repo's JSON, never hard-coded and never restated in a skill.
 
 ## Guards
 
 `hooks/hooks.json` runs `stackfoundry guard` before `Edit`/`Write`/`MultiEdit`/`NotebookEdit` and before
-`Bash`/`PowerShell`. It reads `.claude/stackfoundry/guards.json`: generated-code globs that may not be hand-edited,
+`Bash`/`PowerShell`. It reads `.stackfoundry/guards.json`: generated-code globs that may not be hand-edited,
 command patterns that are forbidden (direct database writes, raw service launches), and the git-write policy. No
 profile means no opinion: the hook exits 0.
 
@@ -115,7 +117,7 @@ repo-enabled plugins.
 
 ## Upgrades
 
-Every file `init` generates records, in `.claude/stackfoundry/manifest.lock.json`, the template it came from, the
+Every file `init` generates records, in `.stackfoundry/manifest.lock.json`, the template it came from, the
 template version and the hash it had when written. `upgrade` regenerates from the new template and sorts each file
 into: untouched since generation (replace), edited by the team (three-way proposal, never applied silently),
 materialized (skip), or deleted by the team (leave deleted).

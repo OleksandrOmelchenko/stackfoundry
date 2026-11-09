@@ -6,6 +6,14 @@ argument-hint: "<target> [<suite name>]"
 
 # Set up mutation testing
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Gives a target's suite a **mutation lane**, the hard evidence behind a WEAK verdict in `review-tests` and the "kills a
 mutant" half of the assurance gate. The tool is the one the target's tooling pack researched for this language and
 test runner, never assumed. Rules: `.claude/rules/testing.md` §10.
@@ -34,7 +42,7 @@ test runner, never assumed. Rules: `.claude/rules/testing.md` §10.
      killed a mutant.
    - Compile-error-only or all-ignored reports are broken the same way.
    - Otherwise note the score over detected and over valid mutants, and the survivors.
-7. **Record.** Draft `tests[].mutation` in `.claude/stackfoundry/targets.json`, the *Mutation lane* line of the
+7. **Record.** Draft `tests[].mutation` in `.stackfoundry/targets.json`, the *Mutation lane* line of the
    target profile's Gate section, and the pin in `ecosystems.json`. **Show the diff, ask, then apply.**
 8. **Report**: the lane command, the scope, the proving run's score and its survivors as candidates for
    `/stackfoundry:write-tests` (not written here), and how long a full-scope run is expected to be relative to the

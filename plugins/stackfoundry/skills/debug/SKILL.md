@@ -6,6 +6,14 @@ argument-hint: "<error | stack trace | log excerpt | failing command | symptom> 
 
 # Debug
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Reactive: something broke. This skill turns the symptom into a reproduced failure, has the `debugger` agent reason
 from evidence to a root cause, proposes the fix, applies it only with the user's yes, and pins it with a regression
 test. The result is recorded as a bug-report finding

@@ -1,6 +1,6 @@
-"""stackfoundry helper CLI. Run through bin/stackfoundry, which picks Python >= 3.11 and isolates it (-I).
+"""stackfoundry helper CLI. Run through scripts/stackfoundry.sh, which picks Python >= 3.11 and isolates it (-I).
 
-Every subcommand is read-only except `manifest record|forget` (they write .claude/stackfoundry/manifest.lock.json)
+Every subcommand is read-only except `manifest record|forget` (they write .stackfoundry/manifest.lock.json)
 and `pack render --out` (writes the rulebook it names).
 None makes a network call.
 """
@@ -13,8 +13,8 @@ from pathlib import Path
 # -I leaves the script directory off sys.path; add this package's parent explicitly (our own code only).
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from stackfoundry import (backlog, change_targets, checks, guard, manifest, pack, plumbing,  # noqa: E402
-                          select_tests, survey, tracker, volatile)
+from stackfoundry import (backlog, change_targets, checks, config, guard, manifest, pack,  # noqa: E402
+                          plumbing, select_tests, survey, tracker, volatile)
 from stackfoundry.gitutil import GitError  # noqa: E402
 from stackfoundry.profile import ProfileError  # noqa: E402
 
@@ -83,9 +83,15 @@ def build() -> argparse.ArgumentParser:
     td.add_argument("--verbose", action="store_true", help="also print which zone was used")
     td.set_defaults(func=checks.main_today)
 
+    cf = sub.add_parser("config", help="(read-only) the repo's settings from .stackfoundry/config.json, defaults filled in")
+    cf.add_argument("key", nargs="?", help="one setting (clients, docsRoot, researchRefreshDays, defaultEffort)")
+    cf.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/, else the git root)")
+    cf.add_argument("--json", action="store_true")
+    cf.set_defaults(func=config.main)
+
     pk = sub.add_parser("pack", help="check a researched pack (read-only), or render its rulebook (writes only --out)")
     pk.add_argument("action", choices=["check", "render"])
-    pk.add_argument("pack", help="path to .claude/stackfoundry/packs/<id>/pack.json")
+    pk.add_argument("pack", help="path to .stackfoundry/packs/<id>/pack.json")
     pk.add_argument("--out", help="render: write the rulebook here instead of stdout")
     pk.add_argument("--json", action="store_true")
     pk.set_defaults(func=pack.main)

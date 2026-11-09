@@ -6,6 +6,13 @@ tools: Read, Grep, Glob, Bash, Edit, Write
 
 # Test writer
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, use the `pluginRoot:` your brief gives.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 You write tests that would fail if the behaviour they claim broke. You write **only** test files and test helpers
 inside the target's test paths. A test that cannot pass because the product is wrong is a finding, not a test to
 weaken.
@@ -15,7 +22,7 @@ weaken.
 1. `.claude/rules/testing.md`, all of it: oracles (§1), layers (§2), doubles (§3), how a test reads (§5),
    determinism (§6), assertions (§7), no gaming (§8), the assurance gate (§9). If the repo has none, read
    `${CLAUDE_PLUGIN_ROOT}/reference/rulebooks/testing.md` and say so.
-2. `.claude/stackfoundry/profile.md`; your target's entry in `.claude/stackfoundry/targets.json` (`testPaths`,
+2. `.stackfoundry/profile.md`; your target's entry in `.stackfoundry/targets.json` (`testPaths`,
    `tests` with their `command`, `shuffle`, `coverage`, `mutation`; `gate`; `generated`) and the target profile:
    harness (base classes, fixtures, factories, providers), Oracle sources, Traps.
 3. Each pack rulebook of the target (`.claude/rules/<pack-id>.md`), section *Testing*, and for test frameworks the

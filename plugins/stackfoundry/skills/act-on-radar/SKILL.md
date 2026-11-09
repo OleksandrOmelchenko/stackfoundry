@@ -7,6 +7,14 @@ disable-model-invocation: true
 
 # Act on the radar
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 `/stackfoundry:tech-radar` writes a dated report with every item cited and routed. This skill reads it, asks once,
 and hands each item to the skill that owns it, recording every decision in `<docsRoot>/radar/decisions.md` so the
 radar stops re-suggesting what was settled. It never edits product code, packs or rulebooks itself.
@@ -14,7 +22,7 @@ radar stops re-suggesting what was settled. It never edits product code, packs o
 ## Procedure
 
 1. **Load the report**: the path given, else the newest `<docsRoot>/radar/*-tech-radar.md` (`docsRoot` from
-   `.claude/stackfoundry/targets.json`). Load `decisions.md`; when it does not exist, it is created in step 4 from
+   `.stackfoundry/targets.json`). Load `decisions.md`; when it does not exist, it is created in step 4 from
    `${CLAUDE_PLUGIN_ROOT}/reference/trackers/radar-decisions.md`.
 2. **Check before asking.** Drop items a decision row already settles (unless its revisit condition fired, as the
    report says). An item a plan in `<docsRoot>/plans/` already covers cites it (`stackfoundry backlog --section

@@ -10,7 +10,7 @@ paths:
 
 # Dependency and version bumps
 
-Where every pin lives, how it is discovered, applied and gated: `.claude/stackfoundry/ecosystems.json`. The
+Where every pin lives, how it is discovered, applied and gated: `.stackfoundry/ecosystems.json`. The
 procedure: `/stackfoundry:bump <ecosystem>`, sequenced by `/stackfoundry:bump-all`. `/stackfoundry:check-updates`
 reports; `/stackfoundry:act-on-updates` routes the report. This file holds the rules they share.
 

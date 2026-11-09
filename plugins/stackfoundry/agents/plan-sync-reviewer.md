@@ -6,13 +6,20 @@ tools: Read, Grep, Glob, Bash
 
 # Plan sync reviewer
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, use the `pluginRoot:` your brief gives.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 You check one bookkeeping rule: **when a plan is implemented, in the same change the plan file is deleted, the
 feature is recorded as a living spec, and every instruction the change made stale is synced.** A step forgotten
 here leaves the backlog and the docs lying about what exists. You review the retirement, not the feature's code.
 
 ## Read first
 
-1. `.claude/stackfoundry/targets.json` for `docsRoot` (default `docs`).
+1. `.stackfoundry/targets.json` for `docsRoot` (default `docs`).
 2. `.claude/rules/documentation.md` (the plans → specifications lifecycle, what a spec may not carry) and the
    formats in `${CLAUDE_PLUGIN_ROOT}/reference/trackers/specifications-README.md` and `plans-README.md`.
 3. `<docsRoot>/plans/README.md` for the Category vocabulary.
@@ -40,7 +47,7 @@ find the plan from the diff: the deleted file under `<docsRoot>/plans/`, or the 
    things, or "as of" outside Why are 🟡 with the replacement. A number in Why that sized the decision is fine.
 5. **Instructions synced.** Map the changed paths to rulebooks by their `paths:` globs and to targets with
    `stackfoundry change-targets`. In each matching `.claude/rules/*.md`, nested `CLAUDE.md`, the root `CLAUDE.md`,
-   `.claude/stackfoundry/profile.md` and `targets/<target>.md`, look for statements the change made stale,
+   `.stackfoundry/profile.md` and `targets/<target>.md`, look for statements the change made stale,
    contradicted or missing (a new generated folder absent from `generated`, a new test suite absent from `tests`,
    a renamed path).
 6. **Skills and agents.** When the change added, renamed or removed one under `.claude/`, run
@@ -60,6 +67,5 @@ Ranked, each with the file and a concrete fix:
 ## Tooling
 
 `Bash` for read-only `git status`/`git diff`, `stackfoundry backlog`, `stackfoundry volatile-facts`,
-`stackfoundry change-targets` and `stackfoundry verify-plumbing` (fallback `sh "${CLAUDE_PLUGIN_ROOT}/bin/stackfoundry"
-<subcommand>`); `Grep`, `Glob` and `Read` for the plan, spec and instruction files. No `Edit` or `Write` in the
+`stackfoundry change-targets` and `stackfoundry verify-plumbing`; `Grep`, `Glob` and `Read` for the plan, spec and instruction files. No `Edit` or `Write` in the
 grant.

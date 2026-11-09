@@ -5,6 +5,14 @@ description: Author or restructure a skill, subagent or path-scoped rule in this
 
 # Skill and agent author
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Write a skill, agent or rule as **one file that is the whole truth**, grounded in this repo, discoverable by its
 description, and in the place Claude Code actually loads it from.
 
@@ -20,14 +28,14 @@ Claude Code scans `.claude/agents/` recursively, so any non-agent file under it 
 material elsewhere. Some files here are stackfoundry's; `stackfoundry manifest list` says which and of what kind:
 
 - **Pack rulebooks** (`.claude/rules/<pack-id>.md`) are generated from researched packs. Edit a rule you disagree
-  with, and record the decision as the pack's `repoConvention` in `.claude/stackfoundry/packs/<pack-id>/` so a
+  with, and record the decision as the pack's `repoConvention` in `.stackfoundry/packs/<pack-id>/` so a
   refresh by `/stackfoundry:research-stack` keeps it. A team rule that is not about one technology goes in a rule
   file of its own.
 - **Code-writer skills** (`.claude/skills/<app-model>-code-writer/`) are generated; an edit is kept, and
   `/stackfoundry:upgrade` proposes a merge instead of overwriting it.
 - **Materialized agents** (`.claude/agents/<target>-<role>.md`) are the team's (`/stackfoundry:materialize`).
 - **Do not hand-write a role-per-target agent.** The plugin's role agents read the target profile; a fact the role
-  is missing belongs in `.claude/stackfoundry/targets/<target>.md`, a narrow reviewer that a path or a pattern
+  is missing belongs in `.stackfoundry/targets/<target>.md`, a narrow reviewer that a path or a pattern
   should call in belongs in `targets.json` → `specialists`, and a hand-tuned role is `/stackfoundry:materialize`.
 
 ## Frontmatter

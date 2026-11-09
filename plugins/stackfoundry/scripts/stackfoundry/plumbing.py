@@ -9,6 +9,7 @@ import json
 import re
 from pathlib import Path
 
+from . import preamble
 from .frontmatter import split
 
 SKILL_CAP = 250
@@ -27,6 +28,8 @@ NEGATION = re.compile(r"\b(never|not|no|don't|do not|without|cannot|isn't|must n
 LINK = re.compile(r"(?<!!)\[[^\]]*\]\(([^)\s]+)\)")
 PLUGIN_REF = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}/([^\s`\"')\]]+)")
 SKILL_REF = re.compile(r"/stackfoundry:([a-z0-9-]+)")
+# Agent Skills (agentskills.io): lowercase letters, digits and single hyphens, at most 64 characters.
+PORTABLE_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 AGENT_REF = re.compile(r"subagent_type\s*[:=]\s*[\"'](?:stackfoundry:)?([a-z0-9-]+)[\"']")
 
 
@@ -102,6 +105,11 @@ def check(base: Path) -> Report:
             skill_names.add(d.name)
             if fields.get("name") != d.name:
                 rep.error(f, f"name {fields.get('name')!r} does not match the folder {d.name!r}")
+            if not PORTABLE_NAME.match(d.name) or len(d.name) > 64:
+                rep.error(f, "name must be lowercase letters, digits and single hyphens, at most 64 characters "
+                             "(the Agent Skills standard other assistants enforce)")
+            if plugin_mode and preamble.SKILL not in body:
+                rep.error(f, "missing or outdated portable-form preamble under the title (see scripts/stackfoundry/preamble.py)")
             desc = fields.get("description")
             if not isinstance(desc, str) or not desc.strip():
                 rep.error(f, "description is missing")
@@ -127,6 +135,8 @@ def check(base: Path) -> Report:
             agent_names.add(f.stem)
             if fields.get("name") != f.stem:
                 rep.error(f, f"name {fields.get('name')!r} does not match the file name {f.stem!r}")
+            if plugin_mode and preamble.AGENT not in body:
+                rep.error(f, "missing or outdated portable-form preamble under the title (see scripts/stackfoundry/preamble.py)")
             desc = fields.get("description")
             if not isinstance(desc, str) or not desc.strip():
                 rep.error(f, "description is missing")

@@ -6,6 +6,13 @@ tools: Read, Grep, Glob, Bash, Edit
 
 # Skill and agent verifier
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, use the `pluginRoot:` your brief gives.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 You audit the **meta layer**: the skill, agent and rulebook definitions, not the code they work on. A malformed
 frontmatter, a path that rotted after a rename, a grant missing a tool the body calls, a rulebook glob that matches
 nothing: each fails silently. Nobody gets an error; a skill just stops being picked, an agent stops being able to
@@ -22,9 +29,9 @@ and every reference to or from it). `prior:` may carry the `verify-plumbing` and
 skill already ran: use it instead of re-running. Two layouts:
 
 - **Repo**: `<root>/.claude/skills/<name>/SKILL.md`, `.claude/agents/<name>.md`, `.claude/rules/*.md`, the
-  `CLAUDE.md` files, and `.claude/stackfoundry/` when the repo uses stackfoundry.
+  `CLAUDE.md` files, and `.stackfoundry/` when the repo uses stackfoundry.
 - **Plugin**: a directory with `.claude-plugin/` or `skills/` at its top: `skills/`, `agents/`, `reference/`,
-  `hooks/`, `bin/`. References are written `${CLAUDE_PLUGIN_ROOT}/<path>`; categories about `.claude/rules`,
+  `hooks/`, `scripts/`. References are written `${CLAUDE_PLUGIN_ROOT}/<path>`; categories about `.claude/rules`,
   `CLAUDE.md` and packs do not apply.
 
 The authoring rules are `.claude/rules/authoring.md` when the audited repo has one, else the plugin's caps (skill
@@ -32,8 +39,7 @@ description ≤ 250 characters, agent ≤ 300) as `verify-plumbing` enforces the
 
 ## Categories
 
-1. **frontmatter.** `stackfoundry verify-plumbing <dir>` (fallback `sh "${CLAUDE_PLUGIN_ROOT}/bin/stackfoundry"
-   verify-plumbing <dir>`): frontmatter parses, names match folder or file, description caps, unknown keys, a
+1. **frontmatter.** `stackfoundry verify-plumbing <dir>`: frontmatter parses, names match folder or file, description caps, unknown keys, a
    grant on every agent, "read-only" agents without write tools, backticked tool mentions covered by the grant.
    Then read each agent, since the script sees only backticked names: a body that dispatches needs the Agent
    tool, researches needs the web tools, edits needs the write tools, drives a browser needs those tools. A grant
@@ -52,8 +58,8 @@ description ≤ 250 characters, agent ≤ 300) as `verify-plumbing` enforces the
 7. **rules.** Every `.claude/rules/*.md` has a `paths:` list except a deliberate always-on rule; every glob
    matches at least one tracked file (`git ls-files -- ':(glob)<glob>'`); no `@import` lines (not expanded in a
    rule). **Every pack has its rulebook**: for each pack id in any target's `packs` in
-   `.claude/stackfoundry/targets.json`, `.claude/rules/<pack-id>.md` and
-   `.claude/stackfoundry/packs/<pack-id>/pack.json` exist; the shared rulebooks the targets need exist
+   `.stackfoundry/targets.json`, `.claude/rules/<pack-id>.md` and
+   `.stackfoundry/packs/<pack-id>/pack.json` exist; the shared rulebooks the targets need exist
    (`testing.md` when any target has tests, `documentation.md`, `benchmarking.md` when a benchmark project exists).
 8. **volatile.** `stackfoundry volatile-facts <dir> --include-counts` over skills, agents and rules, excluding
    generated pack rulebooks (one `--exclude "rules/<layer>-*.md"` per layer), which carry research and access

@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "pluginVersion": "0.1.0",
+  "files": {
+    ".claude/CLAUDE.md": {
+      "template": "reference/templates/claude-md-block.md",
+      "templateVersion": "1",
+      "sha256": "ae16dcc94e81d251ae26e54cb9ef93f80b6fb82336e15db391cb5401009cc383",
+      "kind": "generated"
+    },
+    ".claude/rules/app-model-claude-code-plugin.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "3c285d101900e3661ed25f7163630d154d73a448aacc917c152f5710219e0a1f",
+      "kind": "generated"
+    },
+    ".claude/rules/app-model-python-cli.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "0729cdfb3c8e6280aaa43336dd243220721df6ff01705d8cb84294f922c658ed",
+      "kind": "generated"
+    },
+    ".claude/rules/capability-claude-code-marketplace.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "9f4411795b9d398efaa6b17e30d591c37a0e3fd795d6aaa45c50dadb77827afd",
+      "kind": "generated"
+    },
+    ".claude/rules/dependency-bumps.md": {
+      "template": "reference/rulebooks/dependency-bumps.md",
+      "templateVersion": "1",
+      "sha256": "31e63aa28141e6258a18ccaa68c6eb5193f73d687d61caa367146314c0bd942f",
+      "kind": "generated"
+    },
+    ".claude/rules/documentation.md": {
+      "template": "reference/rulebooks/documentation.md",
+      "templateVersion": "1",
+      "sha256": "617f2661d28f2b9fab1dd58c7ec4077f87c8bbac83416cf829fc1aa0bb9702e3",
+      "kind": "generated"
+    },
+    ".claude/rules/language-posix-sh.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "96f17471cd64fe9319c03d399287d1aca4f5e0e07f017574224876c8025f312b",
+      "kind": "generated"
+    },
+    ".claude/rules/language-python.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "a71c7875b5c9d2ce83fa2a6ebf57cc22ebfe16eed9b2d7cc026c97e47159d040",
+      "kind": "generated"
+    },
+    ".claude/rules/testing.md": {
+      "template": "reference/rulebooks/testing.md",
+      "templateVersion": "1",
+      "sha256": "2463584fcd518dcec5592e72e39b3aa3a6a22bd42c281da1cef319b3118a98db",
+      "kind": "generated"
+    },
+    ".claude/rules/tooling-claude-plugin-eval.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "ba06a6405dc33174af08117db5435198a8d40a5a8944657d9560cec13fb854a1",
+      "kind": "generated"
+    },
+    ".claude/rules/tooling-github-actions.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "c607fa6e2243ea19f4064c1de0ba14b1a85bfbfac6cabc982cbf46ba1a3276eb",
+      "kind": "generated"
+    },
+    ".claude/rules/tooling-unittest.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "204290e124f905dd76b5ffd3b0ecf44807d2912d8bb5fa60e2b6ab259e64fe6b",
+      "kind": "generated"
+    },
+    ".claude/skills/claude-code-plugin-code-writer/SKILL.md": {
+      "template": "reference/templates/code-writer-skill.md",
+      "templateVersion": "1",
+      "sha256": "7ac7ea0a53f9e2c3295c13a86a7743d6e1639ac2b46442eb791eb2a756069b1b",
+      "kind": "generated"
+    },
+    ".claude/skills/python-cli-code-writer/SKILL.md": {
+      "template": "reference/templates/code-writer-skill.md",
+      "templateVersion": "1",
+      "sha256": "cf244bb02ac61d40829b91ca31f174ca9e72e2fa109b5d5615a75cf199f50da6",
+      "kind": "generated"
+    },
+    ".stackfoundry/config.json": {
+      "template": "profile",
+      "templateVersion": "profile",
+      "sha256": "9c4efda3a39f802c4830d507f5a6d7aea62743b4753fc1ac8e09f82d560f505f",
+      "kind": "generated"
+    },
+    ".stackfoundry/ecosystems.json": {
+      "template": "profile",
+      "templateVersion": "profile",
+      "sha256": "a2f344542f382bc6f38b73114460547e39739cb51ce65a32a7c1e8d86a3abadf",
+      "kind": "generated"
+    },
+    ".stackfoundry/guards.json": {
+      "template": "profile",
+      "templateVersion": "profile",
+      "sha256": "97c4c6b8390392cc1f85ab6c2111865a6dbaf8999f91690a336b0eda6a5e18d0",
+      "kind": "generated"
+    },
+    ".stackfoundry/packs/app-model-claude-code-plugin/pack.json": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "c6e416b842e0c418817b29449f651a43821af06af7b88e4ebee8709b583f0170",
+      "kind": "generated"
+    },
+    ".stackfoundry/packs/app-model-python-cli/pack.json": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "c8581b9ce59b49711e166836a02c447371186ec69bdafc8d4b12545519e4e75e",
+      "kind": "generated"
+    },
+    ".stackfoundry/packs/capability-claude-code-marketplace/pack.json": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "aa1005b4f0cfc0a75f03e2485de6e8b74e4f4c441cbca782097bfc019286c20f",
+      "kind": "generated"
+    },
+    ".stackfoundry/packs/language-posix-sh/pack.json": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "e4b56be5cd7e9e2c3fada4b020d6df657ad3d88f28b2b59852db18f2a96540b6",
+      "kind": "generated"
+    },
+    ".stackfoundry/packs/language-python/pack.json": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "d38fef51bc3108a815388633986a7560e0a652dc8240eef8473086e2cec3c721",
+      "kind": "generated"
+    },
+    ".stackfoundry/packs/tooling-claude-plugin-eval/pack.json": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "7cd3a093f703368b0869cba3cfcfb272410041fca9030754c310b343cab3d341",
+      "kind": "generated"
+    },
+    ".stackfoundry/packs/tooling-github-actions/pack.json": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "fa9774a8ae35b2f6740299d843cbdf8eb2dcc21e192e12d1d647983b1ca4438f",
+      "kind": "generated"
+    },
+    ".stackfoundry/packs/tooling-unittest/pack.json": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "11fae456bd328d39d360e8ed953919b9d8b44ea9c66f49bfa3f6c265f98beec6",
+      "kind": "generated"
+    },
+    ".stackfoundry/profile.md": {
+      "template": "reference/templates/profile.md",
+      "templateVersion": "1",
+      "sha256": "d3a12e627c79b705ea9d87edd8e0303720cf61b47d4d3aae64c20270628084ce",
+      "kind": "generated"
+    },
+    ".stackfoundry/targets.json": {
+      "template": "profile",
+      "templateVersion": "profile",
+      "sha256": "2d18f51c4a82a032888d04e765d7314be612e9e785c16a79e914697c6928b5e6",
+      "kind": "generated"
+    },
+    ".stackfoundry/targets/cli.md": {
+      "template": "reference/templates/target.md",
+      "templateVersion": "1",
+      "sha256": "a7a09502c6d573d92b3acdc5e7727333f8621f88563b77f930f402a1d2947c9f",
+      "kind": "generated"
+    },
+    ".stackfoundry/targets/plugin.md": {
+      "template": "reference/templates/target.md",
+      "templateVersion": "1",
+      "sha256": "ff397a0a2b08c3626987d97a3f514fb2d3bb8aaf41e21ee14360c32e9fe356eb",
+      "kind": "generated"
+    },
+    "docs/bug-reports/README.md": {
+      "template": "reference/trackers/bug-reports-README.md",
+      "templateVersion": "1",
+      "sha256": "e292fe742e62c6b59bff8223bfede0ecafce71a2372ab4a88d56492d50958b0d",
+      "kind": "generated"
+    },
+    "docs/dependency-reports/README.md": {
+      "template": "reference/trackers/reports-README.md",
+      "templateVersion": "1",
+      "sha256": "6347d5ca8542b4a646cb50a4566e21b4be036f2f4576f692de21ee52441d99bc",
+      "kind": "generated"
+    },
+    "docs/performance-reports/README.md": {
+      "template": "reference/trackers/reports-README.md",
+      "templateVersion": "1",
+      "sha256": "36b4c307879c61e957ee2d379ce9aac477698c40db975d62582e53bbf08bd3e8",
+      "kind": "generated"
+    },
+    "docs/plans/README.md": {
+      "template": "reference/trackers/plans-README.md",
+      "templateVersion": "1",
+      "sha256": "a6c60df740826303158c66bb9214d44b32bd90d5e3fb738ff9e04c40297c16c5",
+      "kind": "generated"
+    },
+    "docs/plans/_template.md": {
+      "template": "reference/trackers/plan.md",
+      "templateVersion": "1",
+      "sha256": "1b303f87ef979493790ba29a07d0d886967e536e327f4f8535a6fe796522172d",
+      "kind": "generated"
+    },
+    "docs/plans/deferred-upgrades.md": {
+      "template": "reference/trackers/deferred-upgrades.md",
+      "templateVersion": "1",
+      "sha256": "175fae84642fbf801d3b93ec24944ac1b7d9de8aff1bd567326c3779ad7bca0f",
+      "kind": "generated"
+    },
+    "docs/radar/README.md": {
+      "template": "reference/trackers/reports-README.md",
+      "templateVersion": "1",
+      "sha256": "c3a5381328f4c3a34972c6e7686f878ec94458ee05569942eeb50f34141a54a8",
+      "kind": "generated"
+    },
+    "docs/radar/decisions.md": {
+      "template": "reference/trackers/radar-decisions.md",
+      "templateVersion": "1",
+      "sha256": "73edc287931fdc2523aa3e7a0c91064db2b96c8b3c9c7c2372e4d54bc20f14b5",
+      "kind": "generated"
+    },
+    "docs/reports/README.md": {
+      "template": "reference/trackers/reports-README.md",
+      "templateVersion": "1",
+      "sha256": "4e2a1958c2d8cd9e312a89d0b25762db1fdf5b4fe46fbd70c71141465e7e5160",
+      "kind": "generated"
+    },
+    "docs/security/README.md": {
+      "template": "reference/trackers/security-README.md",
+      "templateVersion": "1",
+      "sha256": "09a58d10ccecbd0894192eb4d76c8f22ebeeaf2a0450f2f168f79f8b3272a8c3",
+      "kind": "generated"
+    },
+    "docs/specifications/README.md": {
+      "template": "reference/trackers/specifications-README.md",
+      "templateVersion": "1",
+      "sha256": "8d0457316ce6d8468ca14727d37368145833373f809cd7c8aab2be3e4807f815",
+      "kind": "generated"
+    },
+    "docs/test-designs/README.md": {
+      "template": "reference/trackers/test-designs-README.md",
+      "templateVersion": "1",
+      "sha256": "cc480a3a0053ea152c1453d36edf51464185c9022b583fc08e154c2e2c67d40e",
+      "kind": "generated"
+    }
+  }
+}

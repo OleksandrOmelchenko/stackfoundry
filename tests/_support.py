@@ -13,7 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / "plugins" / "stackfoundry"
 SCRIPTS = PLUGIN / "scripts"
 CLI = SCRIPTS / "stackfoundry" / "cli.py"
-LAUNCHER = PLUGIN / "bin" / "stackfoundry"
+LAUNCHER = PLUGIN / "scripts" / "stackfoundry.sh"
+LAUNCHER_PS1 = PLUGIN / "scripts" / "stackfoundry.ps1"
 
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
@@ -62,4 +63,4 @@ def run_cli(args: list[str], cwd: Path | None = None, stdin: str = "", env: dict
 
 
 def targets_json(root: Path, data: dict):
-    write(root, {".claude/stackfoundry/targets.json": json.dumps(data)})
+    write(root, {".stackfoundry/targets.json": json.dumps(data)})

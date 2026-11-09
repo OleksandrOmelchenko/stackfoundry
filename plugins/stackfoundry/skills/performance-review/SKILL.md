@@ -6,6 +6,14 @@ argument-hint: "[<target> | all] [<area path> | diff [--base <ref>]]"
 
 # Performance review
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Dispatches the `performance-reviewer` for a target. It makes two passes: the code against the *Performance*
 sections of the target's pack rulebooks, then a pass that checks its findings and the stack's current tooling
 against current official guidance on the web. Read-only: it reports, it never fixes. The output is a dated
@@ -15,10 +23,10 @@ desktop app for UI-thread work and startup. The target's packs say which applies
 
 ## Inputs
 
-- **Target**: a `name` from `.claude/stackfoundry/targets.json`, or `all` (every target whose `roles` allow
+- **Target**: a `name` from `.stackfoundry/targets.json`, or `all` (every target whose `roles` allow
   `performance-reviewer`). Absent → list the names and ask.
 - **Scope**: the whole target (default), an area path, or `diff [--base <ref>]`.
-- **Effort**: the user's words win, else the plugin's `defaultEffort` setting (`${user_config.defaultEffort}`).
+- **Effort**: the user's words win, else the repo's `defaultEffort` (`stackfoundry config defaultEffort`).
   thorough → one reviewer per pack layer of the target (app model, each capability) instead of one per target.
 
 ## Procedure

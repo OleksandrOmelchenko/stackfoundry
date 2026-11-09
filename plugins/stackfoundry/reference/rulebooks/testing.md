@@ -11,7 +11,7 @@ paths:
 # Testing rulebook
 
 One rulebook for every suite. Per-target facts (harness, base classes, commands, traps) live in
-`.claude/stackfoundry/targets/<target>.md`; per-framework notes live in each tooling pack's rulebook
+`.stackfoundry/targets/<target>.md`; per-framework notes live in each tooling pack's rulebook
 (`.claude/rules/tooling-*.md`, section Testing). Not here.
 
 ## 1. Oracles: where an expected value may come from

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/OleksandrOmelchenko/stackfoundry/schemas/ecosystems.schema.json",
-  "title": "stackfoundry ecosystems (.claude/stackfoundry/ecosystems.json)",
+  "title": "stackfoundry ecosystems (.stackfoundry/ecosystems.json)",
   "description": "Every version pin in the repo, grouped by ecosystem, with how to discover updates, apply them and gate them. check-updates runs only the `discover` commands; bump runs the rest.",
   "type": "object",
   "required": ["schemaVersion", "ecosystems"],

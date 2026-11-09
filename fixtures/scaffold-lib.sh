@@ -13,7 +13,7 @@ copy_tree() {
 }
 
 # scaffold <fixture> [with-profile]
-#   with-profile also copies <fixture>.profile/ (a ready .claude/stackfoundry/ profile), for cases that test a
+#   with-profile also copies <fixture>.profile/ (a ready .stackfoundry/ profile), for cases that test a
 #   skill on an initialized repo rather than init itself.
 scaffold() {
   name="$1"

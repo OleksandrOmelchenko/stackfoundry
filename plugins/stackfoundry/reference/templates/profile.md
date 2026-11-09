@@ -1,6 +1,6 @@
 ---
 templateVersion: 1
-output: .claude/stackfoundry/profile.md
+output: .stackfoundry/profile.md
 ---
 # {{product name}}: repo profile
 
@@ -37,4 +37,4 @@ supported platforms, anything a reviewer would otherwise call a mistake}}
 
 ## Targets
 
-`.claude/stackfoundry/targets.json` is the list; each target's facts are in `.claude/stackfoundry/targets/`.
+`.stackfoundry/targets.json` is the list; each target's facts are in `.stackfoundry/targets/`.

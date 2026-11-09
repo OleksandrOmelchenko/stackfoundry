@@ -1,0 +1,245 @@
+{
+  "schemaVersion": 1,
+  "id": "language-posix-sh",
+  "layer": "language",
+  "title": "POSIX sh (launcher, git hook, eval scaffolds)",
+  "researchedAt": "2026-11-09",
+  "versions": [
+    {
+      "version": "POSIX sh, researched against POSIX.1-2024 (Issue 8); must also run on dash (Linux), bash 3.2 / zsh as sh (macOS) and Git Bash (MSYS2) sh on Windows",
+      "pinnedIn": "not pinned: #!/bin/sh in plugins/stackfoundry/scripts/stackfoundry.sh, .githooks/pre-commit, fixtures/scaffold-lib.sh; hooks.json invokes `sh` explicitly",
+      "latest": "IEEE Std 1003.1-2024 (Issue 8)"
+    },
+    {
+      "version": "bash (unpinned)",
+      "pinnedIn": "#!/bin/bash + set -euo pipefail in plugins/stackfoundry/evals/*/scaffold.sh"
+    }
+  ],
+  "targets": ["cli"],
+  "rulebookPaths": ["plugins/stackfoundry/bin/**", ".githooks/**", "**/*.sh"],
+  "rules": [
+    {
+      "rule": "In a #!/bin/sh file use only POSIX features: no [[ ]], ==, local, source, $'...', arrays, function keyword, echo -e/-n. A script that needs bash says #!/bin/bash (as the eval scaffolds do) and is run with bash.",
+      "why": "The same file runs under dash, macOS sh and Git Bash; a bashism works on the author's shell and fails (syntax error or wrong branch) on another, and in the guard hook that means the hook errors on one OS only.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry.sh", ".githooks/pre-commit", "fixtures/scaffold-lib.sh", "plugins/stackfoundry/evals/*/scaffold.sh (bash by design)"],
+      "sources": ["posix-shell", "sc3040", "shellcheck-releases"]
+    },
+    {
+      "rule": "Do not rely on `set -o pipefail` in a #!/bin/sh file, and do not put a command whose failure matters on the left of a pipe. Check it separately (write to a temp file, or run it first) or move the script to bash.",
+      "why": "Without pipefail a pipeline's status is its last command's, so set -e does not stop on a failed left side. pipefail is POSIX only since 1003.1-2024 and dash gained it only in 0.5.13; older dash ignores or rejects it. In copy_tree, a failing `cd` or `find` left of `| while read` is invisible: the scaffold continues and commits an incomplete fixture.",
+      "where": ["fixtures/scaffold-lib.sh copy_tree: `(cd \"$1\" && find ...) | while IFS= read -r f`"],
+      "since": "pipefail specified in POSIX.1-2024; dash 0.5.13",
+      "sources": ["posix-shell", "sc3040"]
+    },
+    {
+      "rule": "Double-quote every parameter expansion and command substitution (\"$cli\", \"$@\", \"$(dirname -- \"$0\")\"). To run a command held in variables, pass it as function arguments and expand \"$@\" (the launcher's `ok py -3` pattern), not as an unquoted string.",
+      "why": "Unquoted expansions are field-split on IFS and glob-expanded. The plugin root and repo live under paths with spaces and non-ASCII characters (the dev home is Cyrillic); one unquoted path splits into several arguments and the launcher runs the wrong file or none.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry.sh ok(), exec lines", ".githooks/pre-commit `$py -m unittest`"],
+      "repoConvention": ".githooks/pre-commit deliberately leaves `$py` unquoted so the value `py -3` splits into command + argument (pick_python echoes it). Safe only because pick_python returns one of three fixed strings; ShellCheck reports it as SC2086. Follow the repo, never extend the pattern to values that contain paths.",
+      "sources": ["sc2086", "posix-shell"]
+    },
+    {
+      "rule": "Follow every `cd` with `|| exit 1` (or `|| return` in a function), or use it as an `&&`/`if` condition.",
+      "why": "A failed cd leaves the script in the old directory and the next commands (git add -A, cp, rm) act on the wrong tree; ShellCheck flags a bare cd as SC2164.",
+      "where": [".githooks/pre-commit `cd \"$root\" || exit 1`", "plugins/stackfoundry/scripts/stackfoundry.sh `here=$(CDPATH= cd -- ... && pwd) || exit 1`"],
+      "sources": ["sc2164"]
+    },
+    {
+      "rule": "Resolve a script's own directory with `CDPATH= cd -- \"$(dirname -- \"$0\")\" && pwd` inside $( ), keeping the empty CDPATH prefix and the `--`.",
+      "why": "When cd resolves through a non-empty CDPATH it writes the new path to stdout, so the captured value becomes two lines and every path built from it is wrong. `--` stops a path that starts with `-` being read as an option. The `VAR= cmd` form matches ShellCheck SC1007's pattern; here the empty environment value is the intent (CDPATH='' is the explicit equivalent).",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry.sh `here=`", "fixtures/scaffold-lib.sh scaffold `lib_dir=`", "plugins/stackfoundry/evals/*/scaffold.sh SCAFFOLD_LIB"],
+      "sources": ["posix-cd", "posix-dirname", "sc1007"]
+    },
+    {
+      "rule": "Probe an interpreter by running the version check itself, as `ok()` does; use `command -v`, never `which`, when only presence matters. Keep `2>/dev/null` on probes.",
+      "why": "A name found on PATH is not a usable interpreter: on Windows `python`/`python3` can be Store/install-manager aliases that open the Store or install a runtime, and on any OS the found Python may be older than 3.11. `command -v` is the POSIX presence test (no output, non-zero status when not found); `which` is not specified.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry.sh ok()", ".githooks/pre-commit pick_python"],
+      "sources": ["posix-command", "python-windows"]
+    },
+    {
+      "rule": "End the launcher with `exec` of the real command and treat its exit status as the hook verdict: 0 lets the call proceed (JSON decides), 2 blocks it, anything else is a non-blocking failure. A shell path of the launcher must never exit 2, and `guard` with no usable Python must keep exiting 0.",
+      "why": "exec replaces the shell, so Python's exit status reaches Claude Code unchanged; a stray exit 2 (from the shell or the CLI) blocks the user's tool call. Fail-open for a missing Python is a stated design (hooks.json description).",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry.sh exec lines and `[ \"${1:-}\" = \"guard\" ] && exit 0`", "plugins/stackfoundry/hooks/hooks.json"],
+      "sources": ["cc-hooks", "posix-shell"]
+    },
+    {
+      "rule": "Keep `onFailure: continue` on the guard hook and keep the command in shell form `sh \"${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh\" guard` with the placeholder inside double quotes.",
+      "why": "On Windows hooks run in Git Bash, or in PowerShell when Git Bash is missing; there `sh` cannot start, and without Git Bash any exit other than 0 or 2 from a PreToolUse hook counts as a failure. onFailure decides whether that failure blocks every Edit/Bash call. Unquoted, a plugin root with spaces splits.",
+      "where": ["plugins/stackfoundry/hooks/hooks.json PreToolUse"],
+      "since": "onFailure requires Claude Code 2.1.295",
+      "sources": ["cc-hooks"]
+    },
+    {
+      "rule": "Under `set -u`, read optional positional parameters as `${1:-}` / `${2:-}`.",
+      "why": "Expanding an unset parameter under set -u is an error that aborts a non-interactive shell, so calling `scaffold <fixture>` without the second argument would fail.",
+      "where": ["fixtures/scaffold-lib.sh scaffold `${2:-}`", "plugins/stackfoundry/scripts/stackfoundry.sh `${1:-}`", ".githooks/pre-commit (set -u)"],
+      "sources": ["posix-shell"]
+    },
+    {
+      "rule": "Do not rely on set -e inside functions or on `A && B || C` as if-then-else; write explicit `|| { msg; exit 1; }` or an if block.",
+      "why": "set -e is ignored for every command of an AND-OR list but the last and in if/while conditions, including inside functions called from there, so a failure is silently skipped. With `A && B || C`, C also runs when B fails (SC2015).",
+      "where": ["fixtures/scaffold-lib.sh scaffold (explicit `|| { ...; exit 1; }`)", ".githooks/pre-commit (no set -e, explicit fail=1)"],
+      "sources": ["posix-shell", "sc2015"]
+    },
+    {
+      "rule": "Print data (paths, user input) with `printf '%s\\n' \"$x\"`, not echo.",
+      "why": "POSIX states echo cannot be used portably unless escape sequences are omitted and the first argument does not start with - followed by e, E or n, and encourages printf for new applications; a path containing backslashes (Windows paths) or starting with -n/-e may print differently across shells.",
+      "where": ["not used here yet (current echo calls print fixed text or fixed command names)"],
+      "sources": ["posix-echo"]
+    },
+    {
+      "rule": "Keep shell files LF: .gitattributes pins `*.sh`, `.githooks/*` and `plugins/stackfoundry/bin/*` to eol=lf; a new shell file outside these patterns gets its own line, and after changing .gitattributes run `git add --renormalize .`.",
+      "why": "A CR in a script is read literally (`exit 1\\r`, `then\\r`), giving 'command not found' or syntax errors on every OS; core.autocrlf on Windows would otherwise convert on checkout. Changing attributes does not rewrite files already committed.",
+      "where": [".gitattributes", ".editorconfig end_of_line = lf"],
+      "sources": ["gitattributes", "sc1017"]
+    },
+    {
+      "rule": "When a script on Windows passes paths to a native program (python.exe, py.exe), expect MSYS2 to rewrite POSIX-looking arguments; exclude arguments that only look like paths with MSYS2_ARG_CONV_EXCL, or convert explicitly with cygpath.",
+      "why": "The launcher's `exec python -I \"$cli\"` relies on this conversion to hand python.exe a Windows path; an argument such as `/foo` or `a:/b` that is not a path gets rewritten and the CLI sees a wrong value.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry.sh exec lines (\"$cli\" and \"$@\")"],
+      "sources": ["msys2-paths"]
+    },
+    {
+      "rule": "When a script parses path lists from git (ls-files, diff --name-only), use -z or `-c core.quotePath=false`.",
+      "why": "By default git C-quotes paths with bytes over 0x80, so a Cyrillic file name arrives as \"\\320\\220...\" and no longer matches the file on disk.",
+      "where": ["not used here yet"],
+      "sources": ["git-config-quotepath"]
+    }
+  ],
+  "bugCategories": [
+    {
+      "name": "unquoted-path-expansion",
+      "lookFor": "$var, $(cmd) or $@ outside double quotes in a command argument, test or assignment used later as an argument.",
+      "failure": "A path with spaces or glob characters splits into several arguments; the launcher or scaffold acts on a wrong or missing file.",
+      "severityHint": "blocker",
+      "sources": ["sc2086"]
+    },
+    {
+      "name": "bashism-in-sh",
+      "lookFor": "[[ ]], ==, local, source, arrays, $'...', echo -e, set -o pipefail in a file with #!/bin/sh or run as `sh file`.",
+      "failure": "Syntax error or wrong branch under dash or older shells while passing on the author's bash.",
+      "severityHint": "blocker",
+      "sources": ["sc3040", "posix-shell"]
+    },
+    {
+      "name": "masked-pipeline-failure",
+      "lookFor": "A command whose failure matters on the left of `|` in a sh script, relying on set -e.",
+      "failure": "The script continues after the left side failed and produces partial output (e.g. a fixture committed with files missing).",
+      "severityHint": "confirm",
+      "sources": ["posix-shell", "sc3040"]
+    },
+    {
+      "name": "unchecked-cd",
+      "lookFor": "`cd` not followed by `|| exit`/`|| return` nor used as a condition; `cd` inside $( ) without CDPATH=.",
+      "failure": "Later commands run in the wrong directory, or a captured directory contains an extra line from CDPATH output.",
+      "severityHint": "blocker",
+      "sources": ["sc2164", "posix-cd"]
+    },
+    {
+      "name": "hook-exit-misverdict",
+      "lookFor": "Any path through scripts/stackfoundry.sh that can exit 2, or exit non-zero for `guard` when Python is missing; edits removing `exec` or onFailure.",
+      "failure": "Every Edit/Bash tool call is blocked (exit 2 or onFailure block) or the guard silently stops guarding.",
+      "severityHint": "blocker",
+      "sources": ["cc-hooks"]
+    },
+    {
+      "name": "interpreter-probe-false-positive",
+      "lookFor": "Choosing python by `command -v` or `which` alone, without running a version check.",
+      "failure": "The script picks a Store alias or an old Python and fails or opens the Store instead of falling through to the next candidate.",
+      "severityHint": "confirm",
+      "sources": ["posix-command", "python-windows"]
+    },
+    {
+      "name": "crlf-script",
+      "lookFor": "A new shell file outside the .gitattributes eol=lf patterns, or `\\r` in a script (`cat -v` shows ^M).",
+      "failure": "'command not found' / syntax errors from literal CRs, typically only on clones made on Windows.",
+      "severityHint": "blocker",
+      "sources": ["sc1017", "gitattributes"]
+    },
+    {
+      "name": "msys-arg-mangling",
+      "lookFor": "Arguments to native Windows programs that begin with / or contain : and are not paths.",
+      "failure": "MSYS2 rewrites the argument to a Windows path; the program receives a wrong value on Windows only.",
+      "severityHint": "confirm",
+      "sources": ["msys2-paths"]
+    },
+    {
+      "name": "quoted-git-paths",
+      "lookFor": "Parsing newline-separated git path output without -z or core.quotePath=false.",
+      "failure": "Non-ASCII file names arrive octal-escaped in double quotes and are skipped or treated as missing.",
+      "severityHint": "confirm",
+      "sources": ["git-config-quotepath"]
+    }
+  ],
+  "testing": {
+    "layers": "Shell behaviour is proved end to end from Python unittest by running the real script under `sh` in a temp repo; the launcher's Python selection and fail-open path have no direct test yet.",
+    "harness": [
+      "tests/test_guard.py test_the_launcher_runs_the_guard (runs `sh scripts/stackfoundry.sh guard`)",
+      "tests/test_fixtures.py ScaffoldTests (sources fixtures/scaffold-lib.sh under `sh -c`)",
+      ".github/workflows/ci.yml unit job (ubuntu, windows, macos)"
+    ],
+    "commands": [
+      "python -m unittest discover -s tests -t .",
+      "sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry"
+    ],
+    "traps": [
+      "Both shell tests are skipUnless(shutil.which(\"sh\")): on a machine or runner where sh is not on PATH they skip silently and CI stays green; check the skip count on the Windows job.",
+      "No test runs the launcher with no usable Python (guard must exit 0, other subcommands 127) or from a directory whose path contains spaces or non-ASCII characters; add them by running the launcher with a PATH stripped of Python and from a temp dir named with a space and Cyrillic letters.",
+      "ShellCheck is not run anywhere (no config, no CI step). Recommended: `shellcheck -s sh` on the #!/bin/sh files and `-s bash` on the eval scaffolds; flag for /stackfoundry:scaffold-test-harness."
+    ],
+    "sources": ["shellcheck-releases", "sc2086", "cc-hooks"]
+  },
+  "security": [
+    {
+      "note": "The launcher runs Python with -I so a module planted in the user's repo is not imported; keep -I on every exec branch. Source files with `.` only by a path containing a slash (as the scaffolds build from $0): a bare name is searched on PATH.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry.sh exec lines", "plugins/stackfoundry/evals/*/scaffold.sh `. \"$SCAFFOLD_LIB\"`"],
+      "sources": ["posix-shell"]
+    }
+  ],
+  "performance": [
+    {
+      "note": "The guard runs before every Edit/Write/Bash call with a 10 s timeout and each probe starts a Python process; a timed-out PreToolUse hook does not block, so a slow probe chain silently disables the guard. Keep the fastest likely candidate first and add no extra probes.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry.sh ok() chain", "plugins/stackfoundry/hooks/hooks.json timeout"],
+      "sources": ["cc-hooks"]
+    }
+  ],
+  "upgrade": {
+    "pins": ["None: shebangs #!/bin/sh (launcher, pre-commit, scaffold-lib) and #!/bin/bash (eval scaffolds)."],
+    "lockStep": ["plugins/stackfoundry/hooks/hooks.json invocation `sh .../scripts/stackfoundry.sh guard`", "the Python floor 3.11 in scripts/stackfoundry.sh ok() and .githooks/pre-commit pick_python must stay equal"],
+    "releaseNotes": ["https://github.com/koalaman/shellcheck/releases"],
+    "migrationGuides": ["https://pubs.opengroup.org/onlinepubs/9799919799/utilities/V3_chap02.html"],
+    "deprecationsInUse": [
+      "`py -3` (scripts/stackfoundry.sh, .githooks/pre-commit): the -3 short form belongs to the legacy py launcher, deprecated since Python 3.14 in favour of the Python install manager, which accepts tags starting with 3 without `V:` for compatibility."
+    ]
+  },
+  "sources": {
+    "posix-shell": {"url": "https://pubs.opengroup.org/onlinepubs/9799919799/utilities/V3_chap02.html", "title": "Shell Command Language (exit status 127/126, field splitting, set -e/-u/-o pipefail, exec, dot)", "version": "POSIX.1-2024 Issue 8", "accessed": "2026-11-09"},
+    "posix-command": {"url": "https://pubs.opengroup.org/onlinepubs/9799919799/utilities/command.html", "title": "command utility", "version": "POSIX.1-2024 Issue 8", "accessed": "2026-11-09"},
+    "posix-echo": {"url": "https://pubs.opengroup.org/onlinepubs/9799919799/utilities/echo.html", "title": "echo utility, application usage", "version": "POSIX.1-2024 Issue 8", "accessed": "2026-11-09"},
+    "posix-cd": {"url": "https://pubs.opengroup.org/onlinepubs/9799919799/utilities/cd.html", "title": "cd utility (CDPATH output)", "version": "POSIX.1-2024 Issue 8", "accessed": "2026-11-09"},
+    "posix-dirname": {"url": "https://pubs.opengroup.org/onlinepubs/9799919799/utilities/dirname.html", "title": "dirname utility", "version": "POSIX.1-2024 Issue 8", "accessed": "2026-11-09"},
+    "sc2086": {"url": "https://www.shellcheck.net/wiki/SC2086", "title": "SC2086 Double quote to prevent globbing and word splitting", "version": "ShellCheck wiki (current)", "accessed": "2026-11-09"},
+    "sc2164": {"url": "https://www.shellcheck.net/wiki/SC2164", "title": "SC2164 Use cd ... || exit in case cd fails", "version": "ShellCheck wiki (current)", "accessed": "2026-11-09"},
+    "sc3040": {"url": "https://www.shellcheck.net/wiki/SC3040", "title": "SC3040 In POSIX sh, set option is undefined (pipefail, POSIX.1-2024, dash 0.5.13)", "version": "ShellCheck wiki (current)", "accessed": "2026-11-09"},
+    "sc1007": {"url": "https://www.shellcheck.net/wiki/SC1007", "title": "SC1007 Remove space after = if trying to assign a value", "version": "ShellCheck wiki (current)", "accessed": "2026-11-09"},
+    "sc1017": {"url": "https://www.shellcheck.net/wiki/SC1017", "title": "SC1017 Literal carriage return", "version": "ShellCheck wiki (current)", "accessed": "2026-11-09"},
+    "sc2015": {"url": "https://www.shellcheck.net/wiki/SC2015", "title": "SC2015 A && B || C is not if-then-else", "version": "ShellCheck wiki (current)", "accessed": "2026-11-09"},
+    "shellcheck-releases": {"url": "https://github.com/koalaman/shellcheck/releases", "title": "ShellCheck releases", "version": "v0.11.0 (2025-08)", "accessed": "2026-11-09"},
+    "cc-hooks": {"url": "https://code.claude.com/docs/en/hooks", "title": "Claude Code hooks reference (exit codes, Windows shell, timeout, onFailure)", "version": "current (onFailure from 2.1.295)", "accessed": "2026-11-09"},
+    "msys2-paths": {"url": "https://www.msys2.org/docs/filesystem-paths/", "title": "MSYS2 filesystem paths and argument conversion", "version": "current", "accessed": "2026-11-09"},
+    "python-windows": {"url": "https://docs.python.org/3/using/windows.html", "title": "Using Python on Windows (install manager, aliases, legacy py launcher)", "version": "Python 3.15.2 docs", "accessed": "2026-11-09"},
+    "gitattributes": {"url": "https://git-scm.com/docs/gitattributes", "title": "gitattributes: text, eol, renormalize", "version": "current", "accessed": "2026-11-09"},
+    "git-config-quotepath": {"url": "https://git-scm.com/docs/git-config", "title": "git-config core.quotePath", "version": "current", "accessed": "2026-11-09"}
+  },
+  "notReached": [
+    "Bash manual for the eval scaffolds (#!/bin/bash, set -euo pipefail): not researched; the scaffolds only source scaffold-lib.sh, which is covered as POSIX sh.",
+    "Apple documentation on macOS /bin/sh (bash 3.2 / zsh in sh mode): not read; macOS behaviour rests on the POSIX rules and CI's macos job.",
+    "Official Claude Code docs on the path format of CLAUDE_PLUGIN_ROOT on Windows: the hooks page does not state it; only issue-tracker reports (backslash stripping, closed early 2026) were found."
+  ],
+  "questions": [
+    ".githooks/pre-commit runs `$py -m unittest` unquoted so `py -3` splits (SC2086); scripts/stackfoundry.sh uses the POSIX alternative of passing the command as function arguments. Keep the hook as is, or align it with the launcher?",
+    "fixtures/scaffold-lib.sh copy_tree pipes `(cd \"$1\" && find ...)` into `while read` under set -e without pipefail: a failure on the left is masked. Accept (fixtures are controlled) or restructure?",
+    "With the Python install manager on Windows and no runtime installed, a launch command may try to install a runtime; whether `py -3` / the `python` alias does so inside the 10 s guard timeout is not documented. Worth a Windows check of the launcher's probe chain?",
+    "Add a ShellCheck step to CI (no config exists today)?"
+  ]
+}

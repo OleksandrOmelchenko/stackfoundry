@@ -6,7 +6,15 @@ argument-hint: "[--targets a,b]"
 
 # Sync
 
-Keeps `.claude/stackfoundry/` true as the repo changes. `init` builds the profile once; this skill finds where it
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
+Keeps `.stackfoundry/` true as the repo changes. `init` builds the profile once; this skill finds where it
 drifted and proposes the smallest change that fixes it. Plugin template changes are `/stackfoundry:upgrade`'s job.
 
 ## 1. Compare

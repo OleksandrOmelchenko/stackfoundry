@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        # The supported floor (bin/stackfoundry) and the newest release.
+        # The supported floor (scripts/stackfoundry.sh) and the newest release.
         python: ["3.11", "3.x"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -33,7 +33,7 @@ jobs:
         run: python -m unittest discover -s tests -t . -v
       - name: Plugin plumbing
         shell: bash
-        run: sh plugins/stackfoundry/bin/stackfoundry verify-plumbing plugins/stackfoundry
+        run: sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry
 
   validate:
     name: Validate manifests

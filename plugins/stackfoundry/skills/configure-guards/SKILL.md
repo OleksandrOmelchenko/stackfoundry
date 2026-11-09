@@ -1,14 +1,22 @@
 ---
 name: configure-guards
-description: View and edit the guard hook's rules in .claude/stackfoundry/guards.json — generated-file globs, denied or ask-first commands, the git write policy — testing each rule on sample hook events before saving.
+description: View and edit the guard hook's rules in .stackfoundry/guards.json — generated-file globs, denied or ask-first commands, the git write policy — testing each rule on sample hook events before saving.
 argument-hint: "[show | generated | commands | git | audit]"
 disable-model-invocation: true
 ---
 
 # Configure guards
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 The plugin's `PreToolUse` hook runs `stackfoundry guard` before every `Edit`, `Write`, `MultiEdit`,
-`NotebookEdit`, `Bash` and `PowerShell` call. It reads `.claude/stackfoundry/guards.json` and denies a hand-edit
+`NotebookEdit`, `Bash` and `PowerShell` call. It reads `.stackfoundry/guards.json` and denies a hand-edit
 of a generated file, denies or asks about a command that matches a pattern, and applies the git write policy. This
 skill shows that file, proposes what is missing, and changes it, **testing every rule before it is saved**.
 
@@ -45,7 +53,7 @@ Schema: `${CLAUDE_PLUGIN_ROOT}/reference/schemas/guards.schema.json`. Worked exa
      case varies; escape backslashes for JSON; avoid nested quantifiers. `decision` is `deny` (never right here) or
      `ask` (the owner's call); `reason` says what to do instead; `tools` limits it to `Bash` or `PowerShell`.
    - `git.writes`: `allow`, `ask` or `deny`, with a `reason` naming the policy.
-4. **Test before saving.** Make a scratch project (`mktemp -d`) holding `.claude/stackfoundry/guards.json` = the
+4. **Test before saving.** Make a scratch project (`mktemp -d`) holding `.stackfoundry/guards.json` = the
    draft. For each new or changed rule write at least one event that must trigger it and one near miss that must
    not, plus one positive case per existing rule as a regression check. Write each event to a file with `Write`
    (a command test written inline would carry the very pattern the live guard blocks), then run:

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/OleksandrOmelchenko/stackfoundry/schemas/targets.schema.json",
-  "title": "stackfoundry targets (.claude/stackfoundry/targets.json)",
+  "title": "stackfoundry targets (.stackfoundry/targets.json)",
   "description": "The repo's target map: every deployable or testable unit, its stack of packs, how it is gated and tested, and how changed paths map to it. Every skill reads its facts from here; no skill restates them.",
   "type": "object",
   "required": ["schemaVersion", "targets"],

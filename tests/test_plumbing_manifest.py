@@ -3,19 +3,20 @@ import json
 import unittest
 
 from tests._support import TempRepo, run_cli, write
-from stackfoundry import manifest
+from stackfoundry import manifest, preamble
 from stackfoundry.plumbing import check
 
-GOOD_SKILL = "---\nname: good\ndescription: Does a thing. Use when asked.\n---\nRun `/stackfoundry:good`. " \
-             "See [ref](${CLAUDE_PLUGIN_ROOT}/reference/x.md).\n"
-GOOD_AGENT = "---\nname: hunter\ndescription: Read-only hunter.\ntools: Read, Grep, WebSearch\n---\n" \
-             "## Tooling\n- `WebSearch` for advisories.\n- Never `Edit` anything.\n"
+GOOD_SKILL = "---\nname: good\ndescription: Does a thing. Use when asked.\n---\n# Good\n\n" + preamble.SKILL + \
+             "\nRun `/stackfoundry:good`. See [ref](${CLAUDE_PLUGIN_ROOT}/reference/x.md).\n"
+GOOD_AGENT = "---\nname: hunter\ndescription: Read-only hunter.\ntools: Read, Grep, WebSearch\n---\n# Hunter\n\n" + \
+             preamble.AGENT + "\n## Tooling\n- `WebSearch` for advisories.\n- Never `Edit` anything.\n"
 
 
 class PlumbingTests(unittest.TestCase):
     def test_a_clean_plugin_passes(self):
         files = {".claude-plugin/plugin.json": "{}", "skills/good/SKILL.md": GOOD_SKILL,
-                 "agents/hunter.md": GOOD_AGENT, "reference/x.md": "x"}
+                 "agents/hunter.md": GOOD_AGENT, "reference/x.md": "x", "reference/clients.md": "x",
+                 "scripts/stackfoundry.sh": "", "scripts/stackfoundry.ps1": ""}
         with TempRepo(files) as root:
             rep = check(root)
         self.assertEqual(rep.errors, [])
@@ -29,12 +30,13 @@ class PlumbingTests(unittest.TestCase):
             "skills/dangling/SKILL.md": "---\nname: dangling\ndescription: x\n---\nThen `/stackfoundry:nope`. "
                                         "Dispatch `Agent` with subagent_type: \"ghost\". [a](missing.md)\n",
             "agents/hunter.md": GOOD_AGENT.replace("Read, Grep, WebSearch", "Read, Grep, Edit"),
+            "skills/No_Caps/SKILL.md": "---\nname: No_Caps\ndescription: x\n---\n# No caps\n",
         }
         with TempRepo(files) as root:
             errors = " | ".join(check(root).errors)
         for needle in ("reference/x.md does not exist", "does not match the folder", "251 characters",
                        "/stackfoundry:nope", "'ghost'", "missing.md", "read-only but granted Edit",
-                       "lacks it"):
+                       "lacks it", "single hyphens", "portable-form preamble"):
             self.assertIn(needle, errors)
 
     def test_the_shipped_plugin_is_clean(self):
@@ -59,10 +61,10 @@ class ManifestTests(unittest.TestCase):
             self.assertEqual(rows["d.md"]["action"], "skip (materialized)")
 
             # Simulate a newer template version: untouched -> replace, edited -> ask.
-            data = json.loads((root / ".claude/stackfoundry/manifest.lock.json").read_text(encoding="utf-8"))
+            data = json.loads((root / ".stackfoundry/manifest.lock.json").read_text(encoding="utf-8"))
             for entry in data["files"].values():
                 entry["templateVersion"] = "0"
-            (root / ".claude/stackfoundry/manifest.lock.json").write_text(json.dumps(data), encoding="utf-8")
+            (root / ".stackfoundry/manifest.lock.json").write_text(json.dumps(data), encoding="utf-8")
             rows = {r["file"]: r for r in manifest.diff(root)}
             self.assertEqual(rows["a.md"]["action"], "replace")
             self.assertEqual(rows["b.md"]["action"], "three-way merge, ask")

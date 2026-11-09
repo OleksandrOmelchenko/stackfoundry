@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import unittest
 
-from tests._support import LAUNCHER, TempRepo, run_cli, write
+from tests._support import LAUNCHER, LAUNCHER_PS1, TempRepo, run_cli, write
 
 GUARDS = {
     "schemaVersion": 1,
@@ -22,7 +22,7 @@ def event(tool, **tool_input):
 class GuardTests(unittest.TestCase):
     def run_guard(self, root, payload, guards=GUARDS):
         if guards is not None:
-            write(root, {".claude/stackfoundry/guards.json": json.dumps(guards)})
+            write(root, {".stackfoundry/guards.json": json.dumps(guards)})
         proc = run_cli(["guard"], stdin=payload, env={"CLAUDE_PROJECT_DIR": str(root)})
         self.assertEqual(proc.returncode, 0, proc.stderr)
         return json.loads(proc.stdout)["hookSpecificOutput"] if proc.stdout.strip() else None
@@ -64,17 +64,17 @@ class GuardTests(unittest.TestCase):
     def test_fails_open(self):
         with TempRepo() as root:
             self.assertIsNone(self.run_guard(root, event("Bash", command="git push"), guards=None))
-            write(root, {".claude/stackfoundry/guards.json": "{not json"})
+            write(root, {".stackfoundry/guards.json": "{not json"})
             self.assertIsNone(self.run_guard(root, event("Bash", command="git push"), guards=None))
             self.assertIsNone(self.run_guard(root, "garbage", guards=GUARDS))
 
     def test_check_reports_rules_the_hook_would_silently_skip(self):
         with TempRepo() as root:
-            write(root, {".claude/stackfoundry/guards.json": json.dumps(GUARDS)})
+            write(root, {".stackfoundry/guards.json": json.dumps(GUARDS)})
             self.assertEqual(run_cli(["guard", "--check", "--root", str(root)]).returncode, 0)
             bad = {"schemaVersion": 1, "commands": [{"pattern": "(unclosed", "decision": "block"}],
                    "git": {"writes": "maybe"}}
-            write(root, {".claude/stackfoundry/guards.json": json.dumps(bad)})
+            write(root, {".stackfoundry/guards.json": json.dumps(bad)})
             proc = run_cli(["guard", "--check", "--root", str(root)])
         self.assertEqual(proc.returncode, 1)
         for needle in ("does not compile", "deny or ask", "give a reason", "git.writes"):
@@ -89,10 +89,20 @@ class GuardTests(unittest.TestCase):
     @unittest.skipUnless(shutil.which("sh"), "sh not available")
     def test_the_launcher_runs_the_guard(self):
         with TempRepo() as root:
-            write(root, {".claude/stackfoundry/guards.json": json.dumps(GUARDS)})
+            write(root, {".stackfoundry/guards.json": json.dumps(GUARDS)})
             proc = subprocess.run(["sh", str(LAUNCHER), "guard"], input=event("Bash", command="git push"),
                                   capture_output=True, text=True, encoding="utf-8", env={**__import__("os").environ,
                                                                        "CLAUDE_PROJECT_DIR": str(root)})
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(json.loads(proc.stdout)["hookSpecificOutput"]["permissionDecision"], "ask")
+
+    @unittest.skipUnless(shutil.which("pwsh"), "pwsh not available")
+    def test_the_powershell_launcher_runs_the_guard(self):
+        with TempRepo() as root:
+            write(root, {".stackfoundry/guards.json": json.dumps(GUARDS)})
+            proc = subprocess.run(["pwsh", "-NoProfile", "-File", str(LAUNCHER_PS1), "guard"],
+                                  input=event("Bash", command="git push"), capture_output=True, text=True,
+                                  encoding="utf-8", env={**__import__("os").environ, "CLAUDE_PROJECT_DIR": str(root)})
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual(json.loads(proc.stdout)["hookSpecificOutput"]["permissionDecision"], "ask")
 

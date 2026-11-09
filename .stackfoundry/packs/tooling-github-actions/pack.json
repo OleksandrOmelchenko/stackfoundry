@@ -1,0 +1,224 @@
+{
+  "schemaVersion": 1,
+  "id": "tooling-github-actions",
+  "layer": "tooling",
+  "title": "GitHub Actions (CI workflows, action pins, Dependabot for actions)",
+  "researchedAt": "2026-11-09",
+  "versions": [
+    {"version": "actions/checkout v7.0.1 (3d3c42e5aac5ba805825da76410c181273ba90b1)", "pinnedIn": ".github/workflows/ci.yml jobs unit, validate", "latest": "v7.0.1"},
+    {"version": "actions/setup-python v7.1.0 (6d4fd22b20465ccc0f7354476588e8df7c9ca0e0)", "pinnedIn": ".github/workflows/ci.yml job unit", "latest": "v7.1.0"},
+    {"version": "actions/setup-node v7.1.0 (949feb2413d6458794dcd2491c4babbbce0c15c1)", "pinnedIn": ".github/workflows/ci.yml job validate", "latest": "v7.1.0"},
+    {"version": "@anthropic-ai/claude-code 2.1.307", "pinnedIn": ".github/workflows/ci.yml job validate, step 'Install Claude Code CLI'", "latest": "2.1.319"},
+    {"version": "runners ubuntu-latest (Ubuntu 24.04), windows-latest (Windows Server 2025), macos-latest (macOS 26 arm64)", "pinnedIn": ".github/workflows/ci.yml jobs unit (matrix.os), validate", "latest": "ubuntu-26.04 available but not yet ubuntu-latest"}
+  ],
+  "targets": ["cli", "plugin"],
+  "rulebookPaths": [".github/**"],
+  "rules": [
+    {
+      "rule": "Keep every `permissions:` block explicit and read-only unless a job needs a write scope; grant a write scope at job level for that job only, never at workflow level. Setting any scope sets every unlisted scope to none.",
+      "why": "A broad GITHUB_TOKEN turns any compromised step (a malicious dependency's postinstall, an injected command) into a write to the repository; omitting a needed scope makes the job fail with 403 because unlisted scopes become none.",
+      "where": [".github/workflows/ci.yml top-level permissions (contents: read)"],
+      "repoConvention": "The repo sets `permissions: contents: read` once at workflow level; zizmor's excessive-permissions audit prefers `permissions: {}` at workflow level plus per-job grants. Both jobs only read, so follow the repo; move to per-job grants as soon as one job needs more.",
+      "sources": ["gh-secure-use", "gh-workflow-syntax", "zizmor-audits"]
+    },
+    {
+      "rule": "Run code from pull requests only under `pull_request`, never under `pull_request_target` or `workflow_run`; if a privileged trigger is ever needed (labelling, commenting), it must not check out or execute the PR's code, and must not set `allow-unsafe-pr-checkout: true` on actions/checkout.",
+      "why": "pull_request_target and workflow_run run in the base repository's context with its token, secrets and caches; checking out fork code there is a 'pwn request' that can take over the repo. Under `pull_request` a fork gets a read-only token and no secrets. Since checkout v7 the action refuses fork checkout under these triggers unless the opt-in input is set.",
+      "where": [".github/workflows/ci.yml on: pull_request"],
+      "since": "actions/checkout v7.0.0 (refusal of fork checkout by default)",
+      "sources": ["gh-secure-use", "gh-events", "checkout-v7", "checkout-action-yml", "zizmor-audits"]
+    },
+    {
+      "rule": "Never put a `${{ }}` expression carrying event data (anything ending in title, body, message, head_ref, ref, label, name, email, default_branch, page_name) inside a `run:` script. Pass it through `env:` and reference it as a quoted shell variable (\"$TITLE\"), or pass it as an action input.",
+      "why": "Expressions are substituted into the script text before the shell runs, so a crafted branch name or PR title breaks out of quoting and executes commands on the runner (recent advisories: command injection via branch names and issue titles).",
+      "where": [".github/workflows/ci.yml: no run step uses an expression today; expressions appear only in concurrency, name, runs-on and with (not shell contexts)"],
+      "sources": ["gh-script-injection", "gh-secure-use", "zizmor-audits", "gh-advisories"]
+    },
+    {
+      "rule": "Pin every action by full 40-character commit SHA with a `# vX.Y.Z` comment, take the SHA from the action's own repository (not a fork), and keep the same SHA for the same action in every job.",
+      "why": "A tag or branch can be moved to malicious code; a SHA cannot without a SHA-1 collision. A SHA copied from a fork, or two jobs on different SHAs, defeats review of what actually runs.",
+      "where": [".github/workflows/ci.yml jobs unit and validate (all three actions pinned; SHAs verified against the release tags on 2026-11-09)"],
+      "sources": ["gh-secure-use", "checkout-releases", "setup-python-releases", "setup-node-releases"]
+    },
+    {
+      "rule": "Set `persist-credentials: false` on actions/checkout unless a later step runs authenticated git; when a step does need it, set `true` explicitly.",
+      "why": "By default checkout leaves the token configured for git (since v6 in a file under $RUNNER_TEMP rather than .git/config) for the rest of the job, where any later step, including npm postinstall scripts, can read it.",
+      "where": [".github/workflows/ci.yml jobs unit and validate (both checkouts use the default true)"],
+      "repoConvention": "The repo uses the default (credentials persisted). The token is read-only (contents: read) and fork PRs get a read-only token, so the exposure is low; recorded as a question rather than a defect.",
+      "sources": ["checkout-action-yml", "checkout-readme", "zizmor-audits"]
+    },
+    {
+      "rule": "Keep the Claude Code CLI version pinned exactly in the install step and bump it by hand: Dependabot's github-actions ecosystem does not see npm installs inside `run:`.",
+      "why": "An unpinned CLI can change what `claude plugin validate --strict` accepts between two runs of the same commit; a forgotten pin silently drifts behind (2.1.307 pinned, 2.1.319 latest).",
+      "where": [".github/workflows/ci.yml job validate, step 'Install Claude Code CLI'", ".github/dependabot.yml (package-ecosystem: github-actions only)"],
+      "sources": ["npm-claude-latest", "npm-claude-2-1-307", "dependabot-actions"]
+    },
+    {
+      "rule": "Give every concurrency group a workflow-specific prefix and cancel in progress only for pull-request runs.",
+      "why": "Group names are global across workflows and case-insensitive, so a bare `${{ github.ref }}` group lets one workflow cancel another; cancelling on main would leave main without a verdict.",
+      "where": [".github/workflows/ci.yml concurrency (group ci-${{ github.ref }}, cancel-in-progress only for pull_request)"],
+      "sources": ["gh-workflow-syntax"]
+    },
+    {
+      "rule": "Never use self-hosted runners for this public repository's workflows.",
+      "why": "Any user can open a PR whose code runs on the runner and persist on or pivot from that machine.",
+      "where": ["not used here yet (all jobs use GitHub-hosted runners)"],
+      "sources": ["gh-secure-use"]
+    }
+  ],
+  "bugCategories": [
+    {
+      "name": "expression-injection-in-run",
+      "lookFor": "A `${{ github.event.* }}`, `github.head_ref`, `github.ref` or other attacker-controllable context interpolated directly in a `run:` block (or in a script input of an action such as github-script).",
+      "failure": "Arbitrary command execution on the runner with the job's token and secrets.",
+      "severityHint": "blocker",
+      "sources": ["gh-script-injection", "zizmor-audits"]
+    },
+    {
+      "name": "privileged-trigger-runs-pr-code",
+      "lookFor": "`pull_request_target`, `workflow_run` or `issue_comment` triggers together with a checkout of the PR head, `allow-unsafe-pr-checkout: true`, or use of artifacts produced by a PR run.",
+      "failure": "Fork code runs with write token and secrets: repository takeover, secret exfiltration, cache poisoning of main.",
+      "severityHint": "blocker",
+      "sources": ["gh-secure-use", "gh-events", "checkout-action-yml", "zizmor-audits"]
+    },
+    {
+      "name": "unpinned-or-mismatched-action-ref",
+      "lookFor": "`uses:` with a tag or branch instead of a 40-char SHA; a SHA whose `# vX` comment does not match the tag it resolves to; the same action at different SHAs in different jobs; a SHA from a fork.",
+      "failure": "A moved tag silently runs new (possibly malicious) code; reviewers approve a version that is not the one that runs.",
+      "severityHint": "confirm",
+      "sources": ["gh-secure-use"]
+    },
+    {
+      "name": "token-scope-widening",
+      "lookFor": "`write` scopes or `write-all` at workflow level, a removed `permissions:` block (falls back to repository default), or a new job that writes without a job-level grant.",
+      "failure": "Excess write access for every step; or a job that fails with 403 because unlisted scopes became none.",
+      "severityHint": "confirm",
+      "sources": ["gh-workflow-syntax", "gh-secure-use"]
+    },
+    {
+      "name": "persisted-credentials-exposed",
+      "lookFor": "actions/checkout without `persist-credentials: false` followed by third-party code (npm/pip installs with lifecycle scripts) or an upload-artifact of the workspace.",
+      "failure": "The job token is readable by later steps or leaks in an artifact.",
+      "severityHint": "suggestion",
+      "sources": ["checkout-readme", "zizmor-audits"]
+    }
+  ],
+  "testing": {
+    "layers": "A workflow change is proved only by the CI run it triggers on the pull request: check that every matrix leg ran and the expected jobs appear. Static audit of the YAML (security and syntax) is the cheap layer before that; the repo has none yet.",
+    "harness": [".github/workflows/ci.yml (the workflow itself is the harness; no workflow linter in the repo)"],
+    "commands": [
+      "python -m unittest discover -s tests -t . -v (what job unit runs)",
+      "sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry",
+      "claude plugin validate --strict . && claude plugin validate --strict plugins/stackfoundry (what job validate runs)"
+    ],
+    "traps": [
+      "`-latest` labels move to a new OS version over 1-2 months after an announcement (ubuntu-26.04 is already published); a green run can turn red with no repo change. Pin an OS version on the matrix leg if the Python 3.11 floor must stay reproducible.",
+      "Matrix job order is not guaranteed; never make one leg depend on another's side effects.",
+      "A fork PR from a first-time contributor may wait for maintainer approval before CI runs: a missing check is not a pass."
+    ],
+    "sources": ["runner-images", "gh-workflow-syntax", "gh-events", "zizmor-audits"]
+  },
+  "wiring": [
+    {
+      "check": "Dependabot's github-actions entry uses `directory: /` so it scans .github/workflows; the single `actions` group bumps all actions in one PR so the shared checkout SHA stays identical across jobs.",
+      "failure": "A different directory makes Dependabot miss the workflows; ungrouped PRs can leave jobs on different SHAs.",
+      "where": [".github/dependabot.yml updates[0] (directory /, groups.actions patterns *)"],
+      "sources": ["dependabot-actions", "dependabot-options"]
+    },
+    {
+      "check": "The commands the CI jobs run match the 'Checks before calling a change done' list in .claude/CLAUDE.md.",
+      "failure": "Local checks and CI diverge, so a change is called done that CI rejects (or CI stops checking something the docs promise).",
+      "where": [".github/workflows/ci.yml jobs unit, validate", ".claude/CLAUDE.md 'Checks before calling a change done'"],
+      "sources": ["gh-workflow-syntax"]
+    }
+  ],
+  "security": [
+    {
+      "note": "Dependabot creates alerts only for actions referenced by a semantic version, not for SHA-pinned ones. With every action SHA-pinned, vulnerability awareness rests on Dependabot version updates (weekly) and on watching the advisory database; no advisory exists for actions/checkout, setup-python or setup-node as of 2026-11-09.",
+      "where": [".github/dependabot.yml", ".github/workflows/ci.yml"],
+      "sources": ["gh-secure-use", "gh-advisories"]
+    },
+    {
+      "note": "Workflow dependency lockfiles (.github/workflows/actions.lock, generated by `gh actions-lock`) pin actions and their transitive action dependencies and verify the source repository at run time; GitHub calls this stronger than SHA pinning and Dependabot regenerates entries. Status: public preview per GitHub's changelog of 2026-10-14; InfoQ (2026-11-06) reports GA on 2026-10-28, while the GitHub docs page read still does not state a status. Not adopted here.",
+      "where": ["not used here yet"],
+      "sources": ["gh-lockfiles-concept", "gh-lockfiles-howto", "gh-lockfiles-changelog", "infoq-lockfiles-ga"]
+    },
+    {
+      "note": "Dependabot applies a default 3-day cooldown to version updates (github-actions supports only `default-days`); raising it gives the ecosystem time to detect a compromised release before it reaches a PR here.",
+      "where": [".github/dependabot.yml (no cooldown key: default 3 days)"],
+      "sources": ["dependabot-options"]
+    },
+    {
+      "note": "`npm install -g @anthropic-ai/claude-code@2.1.307` runs the package's postinstall script (`node install.cjs`) in a job whose checkout persisted the token; keep the job's token read-only.",
+      "where": [".github/workflows/ci.yml job validate"],
+      "sources": ["npm-claude-2-1-307", "checkout-readme"]
+    }
+  ],
+  "upgrade": {
+    "pins": [
+      ".github/workflows/ci.yml: actions/checkout@3d3c42e5... # v7.0.1 (x2: unit, validate) - latest",
+      ".github/workflows/ci.yml: actions/setup-python@6d4fd22b... # v7.1.0 - latest",
+      ".github/workflows/ci.yml: actions/setup-node@949feb24... # v7.1.0 - latest",
+      ".github/workflows/ci.yml: @anthropic-ai/claude-code@2.1.307 - latest 2.1.319, manual bump",
+      ".github/workflows/ci.yml: matrix python ['3.11', '3.x'] - 3.11 is the floor declared by scripts/stackfoundry.sh",
+      ".github/workflows/ci.yml: node-version lts/* - resolved at run time, unpinned"
+    ],
+    "lockStep": [
+      "actions/checkout SHA in jobs unit and validate (Dependabot group 'actions' bumps both)",
+      "Claude Code CLI pin in ci.yml with the `claude plugin validate --strict` checks in .claude/CLAUDE.md",
+      "Python floor '3.11' in the matrix with the floor enforced by plugins/stackfoundry/scripts/stackfoundry.sh"
+    ],
+    "releaseNotes": [
+      "https://github.com/actions/checkout/releases",
+      "https://github.com/actions/setup-python/releases",
+      "https://github.com/actions/setup-node/releases",
+      "https://github.com/actions/runner-images"
+    ],
+    "migrationGuides": [
+      "https://github.com/actions/checkout/releases/tag/v7.0.0",
+      "https://github.com/actions/setup-python/releases/tag/v7.0.0",
+      "https://github.com/actions/setup-node/releases/tag/v7.0.0"
+    ],
+    "deprecationsInUse": []
+  },
+  "sources": {
+    "gh-secure-use": {"url": "https://docs.github.com/en/actions/reference/security/secure-use", "title": "Secure use reference (GitHub Actions)", "version": "GitHub.com, current", "accessed": "2026-11-09"},
+    "gh-script-injection": {"url": "https://docs.github.com/en/actions/concepts/security/script-injections", "title": "Script injections", "version": "GitHub.com, current", "accessed": "2026-11-09"},
+    "gh-events": {"url": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows", "title": "Events that trigger workflows", "version": "GitHub.com, current", "accessed": "2026-11-09"},
+    "gh-workflow-syntax": {"url": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax", "title": "Workflow syntax for GitHub Actions", "version": "GitHub.com, current", "accessed": "2026-11-09"},
+    "gh-lockfiles-concept": {"url": "https://docs.github.com/en/actions/concepts/security/workflow-dependency-lockfiles", "title": "Workflow dependency lockfiles", "version": "GitHub.com, current", "accessed": "2026-11-09"},
+    "gh-lockfiles-howto": {"url": "https://docs.github.com/en/actions/how-tos/secure-your-work/lock-workflow-dependencies", "title": "Lock workflow dependencies", "version": "GitHub.com, current", "accessed": "2026-11-09"},
+    "gh-lockfiles-changelog": {"url": "https://github.blog/changelog/2026-10-14-github-actions-workflow-lockfiles-in-public-preview/", "title": "GitHub Actions workflow lockfiles in public preview", "version": "2026-10-14", "accessed": "2026-11-09"},
+    "infoq-lockfiles-ga": {"url": "https://infoq.com/news/2026/11/github-actions-lockfiles-ga", "title": "InfoQ: GitHub Actions Lockfiles Reach GA to Secure Workflow Dependencies (secondary)", "version": "2026-11-06", "accessed": "2026-11-09"},
+    "checkout-releases": {"url": "https://github.com/actions/checkout/releases", "title": "actions/checkout releases", "version": "v7.0.1", "accessed": "2026-11-09"},
+    "checkout-v7": {"url": "https://github.com/actions/checkout/releases/tag/v7.0.0", "title": "actions/checkout v7.0.0", "version": "v7.0.0", "accessed": "2026-11-09"},
+    "checkout-v701": {"url": "https://github.com/actions/checkout/releases/tag/v7.0.1", "title": "actions/checkout v7.0.1", "version": "v7.0.1", "accessed": "2026-11-09"},
+    "checkout-action-yml": {"url": "https://raw.githubusercontent.com/actions/checkout/main/action.yml", "title": "actions/checkout action.yml", "version": "main (v7, node24)", "accessed": "2026-11-09"},
+    "checkout-readme": {"url": "https://raw.githubusercontent.com/actions/checkout/main/README.md", "title": "actions/checkout README", "version": "main (v7)", "accessed": "2026-11-09"},
+    "setup-python-releases": {"url": "https://github.com/actions/setup-python/releases", "title": "actions/setup-python releases", "version": "v7.1.0", "accessed": "2026-11-09"},
+    "setup-python-v7": {"url": "https://github.com/actions/setup-python/releases/tag/v7.0.0", "title": "actions/setup-python v7.0.0", "version": "v7.0.0", "accessed": "2026-11-09"},
+    "setup-node-releases": {"url": "https://github.com/actions/setup-node/releases", "title": "actions/setup-node releases", "version": "v7.1.0", "accessed": "2026-11-09"},
+    "setup-node-v7": {"url": "https://github.com/actions/setup-node/releases/tag/v7.0.0", "title": "actions/setup-node v7.0.0", "version": "v7.0.0", "accessed": "2026-11-09"},
+    "runner-images": {"url": "https://github.com/actions/runner-images", "title": "actions/runner-images: available images and -latest labels", "version": "current", "accessed": "2026-11-09"},
+    "dependabot-actions": {"url": "https://docs.github.com/en/code-security/dependabot/working-with-dependabot/keeping-your-actions-up-to-date-with-dependabot", "title": "Keeping your actions up to date with Dependabot", "version": "GitHub.com, current", "accessed": "2026-11-09"},
+    "dependabot-options": {"url": "https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference", "title": "Dependabot options reference", "version": "GitHub.com, current", "accessed": "2026-11-09"},
+    "zizmor-audits": {"url": "https://docs.zizmor.sh/audits/", "title": "zizmor audit rules", "version": "docs current (audits up to v1.33.0)", "accessed": "2026-11-09"},
+    "gh-advisories": {"url": "https://github.com/advisories?query=ecosystem%3Aactions+sort%3Apublished-desc", "title": "GitHub Advisory Database, GitHub Actions ecosystem", "version": "as of 2026-11-09", "accessed": "2026-11-09"},
+    "npm-claude-latest": {"url": "https://registry.npmjs.org/@anthropic-ai/claude-code/latest", "title": "npm registry: @anthropic-ai/claude-code latest", "version": "2.1.319", "accessed": "2026-11-09"},
+    "npm-claude-2-1-307": {"url": "https://registry.npmjs.org/@anthropic-ai/claude-code/2.1.307", "title": "npm registry: @anthropic-ai/claude-code 2.1.307", "version": "2.1.307", "accessed": "2026-11-09"}
+  },
+  "notReached": [
+    "Official GA announcement of workflow lockfiles: not found on github.blog; the GA date (2026-10-28) rests on the InfoQ article (read), while GitHub's own changelog read says public preview.",
+    "Default job timeout-minutes: the part of workflow-syntax read did not state it, so no timeout rule is given.",
+    "Node runtime of setup-python/setup-node v7: their release notes do not state it (checkout v7 is node24 per action.yml).",
+    "npmjs.com versions page returned 403; versions were read from registry.npmjs.org instead.",
+    "Availability of Python 3.11 on ubuntu-26.04 images (relevant when ubuntu-latest migrates): not checked."
+  ],
+  "questions": [
+    "Set `persist-credentials: false` on both actions/checkout steps? No step needs authenticated git, and the validate job runs an npm postinstall after checkout (zizmor artipacked).",
+    "Adopt .github/workflows/actions.lock (gh actions-lock) instead of or alongside SHA pins? GitHub calls it the strongest protection; status is public preview per official sources.",
+    "Bump the Claude Code CLI pin from 2.1.307 to 2.1.319, and decide who owns that manual bump since Dependabot does not cover it.",
+    "Raise Dependabot's cooldown above the default 3 days for github-actions (cooldown.default-days)?",
+    "Pin the OS of the Python 3.11 floor leg (e.g. ubuntu-24.04) so the -latest migration cannot change the floor test silently?"
+  ]
+}

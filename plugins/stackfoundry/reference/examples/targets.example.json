@@ -23,7 +23,7 @@
         {"name": "integration", "kind": "integration", "command": "dotnet test tests/Integration.Tests -c Release",
          "paths": ["tests/Integration.Tests/**"], "covers": ["src/Api/**", "src/Shared/**"]}
       ],
-      "profile": ".claude/stackfoundry/targets/api.md"
+      "profile": ".stackfoundry/targets/api.md"
     },
     {
       "name": "desktop",
@@ -35,7 +35,7 @@
       "stakes": ["data-integrity"],
       "gate": {"build": ["dotnet build src/Desktop -c Release"], "test": ["dotnet test tests/Desktop.Tests -c Release"]},
       "tests": [{"name": "unit", "kind": "unit", "command": "dotnet test tests/Desktop.Tests -c Release"}],
-      "profile": ".claude/stackfoundry/targets/desktop.md"
+      "profile": ".stackfoundry/targets/desktop.md"
     },
     {
       "name": "web",
@@ -49,7 +49,7 @@
       "gate": {"build": ["npm run build --prefix web"], "test": ["npm test --prefix web"], "lint": ["npm run lint --prefix web"]},
       "tests": [{"name": "vitest", "kind": "component", "command": "npm test --prefix web",
                  "affectedCommand": "npx --prefix web vitest related --run <files>"}],
-      "profile": ".claude/stackfoundry/targets/web.md"
+      "profile": ".stackfoundry/targets/web.md"
     },
     {
       "name": "web-ssr",
@@ -61,7 +61,7 @@
       "webUi": true,
       "gate": {"build": ["npm run build --prefix web"], "test": ["npm run test:ssr --prefix web"]},
       "tests": [{"name": "ssr", "kind": "ssr", "command": "npm run test:ssr --prefix web"}],
-      "profile": ".claude/stackfoundry/targets/web-ssr.md"
+      "profile": ".stackfoundry/targets/web-ssr.md"
     },
     {
       "name": "shared",
@@ -71,7 +71,7 @@
       "exposure": "internal",
       "gate": {"build": ["dotnet build -c Release"], "test": ["dotnet test -c Release"]},
       "tests": [{"name": "all", "kind": "unit", "command": "dotnet test -c Release"}],
-      "profile": ".claude/stackfoundry/targets/shared.md"
+      "profile": ".stackfoundry/targets/shared.md"
     }
   ],
   "rules": [

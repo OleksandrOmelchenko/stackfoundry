@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "docsRoot": "docs",
+  "timezone": "UTC",
+  "defaultBranch": "main",
+  "targets": [
+    {
+      "name": "web",
+      "summary": "Public shop front-end (Vue single-page app).",
+      "paths": ["src/**", "vite.config.ts", "package.json"],
+      "testPaths": ["src/**/__tests__/**"],
+      "packs": ["language-typescript", "app-model-vue-spa", "tooling-vite", "tooling-vitest"],
+      "exposure": "public",
+      "stakes": ["money"],
+      "webUi": true,
+      "gate": {"build": ["npm run build"], "test": ["npm test"]},
+      "tests": [{"name": "vitest", "kind": "component", "command": "npm test", "paths": ["src/**/__tests__/**"]}],
+      "profile": ".stackfoundry/targets/web.md"
+    }
+  ],
+  "ignored": ["docs/**", "**/*.md"]
+}

@@ -46,7 +46,7 @@ class GlobsCheckTests(unittest.TestCase):
 class TodayTests(unittest.TestCase):
     def test_prints_an_iso_date_with_or_without_a_profile(self):
         import re
-        with TempRepo({".claude/stackfoundry/targets.json": json.dumps({"timezone": "Europe/Madrid"})}) as root:
+        with TempRepo({".stackfoundry/targets.json": json.dumps({"timezone": "Europe/Madrid"})}) as root:
             proc = run_cli(["today", "--root", str(root), "--verbose"])
             self.assertEqual(proc.returncode, 0, proc.stderr)
             self.assertRegex(proc.stdout, r"^\d{4}-\d{2}-\d{2} \(")

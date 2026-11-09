@@ -7,9 +7,17 @@ disable-model-invocation: true
 
 # Elaborate plan
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 `/stackfoundry:with-plan` plans, builds and verifies. This adds two things around it: the plan names the targets
 and designs the tests **before any code exists**, and the finished change goes through a quality sweep before it is
-called done. No `.claude/stackfoundry/targets.json` → say "run `/stackfoundry:init`" and stop: the targets, gates
+called done. No `.stackfoundry/targets.json` → say "run `/stackfoundry:init`" and stop: the targets, gates
 and rulebooks this cycle relies on come from there.
 
 ## 1. Plan (plan mode)

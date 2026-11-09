@@ -1,11 +1,13 @@
-"""Load and check the repo profile under `.claude/stackfoundry/` (schemas: reference/schemas/*.schema.json)."""
+"""Load and check the repo profile under `.stackfoundry/` (schemas: reference/schemas/*.schema.json)."""
 from __future__ import annotations
 
 import json
 import re
 from pathlib import Path
 
-PROFILE_DIR = Path(".claude") / "stackfoundry"
+PROFILE_DIR = Path(".stackfoundry")
+LEGACY_DIR = Path(".claude") / "stackfoundry"  # the first location; /stackfoundry:upgrade moves it
+CONFIG = PROFILE_DIR / "config.json"
 TARGETS = PROFILE_DIR / "targets.json"
 GUARDS = PROFILE_DIR / "guards.json"
 ECOSYSTEMS = PROFILE_DIR / "ecosystems.json"
@@ -34,6 +36,11 @@ def load_json(path: Path) -> dict:
 def load_targets(root: Path) -> dict:
     path = root / TARGETS
     if not path.exists():
+        if (root / LEGACY_DIR / "targets.json").exists():
+            raise ProfileError(
+                f"the profile is in the old location {LEGACY_DIR.as_posix()}/: run /stackfoundry:upgrade to move it to "
+                f"{PROFILE_DIR.as_posix()}/"
+            )
         raise ProfileError(
             f"{TARGETS.as_posix()} not found under {root}: run /stackfoundry:init (or /stackfoundry:sync) first"
         )
@@ -100,10 +107,10 @@ def _str_list(value) -> bool:
 
 
 def find_root(start: Path) -> Path:
-    """The nearest ancestor holding `.claude/stackfoundry/`, else the nearest with `.git`, else `start`."""
+    """The nearest ancestor holding `.stackfoundry/` (or the old `.claude/stackfoundry/`), else the nearest with `.git`, else `start`."""
     start = start.resolve()
     for d in (start, *start.parents):
-        if (d / PROFILE_DIR).is_dir():
+        if (d / PROFILE_DIR).is_dir() or (d / LEGACY_DIR).is_dir():
             return d
     for d in (start, *start.parents):
         if (d / ".git").exists():

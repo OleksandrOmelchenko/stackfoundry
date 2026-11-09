@@ -118,7 +118,7 @@ def render(pack: dict) -> str:
     out: list[str] = [
         "---",
         f"description: {title} rulebook ({layer} layer). Researched {pack['researchedAt']}; source pack "
-        f".claude/stackfoundry/packs/{pack['id']}/pack.json.",
+        f".stackfoundry/packs/{pack['id']}/pack.json.",
         "paths:",
     ]
     out += [f'  - "{g}"' for g in pack.get("rulebookPaths", [])] or ["  []"]

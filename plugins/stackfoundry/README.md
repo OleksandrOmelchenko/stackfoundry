@@ -32,10 +32,10 @@ Later:
 
 ## Settings
 
-`/plugin configure stackfoundry` sets the docs root, the research refresh window and the default fan-out effort.
-Values recorded in the repo profile win.
+The repo's settings (the assistants it uses, the docs root, the research refresh window and the default fan-out
+effort) are in `.stackfoundry/config.json`; `stackfoundry config` prints them with the defaults filled in.
 
 ## Requirements
 
-Claude Code, git, Python 3.11 or newer on `PATH` as `python3`, `python` or `py -3`. Claude Code only: claude.ai and
-Cowork don't install plugins that ship a `bin/` folder.
+Claude Code (or another assistant in `reference/clients.md`), git, Python 3.11 or newer on `PATH` as `python3`,
+`python` or `py -3`, and `sh` (Git Bash on Windows) or PowerShell 7.

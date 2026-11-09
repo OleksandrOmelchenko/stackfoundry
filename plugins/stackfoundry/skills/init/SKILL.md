@@ -7,6 +7,14 @@ disable-model-invocation: true
 
 # Init
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Turns a repository into one stackfoundry can work in. It studies the repo, agrees a **target map** with the user
 (every deployable or testable unit and its stack of layers, `${CLAUDE_PLUGIN_ROOT}/reference/layers.md`),
 researches every technology in that map from current official sources, and writes the facts every stackfoundry skill
@@ -15,13 +23,14 @@ and agent reads. It **never overwrites** existing `.claude/` content or docs: it
 ## 0. Preconditions
 
 - A git repository, and `stackfoundry --help` works (Python ≥ 3.11). If not, say what is missing and stop.
-- `.claude/stackfoundry/targets.json` already exists → this is not a first run: offer `/stackfoundry:sync` (repo
+- `.stackfoundry/targets.json` already exists → this is not a first run: offer `/stackfoundry:sync` (repo
   changed) or `/stackfoundry:upgrade` (plugin changed) and stop unless the user asks to start over.
 - `--new`, or a survey with no manifests and no source: the **interview-first** path (step 2b).
-- **Can this session write under `.claude/`?** Claude Code protects that folder: every write there is prompted
-  (interactive), routed to a classifier (`auto` mode) or allowed only in `bypassPermissions` mode; allow rules such as
-  `Edit(.claude/**)` do not change that. Check now, before any research is spent: write
-  `.claude/stackfoundry/.write-probe` and delete it. If it is refused, stop here and say how to rerun (Tooling).
+- **Can this session write under `.claude/`?** (Claude Code only, and only when it is one of the repo's clients.)
+  Claude Code protects that folder: every write there is prompted (interactive), routed to a classifier (`auto`
+  mode) or allowed only in `bypassPermissions` mode; allow rules such as `Edit(.claude/**)` do not change that. The
+  facts in `.stackfoundry/` are not affected. Check now, before any research is spent: write
+  `.claude/.stackfoundry-write-probe` and delete it. If it is refused, stop here and say how to rerun (Tooling).
 - **Non-interactive run** (`claude -p`, a scheduled task, CI): nobody answers questions. Take answers from the
   arguments; where none is given, choose the option this skill recommends (or the most conservative one) and list
   every such choice under "Decisions made without the user" in the report. Never route around a refused write.
@@ -51,9 +60,9 @@ Show one table: target · paths · stack (packs by layer) · exposure · stakes 
 2. Ambiguous app models and the exposure and stakes of each target (who can reach it; money, personal data, auth,
    data integrity).
 3. Working agreements: the git-write policy (`ask` recommended), the generated folders and how each is
-   regenerated, commands that must never run (direct database writes, deploys), the docs root (the plugin setting
-   `${user_config.docsRoot}`, else `docs`, unless the repo already keeps docs elsewhere), the plan categories, the
-   time zone for report dates.
+   regenerated, commands that must never run (direct database writes, deploys), the docs root (`docs` unless the
+   repo already keeps docs elsewhere), the plan categories, the time zone for report dates, and the assistants the
+   team uses (`clients`: claude-code, codex, copilot, cursor, gemini; `${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
 4. Roles to enable per target (default: all), and how to treat existing `.claude/` content (keep side by side
    recommended).
 
@@ -66,9 +75,7 @@ come later (`/stackfoundry:scaffold-test-harness` once code exists).
 Collect the unique packs across all targets. Dispatch one `stackfoundry:stack-researcher` per pack **in one
 message** (batches of about six when there are many). Each brief carries `pack:`, `versions:` (where each is pinned),
 `evidence:` (the targets and files using it), `exposure:` and `stakes:` of those targets, and
-`output: .stackfoundry-staging/packs/<pack-id>/pack.json`, the one file the researcher writes. The staging folder is
-outside the protected `.claude/`, so research is saved even if a later write is refused; step 4 moves each checked
-pack into `.claude/stackfoundry/packs/` and deletes the staging folder. Follow
+`output: .stackfoundry/packs/<pack-id>/pack.json`, the one file the researcher writes. Follow
 `${CLAUDE_PLUGIN_ROOT}/reference/pack-research.md`. When the researchers finish:
 
 - `stackfoundry pack check <output>` for each pack (researchers have no shell, so the check is yours); send errors back to the same researcher (`SendMessage` when the
@@ -84,10 +91,11 @@ Then write:
 
 | File | From | Recorded with `--template` |
 |---|---|---|
-| `.claude/stackfoundry/profile.md` | `reference/templates/profile.md` + the interview | `reference/templates/profile.md` |
-| `.claude/stackfoundry/targets.json`, `ecosystems.json`, `guards.json` | the agreed map; schemas in `reference/schemas/` | `profile` |
-| `.claude/stackfoundry/packs/<pack-id>/pack.json` | moved from `.stackfoundry-staging/` (step 3), then the staging folder is deleted | `research` |
-| `.claude/stackfoundry/targets/<target>.md` | `reference/templates/target.md` | that template |
+| `.stackfoundry/profile.md` | `reference/templates/profile.md` + the interview | `reference/templates/profile.md` |
+| `.stackfoundry/config.json` | the interview: `clients`, `docsRoot` (defaults: `stackfoundry config`) | `profile` |
+| `.stackfoundry/targets.json`, `ecosystems.json`, `guards.json` | the agreed map; schemas in `reference/schemas/` | `profile` |
+| `.stackfoundry/packs/<pack-id>/pack.json` | written by its researcher (step 3) | `research` |
+| `.stackfoundry/targets/<target>.md` | `reference/templates/target.md` | that template |
 | `.claude/rules/<pack-id>.md` | `stackfoundry pack render <pack.json> --out <rule>`, never by hand | `research` |
 | `.claude/rules/testing.md`, `dependency-bumps.md`, `documentation.md` (+ `benchmarking.md` when a benchmark harness exists) | `reference/rulebooks/`, placeholders filled from the profile | that rulebook |
 | `.claude/skills/<app-model>-code-writer/SKILL.md` per app model (bare id: `app-model-wpf` → `wpf`) | `reference/templates/code-writer-skill.md` | that template |

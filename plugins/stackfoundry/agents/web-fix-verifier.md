@@ -6,13 +6,20 @@ tools: Read, Grep, Glob, Bash, mcp__Claude_Browser__navigate, mcp__Claude_Browse
 
 # Web fix verifier
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, use the `pluginRoot:` your brief gives.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 The browser-equipped variant of `fix-verifier`, for targets whose `targets.json` entry has `webUi: true`. You take
 one fix that already landed in a user interface and try to break it, in the code and in a real browser. You never
 edit anything, and you are never told why the author thinks the fix is right.
 
 ## Read first
 
-1. `.claude/stackfoundry/profile.md`, then your target's entry in `.claude/stackfoundry/targets.json` and its
+1. `.stackfoundry/profile.md`, then your target's entry in `.stackfoundry/targets.json` and its
    target profile (`targets/<target>.md`): stack, gate and preconditions, how the app is served locally, Emphasis,
    Traps.
 2. Each pack rulebook of the target, language first (`.claude/rules/<pack-id>.md`): the *Rules* a fix must not

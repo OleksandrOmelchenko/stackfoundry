@@ -12,9 +12,6 @@ venv/
 .testagent/
 fixtures/**/_build/
 
-# stackfoundry init's research staging (moved into .claude/ and deleted by init)
-.stackfoundry-staging/
-
 # Claude Code local state
 .claude/settings.local.json
 .claude/worktrees/

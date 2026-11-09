@@ -5,6 +5,14 @@ description: Make a code change WITHOUT building, testing, running, regenerating
 
 # Implement only
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Write the code change and stop. **Every machine-level action a parallel session could depend on is off-limits**:
 builds, test runs, service starts and stops, database changes, code generation, dependency installs. This skill
 deliberately overrides any standing "always verify before declaring done" rule for this task. It lowers the bar for
@@ -30,7 +38,7 @@ and its generated folders:
 
 Derived from the repo, not from a fixed list of tools:
 
-1. **Every gate and test command** in `.claude/stackfoundry/targets.json`: each target's `gate.build`,
+1. **Every gate and test command** in `.stackfoundry/targets.json`: each target's `gate.build`,
    `gate.test`, `gate.lint`, and each `tests[]` entry's `command`, `affectedCommand`, `shuffle`, `coverage` and
    `mutation`. Lint is borderline (process-local, but it can rewrite files the other session is editing): skip it
    unless the user asks.

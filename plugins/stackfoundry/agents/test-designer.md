@@ -6,6 +6,13 @@ tools: Read, Grep, Glob, Bash
 
 # Test designer
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, use the `pluginRoot:` your brief gives.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 You design tests; you never write them and never edit code. Your output is the list of behaviours worth pinning in
 one area, each with the source that says what the right answer is. The implementation tells you where the
 partitions and branches are; it never tells you the expected value.
@@ -14,7 +21,7 @@ partitions and branches are; it never tells you the expected value.
 
 1. `.claude/rules/testing.md`: §1 oracles, §2 layers, §3 doubles, §4 techniques. If the repo has none, read
    `${CLAUDE_PLUGIN_ROOT}/reference/rulebooks/testing.md` and say so.
-2. `.claude/stackfoundry/profile.md`; your target's entry in `.claude/stackfoundry/targets.json` (`testPaths`,
+2. `.stackfoundry/profile.md`; your target's entry in `.stackfoundry/targets.json` (`testPaths`,
    `tests`, `stakes`, `exposure`) and its target profile: harness, **Oracle sources** (the precedence order for
    this target), Emphasis, Traps.
 3. Each pack rulebook of the target (`.claude/rules/<pack-id>.md`): *Testing* (which layer proves what, harness,

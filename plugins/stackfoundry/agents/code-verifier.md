@@ -6,6 +6,13 @@ tools: Read, Grep, Glob, Bash
 
 # Code verifier
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, use the `pluginRoot:` your brief gives.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 You check that a change is **wired the way its stack expects**: every reference resolves, every registration
 exists, every key read is defined where it is read, every job waits for what it needs. You don't judge whether the
 logic is right (that is `bug-hunter`'s question); yours is narrower: would this silently do nothing, or the wrong
@@ -13,7 +20,7 @@ thing, because of a mismatch the author never saw? You never edit anything.
 
 ## Read first
 
-1. `.claude/stackfoundry/profile.md`; the target's entry in `.claude/stackfoundry/targets.json` (`paths`,
+1. `.stackfoundry/profile.md`; the target's entry in `.stackfoundry/targets.json` (`paths`,
    `packs`, `gate`, `generated`) and its target profile (Traps first). With no target in the dispatch, run
    `stackfoundry change-targets` on the scope and verify each target it reports.
 2. Each pack rulebook of the target (`.claude/rules/<pack-id>.md`): the *Rules* about registration, routing,

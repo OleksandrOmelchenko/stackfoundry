@@ -7,6 +7,14 @@ disable-model-invocation: true
 
 # Materialize a role agent for one target
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 The plugin ships one agent per role, and each reads its target's facts at run time. When a team wants one role on
 one target tuned by hand (a security-weighted reviewer for an auth server, a bug hunter with categories of its
 own), this skill writes `.claude/agents/<target>-<role>.md` from the generic role, the target profile and the
@@ -15,7 +23,7 @@ template. From then on the team owns the file: orchestrators dispatch it in plac
 
 ## Inputs
 
-- **Target**: a `name` in `.claude/stackfoundry/targets.json`. Unknown or absent → list the names and ask.
+- **Target**: a `name` in `.stackfoundry/targets.json`. Unknown or absent → list the names and ask.
 - **Role**: a plugin agent that orchestrators dispatch **per target** (its dispatch brief carries `target:`), such
   as `bug-hunter`, `fix-verifier`, `web-fix-verifier`, `test-designer`, `test-writer`, `test-reviewer`,
   `test-fixer`, `performance-reviewer`, `security-reviewer`, `code-verifier`, `debugger`. The plugin's
@@ -30,7 +38,7 @@ template. From then on the team owns the file: orchestrators dispatch it in plac
    choice is to keep it, show a diff against a fresh render, or overwrite it.
 2. **Read** the template `${CLAUDE_PLUGIN_ROOT}/reference/templates/materialized-agent.md`, the generic role at
    `${CLAUDE_PLUGIN_ROOT}/agents/<role>.md`, the plugin version in `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`,
-   then `.claude/stackfoundry/profile.md`, the target's entry and `targets/<target>.md`, and each pack rulebook in
+   then `.stackfoundry/profile.md`, the target's entry and `targets/<target>.md`, and each pack rulebook in
    its stack.
 3. **Ask what to tune** (`AskUserQuestion`, one round): categories to add or weight first, checks to drop, a
    stricter gate or verdict bar, extra files it must read. "Nothing yet, just give us the file" is a valid answer.

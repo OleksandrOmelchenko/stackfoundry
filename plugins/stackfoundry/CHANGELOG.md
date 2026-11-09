@@ -32,8 +32,19 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   manifest; init ignores fixtures and handles `.claude/CLAUDE.md`, the marketplace repo itself and
   non-interactive runs.
 - The guard hook sets `onFailure: continue`.
-- init checks it can write under `.claude/` before spending anything on research, and researchers write their packs
-  to `.stackfoundry-staging/` (outside the protected folder), which init moves into place.
+- init checks it can write under `.claude/` before spending anything on research.
+- Portability groundwork for Codex, GitHub Copilot, Cursor and Gemini CLI:
+  - the repo profile moved from `.claude/stackfoundry/` to `.stackfoundry/`, which every assistant can read and
+    which Claude Code does not protect, so researchers write their packs straight into it; `upgrade` moves an old
+    profile;
+  - the helper CLI's launcher moved from `bin/stackfoundry` to `scripts/stackfoundry.sh`, with
+    `scripts/stackfoundry.ps1` for Windows without `sh`; without a top-level `bin/`, claude.ai and Cowork accept the
+    plugin;
+  - the plugin settings (`userConfig`) became the repo's `.stackfoundry/config.json`, which also lists the
+    assistants the repo uses, read with the new `stackfoundry config`;
+  - every skill and agent carries a portable-form preamble (the CLI by path, the plugin root where `${CLAUDE_PLUGIN_ROOT}`
+    is not substituted, and `reference/clients.md` for tool equivalents), checked by `verify-plumbing` along with the
+    Agent Skills name rules.
 - The guard reads the nearest `guards.json` above the edited file (worktrees and nested repos), normalizes paths,
   and sees git commands inside quotes (`sh -c 'git push'`).
 - The CLI runs git by its absolute path from `PATH`, never a `git` in the repo; `pack render --out` writes atomically;

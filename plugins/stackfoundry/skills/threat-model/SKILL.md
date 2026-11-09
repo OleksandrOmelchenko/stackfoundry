@@ -6,6 +6,14 @@ argument-hint: "<target>"
 
 # Threat model
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Dispatches `security-reviewer` in threat-model mode for one target and keeps the result as a **living document**,
 `<docsRoot>/security/<target>-threat-model.md`: what is worth attacking, who can reach it, where it enters, which
 boundaries it crosses, what stops each threat in the code, and which threats nothing stops yet. Gaps are tracked
@@ -25,7 +33,7 @@ code. Living-doc rules: `.claude/rules/documentation.md` (path + symbol, never `
    existing model's threats and gaps plus the open findings, `concurrency: read-only, do not build`.
 4. **Challenge the gaps.** Each 🔴/🟡 gap goes to a fresh `security-reviewer` (`mode: review`, `scope: files:` the
    entry point) told to find the mitigation the model missed; a gap a real control closes becomes a mitigated
-   threat. Effort (the user's words, else the plugin's `defaultEffort` setting, `${user_config.defaultEffort}`):
+   threat. Effort (the user's words, else the repo's `defaultEffort`, `stackfoundry config defaultEffort`):
    thorough → three votes, the gap stands on two.
 5. **Write** the model (below), run `stackfoundry tracker check <file>` and fix until clean, and add or refresh its
    row in `<docsRoot>/security/README.md` (create it from

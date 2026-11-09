@@ -6,6 +6,14 @@ argument-hint: "[--report-only] [pack-id ...]"
 
 # Check formats
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 A version bump keeps a library current; it says nothing about whether the project's **shape** is current: a legacy
 solution or project format, a superseded test runner, an old lint config format, a framework's older template or
 control-flow syntax. Those migrations arrive in release posts, not in an outdated-packages listing. This skill finds
@@ -14,7 +22,7 @@ stop rule, routes) are `.claude/rules/dependency-bumps.md`.
 
 ## Inputs
 
-- Packs: every `.claude/stackfoundry/packs/*/pack.json`, or the ids given. Each pack's `upgrade` links and `sources`
+- Packs: every `.stackfoundry/packs/*/pack.json`, or the ids given. Each pack's `upgrade` links and `sources`
   are the starting points of Pass 2.
 - `--report-only`: Pass 1 and Pass 2 only, no question and no write (how `/stackfoundry:check-updates` calls it).
 

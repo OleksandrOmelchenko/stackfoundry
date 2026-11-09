@@ -1,7 +1,7 @@
 ---
 description: How any version pin is bumped — classify patch/minor/major first, a major waits for the user, route every finding, move lock-step chains together, read the technology's own release sources, one ecosystem per change.
 paths:
-  - "plugins/stackfoundry/bin/stackfoundry"
+  - "plugins/stackfoundry/scripts/stackfoundry.sh"
   - ".githooks/pre-commit"
   - ".github/workflows/*.yml"
   - ".github/dependabot.yml"
@@ -9,7 +9,7 @@ paths:
 
 # Dependency and version bumps
 
-Where every pin lives, how it is discovered, applied and gated: `.claude/stackfoundry/ecosystems.json`. The
+Where every pin lives, how it is discovered, applied and gated: `.stackfoundry/ecosystems.json`. The
 procedure: `/stackfoundry:bump <ecosystem>`, sequenced by `/stackfoundry:bump-all`. `/stackfoundry:check-updates`
 reports; `/stackfoundry:act-on-updates` routes the report. This file holds the rules they share.
 

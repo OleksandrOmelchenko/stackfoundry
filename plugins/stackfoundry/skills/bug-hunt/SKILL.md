@@ -6,19 +6,27 @@ argument-hint: "[<target>] [diff [--base <ref>] | <area path>] [--into <report>]
 
 # Bug hunt
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Fans `bug-hunter` agents over one target, one per bug category, has a second skeptic try to refute every serious
 finding, and writes the survivors to a bug report whose findings are a tracker. Read-only on code: it reports, it
 never fixes. Report format: `${CLAUDE_PLUGIN_ROOT}/reference/trackers/bug-reports-README.md`.
 
 ## Inputs
 
-- **Target**: a `name` from `.claude/stackfoundry/targets.json`. Absent → `stackfoundry change-targets` on the
+- **Target**: a `name` from `.stackfoundry/targets.json`. Absent → `stackfoundry change-targets` on the
   uncommitted tree and hunt each touched code target in diff mode; nothing changed → list the names and ask.
 - **Mode**: **sweep** (default: the whole target) · **area** (a path under the target's `paths`) · **diff**
   (`diff [--base <ref>]`: the changed files and what they reach; nothing changed in the target → say so, stop).
 - **`--into <report>`**: merge into that report instead of starting a dated one (quality-sweep uses it).
-- **Effort**: the user's words win ("quick look", "thorough audit"); otherwise the plugin's `defaultEffort`
-  setting (`${user_config.defaultEffort}`). quick → diff or area scope, one refutation vote · standard → the
+- **Effort**: the user's words win ("quick look", "thorough audit"); otherwise the repo's `defaultEffort`
+  setting (`stackfoundry config defaultEffort`). quick → diff or area scope, one refutation vote · standard → the
   requested scope, one vote · thorough → deep sweep, three votes on every 🔴/🟡.
 
 ## Procedure

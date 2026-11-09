@@ -6,13 +6,21 @@ argument-hint: "<target> [--flaky <test> | --review <report or design>]"
 
 # Fix tests
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Resolves each red, flaky or weak test by its **cause**. Rules: `.claude/rules/testing.md` (§14 the classification,
 §11 flaky categories and their fixes, §8 what may never be done to make a test pass). Step four of the loop:
 `design-tests` → `write-tests` → `review-tests` → **fix**.
 
 ## Inputs
 
-- **Target**: a `name` from `.claude/stackfoundry/targets.json`; unknown or absent → list the names and ask.
+- **Target**: a `name` from `.stackfoundry/targets.json`; unknown or absent → list the names and ask.
 - **Red** (default): the failures of the target's gate, run first.
 - **Flaky** (`--flaky <test>`): a test reported intermittent; reproduced before anything is touched.
 - **Findings** (`--review <report or design>`): the ⚠️ verdicts from `review-tests`.

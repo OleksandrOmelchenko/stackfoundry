@@ -6,6 +6,14 @@ argument-hint: "[category | probe | skill or agent name]"
 
 # Skill and agent verifier
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Skills (`.claude/skills/<name>/SKILL.md`), agents (`.claude/agents/<name>.md`) and path-scoped rulebooks
 (`.claude/rules/*.md`) rot like any cross-referenced docs, and the failure is **silent**: a rename leaves a stale
 path, a `tools:` grant stops covering what the body calls, a broken frontmatter drops a skill from discovery, a

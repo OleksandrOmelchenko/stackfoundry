@@ -11,7 +11,7 @@ this skill is the decision procedure. Read them before editing.
 | Read first | Before touching |
 |---|---|
 | [`language-python`](../../rules/language-python.md) | any `.py` file: encodings, 3.11 floor, subprocess, paths |
-| [`language-posix-sh`](../../rules/language-posix-sh.md) | `plugins/stackfoundry/bin/stackfoundry`, `.githooks/pre-commit`, `*.sh` |
+| [`language-posix-sh`](../../rules/language-posix-sh.md) | `plugins/stackfoundry/scripts/stackfoundry.sh`, `.githooks/pre-commit`, `*.sh` |
 | [`app-model-python-cli`](../../rules/app-model-python-cli.md) | `scripts/stackfoundry/*.py`, `plugins/stackfoundry/hooks/hooks.json`: subcommands, the guard's hook contract |
 | [`tooling-unittest`](../../rules/tooling-unittest.md) | `tests/**` |
 | [`tooling-github-actions`](../../rules/tooling-github-actions.md) | `.github/**` |
@@ -48,7 +48,7 @@ this skill is the decision procedure. Read them before editing.
 3. Make the change. A new or changed subcommand: update `cli.py` `build()` help and the module docstring, the
    skill or agent that calls it, and add a test in `tests/` using `tests/_support.py` (`TempRepo`, `run_cli`).
 4. Verify with the target's gate: `python -m unittest discover -s tests -t . -v` and
-   `sh plugins/stackfoundry/bin/stackfoundry verify-plumbing plugins/stackfoundry`.
+   `sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry`.
 5. Then `/stackfoundry:review-changes` for an independent review.
 
 ## Tooling

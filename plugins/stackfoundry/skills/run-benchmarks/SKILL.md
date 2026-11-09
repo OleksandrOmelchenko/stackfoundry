@@ -6,6 +6,14 @@ argument-hint: "[<benchmark target>] <filter> [--runs N] [--baseline <result fol
 
 # Run benchmarks
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Measures what `/stackfoundry:write-benchmarks` wrote and turns the numbers into a verdict a reviewer accepts. Rules:
 `.claude/rules/benchmarking.md` (§3 environment, §4 comparing and the verdicts, §5 reports). The commands (kind,
 preflight, measured run, comparison, preconditions) come from the entry and profile of the target that owns the

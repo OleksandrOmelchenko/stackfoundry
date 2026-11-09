@@ -23,8 +23,9 @@ committed `.claude/settings.json`. Each collaborator still runs the install comm
 
 Requirements: Claude Code, git, Python 3.11+ (the helper CLI and hooks use only the standard library).
 
-stackfoundry is a **Claude Code** plugin. It ships a command-line helper in `bin/`, and claude.ai and Cowork don't
-install plugins that do; its work (git, builds, test suites) needs a development environment anyway.
+stackfoundry is written as a Claude Code plugin and is being made portable to Codex, GitHub Copilot, Cursor and
+Gemini CLI (`plugins/stackfoundry/reference/clients.md` maps each one). Its work (git, builds, test suites) needs a
+development environment.
 
 ## How it works
 
@@ -48,7 +49,7 @@ the C# rules plus the ASP.NET Core rules for an API file.
 
 | The plugin ships (and updates) | `init` writes into your repo (and you own) |
 |---|---|
-| orchestrator skills: `bug-hunt`, `write-tests`, `check-updates`, `tech-radar`… | `.claude/stackfoundry/`: profile, targets, ecosystems, guards, researched packs, manifest |
+| orchestrator skills: `bug-hunt`, `write-tests`, `check-updates`, `tech-radar`… | `.stackfoundry/`: profile, targets, ecosystems, guards, researched packs, manifest |
 | generic role agents: `bug-hunter`, `test-writer`, `fix-verifier`… | `.claude/rules/<layer>-<tech>.md`: grounded, path-scoped rulebooks |
 | the method: layer taxonomy, schemas, research procedure, rulebook and tracker templates | `.claude/skills/<app-model>-code-writer/`: the decisions that go wrong most often, per app model |
 | the `stackfoundry` helper CLI and guard hooks | tracker scaffolds: bug reports, test designs, plans, specifications, dependency and radar reports |

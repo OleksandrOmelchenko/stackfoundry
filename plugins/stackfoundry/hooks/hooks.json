@@ -1,5 +1,5 @@
 {
-  "description": "stackfoundry guards: deny hand-edits of generated files and forbidden commands, and ask before git writes, as the repo's .claude/stackfoundry/guards.json says. No profile, no opinion; if the hook itself cannot run (no sh or Python), the call goes through.",
+  "description": "stackfoundry guards: deny hand-edits of generated files and forbidden commands, and ask before git writes, as the repo's .stackfoundry/guards.json says. No profile, no opinion; if the hook itself cannot run (no sh or Python), the call goes through.",
   "hooks": {
     "PreToolUse": [
       {
@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/bin/stackfoundry\" guard",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh\" guard",
             "timeout": 10,
             "onFailure": "continue"
           }

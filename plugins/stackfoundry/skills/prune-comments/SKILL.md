@@ -6,6 +6,14 @@ argument-hint: "[path | diff | commit <sha> | all] [harsh]"
 
 # Prune comments
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Good comments record **why**: a trap, a race, a spec clause, a bug a previous shape caused. They are what keeps code
 maintainable, and a careless sweep destroys exactly them. So the default mode is **conservative**: the burden of
 proof is on deleting, and a comment whose value is arguable stays. **Harsh mode** flips the default for freshly

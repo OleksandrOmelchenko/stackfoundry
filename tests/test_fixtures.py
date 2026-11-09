@@ -44,7 +44,7 @@ class FixtureProfileTests(unittest.TestCase):
         self.assertTrue(overlays)
         for overlay in overlays:
             with self.subTest(overlay=overlay.name):
-                data = json.loads((overlay / ".claude/stackfoundry/targets.json").read_text(encoding="utf-8"))
+                data = json.loads((overlay / ".stackfoundry/targets.json").read_text(encoding="utf-8"))
                 self.assertEqual(check_targets(data), [])
                 for target in data["targets"]:
                     self.assertTrue((overlay / target["profile"]).is_file(), target["profile"])

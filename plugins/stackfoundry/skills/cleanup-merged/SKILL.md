@@ -6,6 +6,14 @@ argument-hint: "[all | <branch> ...]"
 
 # Cleanup after merge
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Landed work leaves its local branch behind, often with a worktree. A branch lands in one of two ways:
 
 - **as a pull request**, by squash or rebase: the commits are rewritten, so `git branch --merged` cannot tell;

@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "docsRoot": "docs",
+  "timezone": "Europe/Madrid",
+  "defaultBranch": "main",
+  "ci": {"provider": "github-actions", "cli": "gh run view <id> --log-failed"},
+  "targets": [
+    {
+      "name": "cli",
+      "summary": "The stackfoundry helper CLI (Python standard library, no network), its POSIX sh launcher and the PreToolUse guard hook wiring; run locally inside plugin users' Claude Code sessions.",
+      "paths": ["plugins/stackfoundry/scripts/**", "plugins/stackfoundry/hooks/**"],
+      "testPaths": ["tests/test_change_targets.py", "tests/test_checks.py", "tests/test_docs_tools.py", "tests/test_fixtures.py",
+                    "tests/test_frontmatter.py", "tests/test_globs.py", "tests/test_guard.py", "tests/test_plumbing_manifest.py",
+                    "tests/test_self_run_fixes.py", "tests/test_survey.py", "fixtures/**"],
+      "packs": ["language-python", "language-posix-sh", "app-model-python-cli", "tooling-unittest", "tooling-github-actions"],
+      "exposure": "offline",
+      "stakes": ["safety", "data-integrity"],
+      "gate": {
+        "test": ["python -m unittest discover -s tests -t . -v"],
+        "lint": ["sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry"],
+        "preconditions": ["Python >= 3.11 on PATH as python3, python or py -3", "git on PATH (git-dependent tests skip without it: tests/_support.py HAS_GIT)"]
+      },
+      "tests": [
+        {"name": "unittest", "kind": "unit", "command": "python -m unittest discover -s tests -t . -v",
+         "affectedCommand": "python -m unittest tests.<test_module> -v",
+         "paths": ["tests/**"],
+         "covers": ["plugins/stackfoundry/scripts/**", "plugins/stackfoundry/reference/**", "fixtures/**"]}
+      ],
+      "profile": ".stackfoundry/targets/cli.md"
+    },
+    {
+      "name": "plugin",
+      "summary": "The Claude Code plugin and its marketplace entry: skills, generic role agents, the reference method (layers, schemas, templates, trackers) and eval cases, used by developers running /stackfoundry:* in their own repos.",
+      "paths": ["plugins/stackfoundry/skills/**", "plugins/stackfoundry/agents/**", "plugins/stackfoundry/reference/**",
+                "plugins/stackfoundry/evals/**", "plugins/stackfoundry/.claude-plugin/**", "plugins/stackfoundry/*.md", ".claude-plugin/**"],
+      "testPaths": ["tests/test_reference.py", "tests/test_manifests.py", "fixtures/**"],
+      "packs": ["app-model-claude-code-plugin", "capability-claude-code-marketplace", "tooling-claude-plugin-eval", "tooling-unittest"],
+      "exposure": "offline",
+      "stakes": ["safety", "data-integrity"],
+      "gate": {
+        "test": ["python -m unittest discover -s tests -t . -v"],
+        "lint": ["sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry",
+                 "claude plugin validate --strict .",
+                 "claude plugin validate --strict plugins/stackfoundry"],
+        "preconditions": ["Python >= 3.11 on PATH", "the claude CLI on PATH (CI pins @anthropic-ai/claude-code@2.1.307)"]
+      },
+      "tests": [
+        {"name": "reference-and-manifests", "kind": "unit", "command": "python -m unittest tests.test_reference tests.test_manifests -v",
+         "paths": ["tests/test_reference.py", "tests/test_manifests.py"]},
+        {"name": "plumbing", "kind": "contract", "command": "sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry",
+         "covers": ["plugins/stackfoundry/skills/**", "plugins/stackfoundry/agents/**"]},
+        {"name": "evals", "kind": "e2e", "command": "cd plugins/stackfoundry && claude plugin eval . --scaffold --runs 1 --no-publish --tag read-only",
+         "paths": ["plugins/stackfoundry/evals/**"], "covers": ["plugins/stackfoundry/skills/**", "plugins/stackfoundry/agents/**", "fixtures/**"]}
+      ],
+      "profile": ".stackfoundry/targets/plugin.md"
+    }
+  ],
+  "rules": [
+    {"glob": "plugins/stackfoundry/reference/schemas/**", "targets": ["plugin", "cli"], "note": "schemas are mirrored by scripts/stackfoundry/profile.py check_targets"},
+    {"glob": "plugins/stackfoundry/reference/detect-signals.json", "targets": ["cli", "plugin"], "note": "read by survey.py; drives the surveyor agent's hints"},
+    {"glob": "plugins/stackfoundry/.claude-plugin/**", "targets": ["plugin", "cli"], "note": "plugin.json is read by manifest.py and plumbing.py"},
+    {"glob": "plugins/stackfoundry/reference/templates/**", "targets": ["plugin", "cli"], "note": "pack.py renders templates/pack-rulebook.md"},
+    {"glob": "plugins/stackfoundry/reference/trackers/**", "targets": ["plugin", "cli"], "note": "format parsed by stackfoundry tracker"},
+    {"glob": "fixtures/**", "targets": ["cli", "plugin"], "note": "test and eval data, never product code: surveyed by tests/test_fixtures.py and scaffolded by evals/*/scaffold.sh. Never 'fix' a fixture to look correct"},
+    {"glob": "docs/release.md", "targets": ["plugin"], "note": "release rules asserted by tests/test_manifests.py"},
+    {"glob": ".github/ISSUE_TEMPLATE/**", "targets": [], "note": "issue templates"},
+    {"glob": "LICENSE", "targets": [], "note": "license text"}
+  ],
+  "specialists": [],
+  "generated": [],
+  "ignored": ["**/__pycache__/**", "**/evals/results/**", ".testagent/**", "fixtures/**/_build/**"],
+  "fullRunTriggers": ["tests/_support.py", "tests/__init__.py", ".github/workflows/ci.yml", ".githooks/pre-commit",
+                      "plugins/stackfoundry/scripts/stackfoundry.sh", "plugins/stackfoundry/scripts/stackfoundry/__init__.py"]
+}

@@ -6,13 +6,21 @@ argument-hint: "[ecosystem-id ...] [approve: <item> ...]"
 
 # Bump all
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 `/stackfoundry:bump <ecosystem-id>` knows one ecosystem's pins, gate and traps. This skill only sequences it over
 every ecosystem, keeps the user's decisions in one place and writes down what was deferred. It adds no rule of its
 own: they are in `.claude/rules/dependency-bumps.md`.
 
 ## Inputs
 
-- The ecosystems and their **apply order** are `.claude/stackfoundry/ecosystems.json` → `ecosystems`, in file order
+- The ecosystems and their **apply order** are `.stackfoundry/ecosystems.json` → `ecosystems`, in file order
   (platforms first, then package managers, generators, CI, infrastructure, formats last). Arguments pick a subset
   by `id`; none means every ecosystem.
 - `approve: <item> …` names majors already decided by the caller (`/stackfoundry:act-on-updates` passes it), written

@@ -6,6 +6,14 @@ argument-hint: "[target ...] [--runs N]"
 
 # Flaky watch
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 A flaky test passes and fails on the same code. One run never shows it; repeated shuffled runs do. This skill runs
 each target's suites `N` times in shuffled order, keeps only the tests that both passed and failed, and writes one
 dated report that routes each to `/stackfoundry:fix-tests`. It is unattended and never edits a test. Flaky
@@ -13,7 +21,7 @@ categories and how they are fixed are `.claude/rules/testing.md` § 11 (Flaky te
 
 ## Inputs
 
-- `.claude/stackfoundry/targets.json`: per target, `tests[]` (`name`, `command`, `shuffle`) and `gate.preconditions`;
+- `.stackfoundry/targets.json`: per target, `tests[]` (`name`, `command`, `shuffle`) and `gate.preconditions`;
   `docsRoot` and `timezone`. Arguments pick targets; none means all. `--runs N`: runs per suite (default 5).
 - No `targets.json`: one line ("run `/stackfoundry:init`") and stop without writing.
 

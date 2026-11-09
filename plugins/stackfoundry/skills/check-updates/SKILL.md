@@ -6,21 +6,29 @@ argument-hint: "[ecosystem-id ...]"
 
 # Check updates
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 The read-only half of `/stackfoundry:bump-all`. It runs the `discover` commands of each ecosystem in
-`.claude/stackfoundry/ecosystems.json`, classifies and routes every finding, and writes one dated report. It is
+`.stackfoundry/ecosystems.json`, classifies and routes every finding, and writes one dated report. It is
 unattended (a scheduled task runs it), so it leaves the tree as it found it apart from that report. Acting on the
 report is `/stackfoundry:act-on-updates`, after a person has read it. Classification, routes, freshness and chains
 are in `.claude/rules/dependency-bumps.md` (template: `${CLAUDE_PLUGIN_ROOT}/reference/rulebooks/dependency-bumps.md`).
 
 ## Inputs
 
-- `.claude/stackfoundry/ecosystems.json`: the ecosystems in apply order, their `discover` commands,
+- `.stackfoundry/ecosystems.json`: the ecosystems in apply order, their `discover` commands,
   `outsideManifest` pins, `chains`, `sources` and `deferredFile`. Arguments pick a subset by `id`; none means all.
-- `.claude/stackfoundry/targets.json`: `docsRoot` and `timezone`.
-- Each ecosystem's pack: `.claude/rules/<pack>.md` § Upgrades and `.claude/stackfoundry/packs/<pack>/pack.json` →
+- `.stackfoundry/targets.json`: `docsRoot` and `timezone`.
+- Each ecosystem's pack: `.claude/rules/<pack>.md` § Upgrades and `.stackfoundry/packs/<pack>/pack.json` →
   `upgrade` (release notes, migration guides, deprecations in use).
 
-No `ecosystems.json`: print one line ("no `.claude/stackfoundry/ecosystems.json`: run `/stackfoundry:init`") and
+No `ecosystems.json`: print one line ("no `.stackfoundry/ecosystems.json`: run `/stackfoundry:init`") and
 stop without writing.
 
 ## Unattended contract

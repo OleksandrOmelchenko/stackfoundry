@@ -7,6 +7,14 @@ disable-model-invocation: true
 
 # Schedule the unattended skills
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 The unattended skills follow one contract (no questions, no installs, no git writes, one report, a side-effect
 check), so they can run on a timer. This skill proposes a cadence, asks once, and registers them as Claude desktop
 scheduled tasks, which run on this machine with its toolchain (the discover commands need the real package managers)
@@ -16,8 +24,8 @@ and catch up a missed run on the next launch. It creates nothing before the user
 
 | Skill | Cadence | Cron (local time) | Applies when |
 |---|---|---|---|
-| `check-updates` | weekly | `0 7 * * 1` | `.claude/stackfoundry/ecosystems.json` exists |
-| `tech-radar` | every two weeks | `0 7 1,15 * *` | packs exist under `.claude/stackfoundry/packs/` |
+| `check-updates` | weekly | `0 7 * * 1` | `.stackfoundry/ecosystems.json` exists |
+| `tech-radar` | every two weeks | `0 7 1,15 * *` | packs exist under `.stackfoundry/packs/` |
 | `stackfoundry-radar` | monthly | `0 7 2 * *` | always |
 | `flaky-watch` | nightly or weekly | `0 2 * * *` or `0 2 * * 6` | some target has a `tests[].shuffle` command |
 | `docs-reconciler` (report-only) | weekly | `0 7 * * 5` | `<docsRoot>` exists |
@@ -27,7 +35,7 @@ overnight with the gate preconditions met; otherwise weekly.
 
 ## Procedure
 
-1. **Read the profile**: `.claude/stackfoundry/targets.json` (`docsRoot`, targets with `tests[].shuffle`), the
+1. **Read the profile**: `.stackfoundry/targets.json` (`docsRoot`, targets with `tests[].shuffle`), the
    presence of `ecosystems.json` and packs, and the repo's absolute path (`git rev-parse --show-toplevel`). No
    profile: say "run `/stackfoundry:init` first" and stop.
 2. **Load the scheduling tools**: `ToolSearch` with the query `scheduled task`. When they load, list the existing

@@ -6,6 +6,14 @@ argument-hint: "<target> [<area path> | diff [--base <ref>]]"
 
 # Security review of a target
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Reviews one target the way an attacker who can reach it would look at it: `security-reviewer` agents in review mode,
 one per trust boundary or security category, plus two mechanical checks the orchestrator runs itself (secrets in the
 tree, known-vulnerable dependencies). Findings that survive refutation go into a bug report tracker
@@ -13,10 +21,10 @@ tree, known-vulnerable dependencies). Findings that survive refutation go into a
 
 ## Inputs
 
-- **Target**: a `name` from `.claude/stackfoundry/targets.json`. Absent → `stackfoundry change-targets` on the
+- **Target**: a `name` from `.stackfoundry/targets.json`. Absent → `stackfoundry change-targets` on the
   uncommitted tree; nothing changed → list the names and ask.
 - **Scope**: the whole target (default), an area path, or `diff [--base <ref>]`.
-- **Effort**: the user's words win, else the plugin's `defaultEffort` setting (`${user_config.defaultEffort}`).
+- **Effort**: the user's words win, else the repo's `defaultEffort` (`stackfoundry config defaultEffort`).
   quick → diff scope, one refutation vote · thorough → three votes on every 🔴/🟡 and the history scan below.
 
 ## Procedure
@@ -38,7 +46,7 @@ tree, known-vulnerable dependencies). Findings that survive refutation go into a
      `gh[pousr]_[A-Za-z0-9]{36,}`, `xox[abprs]-`), connection strings with a password, and assignments of long
      high-entropy literals to names like `key`, `secret`, `token` or `password`. Thorough: the same patterns over
      history with `git log -p -G`. Judge each hit (a test fixture or a documented placeholder is not a secret).
-   - **Dependency advisories**: in `.claude/stackfoundry/ecosystems.json`, every ecosystem whose `gateTargets`
+   - **Dependency advisories**: in `.stackfoundry/ecosystems.json`, every ecosystem whose `gateTargets`
      include the target; run those of its `discover` commands that list vulnerabilities. None does → say so under
      Not covered and suggest `/stackfoundry:sync` add one.
 5. **Fan out** `stackfoundry:security-reviewer` (or `materialized.security-reviewer`), one per boundary or

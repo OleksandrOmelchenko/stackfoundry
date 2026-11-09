@@ -3,7 +3,7 @@ templateVersion: 1
 output: .claude/rules/{{pack-id}}.md
 ---
 ---
-description: {{one line: what this rulebook governs}}. Researched {{researchedAt}} for {{versions}}; source pack .claude/stackfoundry/packs/{{pack-id}}/pack.json.
+description: {{one line: what this rulebook governs}}. Researched {{researchedAt}} for {{versions}}; source pack .stackfoundry/packs/{{pack-id}}/pack.json.
 paths:
 {{one "  - \"<glob>\"" line per rulebookPaths entry}}
 ---

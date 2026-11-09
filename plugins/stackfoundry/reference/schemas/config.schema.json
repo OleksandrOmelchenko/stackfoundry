@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/OleksandrOmelchenko/stackfoundry/schemas/config.schema.json",
+  "title": "stackfoundry settings (.stackfoundry/config.json)",
+  "description": "The repo's stackfoundry settings, shared by every assistant and collaborator. Written by init; read with `stackfoundry config [key]`, which fills in the defaults. A missing file means all defaults.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "clients": {
+      "type": "array",
+      "description": "The assistants this repo uses. init and sync write each one's files (rulebooks, instruction block, generated skills and agents); the rest are left alone.",
+      "items": {"enum": ["claude-code", "codex", "copilot", "cursor", "gemini"]},
+      "minItems": 1,
+      "uniqueItems": true,
+      "default": ["claude-code"]
+    },
+    "docsRoot": {
+      "type": "string",
+      "description": "Folder, relative to the repo root, where trackers live (bug reports, test designs, plans, specifications, dependency and radar reports).",
+      "default": "docs"
+    },
+    "researchRefreshDays": {
+      "type": "integer",
+      "minimum": 7,
+      "maximum": 365,
+      "description": "A technology pack older than this is flagged stale by tech-radar and offered for re-research.",
+      "default": 90
+    },
+    "defaultEffort": {
+      "enum": ["quick", "standard", "thorough"],
+      "description": "How wide orchestrators fan out when the request does not say: quick (diff scope, one verify vote), standard, or thorough (deep sweep, three refutation votes on high-risk findings).",
+      "default": "standard"
+    }
+  }
+}

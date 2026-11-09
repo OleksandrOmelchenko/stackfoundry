@@ -9,7 +9,7 @@ Future, not-yet-started features, one file each, unordered. `/stackfoundry:plan-
 
 Line 3 of every plan and spec is `**Category:** <word>`, one of:
 
-- `cli`: the helper CLI, its launcher and the guard hook (`plugins/stackfoundry/scripts/`, `bin/`, `hooks/`).
+- `cli`: the helper CLI, its launcher and the guard hook (`plugins/stackfoundry/scripts/`, `hooks/`).
 - `plugin`: skills, agents, the reference method and evals (`plugins/stackfoundry/`).
 - `repo`: CI, release, contributor tooling and repo-level docs (`.github/`, `.githooks/`, `docs/`).
 

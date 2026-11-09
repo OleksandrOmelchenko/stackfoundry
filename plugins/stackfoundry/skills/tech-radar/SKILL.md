@@ -6,21 +6,29 @@ argument-hint: "[pack-id ...]"
 
 # Tech radar
 
-Packs are researched once and age. This skill asks, per pack in `.claude/stackfoundry/packs/`, what changed since its
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
+Packs are researched once and age. This skill asks, per pack in `.stackfoundry/packs/`, what changed since its
 `researchedAt` that this repo should know, and writes one dated report. It is unattended: it never edits a pack, a
 rulebook or code. `/stackfoundry:act-on-radar` routes the report after a person has read it; `/stackfoundry:bump`
 and `/stackfoundry:check-updates` own version numbers, so this skill points at them rather than duplicating them.
 
 ## Inputs
 
-- `.claude/stackfoundry/packs/*/pack.json` (or the ids given): `layer`, `versions` (`version`, `pinnedIn`,
+- `.stackfoundry/packs/*/pack.json` (or the ids given): `layer`, `versions` (`version`, `pinnedIn`,
   `latest`), `researchedAt`, `upgrade` (`releaseNotes`, `migrationGuides`, `deprecationsInUse`), `sources`, and the
   targets that use it (`targets.json` → `targets[].packs`).
 - `<docsRoot>/radar/decisions.md` (format: `${CLAUDE_PLUGIN_ROOT}/reference/trackers/radar-decisions.md`). An item
   with a row there is skipped unless its **Revisit when** condition now holds; say which condition fired.
-- The refresh window: the plugin setting `researchRefreshDays` (`${user_config.researchRefreshDays}`; 90 when
+- The refresh window: the repo's `researchRefreshDays` (`stackfoundry config researchRefreshDays`; 90 when
   unset).
-- `docsRoot` and `timezone` from `.claude/stackfoundry/targets.json`. No packs: one line ("run
+- `docsRoot` and `timezone` from `.stackfoundry/targets.json`. No packs: one line ("run
   `/stackfoundry:init`") and stop without writing.
 
 ## Unattended contract

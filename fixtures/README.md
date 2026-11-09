@@ -13,7 +13,7 @@ the target map `init` should arrive at.
 | `vue-spa` | a TypeScript UI target with a component harness |
 | `python-fastapi` | a Python service with a security-relevant planted bug |
 
-A `<fixture>.profile/` folder beside a fixture holds a ready `.claude/stackfoundry/` profile. Cases that test a skill
+A `<fixture>.profile/` folder beside a fixture holds a ready `.stackfoundry/` profile. Cases that test a skill
 on an initialized repo (bug-hunt, review-tests, debug…) call `scaffold <fixture> with-profile`; cases that test
 `init` itself use the bare fixture.
 

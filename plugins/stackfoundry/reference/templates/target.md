@@ -1,6 +1,6 @@
 ---
 templateVersion: 1
-output: .claude/stackfoundry/targets/{{target}}.md
+output: .stackfoundry/targets/{{target}}.md
 ---
 # Target `{{target}}`
 

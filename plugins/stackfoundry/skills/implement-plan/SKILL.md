@@ -6,6 +6,14 @@ argument-hint: "[plan slug]"
 
 # Implement a plan, then retire it
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Takes a plan from `<docsRoot>/plans/` (`targets.json` → `docsRoot`, default `docs`), builds it the repo's way, and
 once it is built and verified **retires** it in the same change: the plan is deleted, a living spec records what
 was built, and every instruction the change made untrue is synced. The lifecycle is in
@@ -36,7 +44,7 @@ sweep; the retirement below still applies.
      (what was exercised and that the gate was green, no suite totals), Follow-ups (not yet implemented).
    - **Add its index row** to `<docsRoot>/specifications/README.md`.
    - **Sync instructions** the change made untrue: `CLAUDE.md` files (outside the stackfoundry markers), the
-     team's `.claude/rules/` files, the target profile (`.claude/stackfoundry/targets/<target>.md`) when paths,
+     team's `.claude/rules/` files, the target profile (`.stackfoundry/targets/<target>.md`) when paths,
      harness, gate or traps changed, and any skill or agent whose behaviour changed. A new project or app model
      means `targets.json` is behind: suggest `/stackfoundry:sync` rather than hand-editing the target map.
 5. **Confirm the retirement** with the `plan-sync-reviewer` agent: plan deleted, spec and index row present,

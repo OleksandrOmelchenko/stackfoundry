@@ -6,9 +6,26 @@ disable-model-invocation: true
 
 # Upgrade
 
-After `claude plugin update stackfoundry@stackfoundry`, the plugin's skills and agents are new, but the files `init`
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
+After the plugin updates (`claude plugin update stackfoundry@stackfoundry`, or the other assistant's update), the plugin's skills and agents are new, but the files `init`
 generated in this repo still come from the old templates. This skill brings them forward without losing the team's
-edits. It relies on `.claude/stackfoundry/manifest.lock.json` (`stackfoundry manifest`).
+edits. It relies on `.stackfoundry/manifest.lock.json` (`stackfoundry manifest`).
+
+## 0. Move an old profile
+
+A profile in `.claude/stackfoundry/` (the survey reports `hasLegacyStackfoundryProfile`) moves to `.stackfoundry/`
+first, so every assistant can read it: move the folder with its contents unchanged, then rewrite each
+`.claude/stackfoundry/` path inside `manifest.lock.json`. The plugin settings that lived in Claude Code's plugin
+configuration (`docsRoot`, `researchRefreshDays`, `defaultEffort`) go to `.stackfoundry/config.json` with
+`clients: ["claude-code"]` (schema `${CLAUDE_PLUGIN_ROOT}/reference/schemas/config.schema.json`); ask the user for
+the values they had set, since the plugin can no longer read them. Then continue with step 1.
 
 ## 1. Plan
 

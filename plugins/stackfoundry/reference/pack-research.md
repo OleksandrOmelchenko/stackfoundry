@@ -51,7 +51,7 @@ Read in this order, and stop widening once the pack is complete:
 ## Freshness
 
 A pack records `researchedAt` and the version researched. `tech-radar` flags a pack as stale when it is older than
-the refresh window (plugin setting `researchRefreshDays`) or when the repo now pins a newer major than the one
+the refresh window (`researchRefreshDays` in `.stackfoundry/config.json`) or when the repo now pins a newer major than the one
 researched; `act-on-radar` routes stale packs to `research-stack`.
 
 ## Output size

@@ -6,8 +6,16 @@ argument-hint: "[<target> ...] [--affected | --full] [--base <ref>] [--files a,b
 
 # Run tests
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Plans with `stackfoundry select-tests`, runs what it selects, and reports what the run did **not** cover. The
-selection rules live in the CLI and the `tests` entries of `.claude/stackfoundry/targets.json`: quote the plan,
+selection rules live in the CLI and the `tests` entries of `.stackfoundry/targets.json`: quote the plan,
 never restate the rules. A red test is a finding, never something to make green by narrowing the selection.
 
 ## 1. Plan

@@ -44,8 +44,8 @@ Rules:
 
 Every role agent reads, for its target, in this order:
 
-1. `.claude/stackfoundry/profile.md` (what the product is, who uses it, what is at stake);
-2. `.claude/stackfoundry/targets/<target>.md` (stack facts, harness, gate, traps, oracle sources);
+1. `.stackfoundry/profile.md` (what the product is, who uses it, what is at stake);
+2. `.stackfoundry/targets/<target>.md` (stack facts, harness, gate, traps, oracle sources);
 3. the rulebook of each pack in the target's stack, language first, then app model, capabilities, tooling;
 4. the shared rulebook for its role (`testing.md` for test roles, `dependency-bumps.md` for bumpers…).
 

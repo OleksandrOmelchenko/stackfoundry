@@ -6,6 +6,14 @@ argument-hint: "<target> [diff [--base <ref>] | --design <doc> | <area>]"
 
 # Review tests
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Decides, per test, whether it **would fail if the behaviour it claims to pin broke**: the adversarial counterpart
 to `write-tests`. Read-only on tests and code; fixing is `fix-tests`. Rules: `.claude/rules/testing.md` (§13 the
 verdict vocabulary, §12 smells, §10 mutation, §11 flaky categories). Step three of the loop:
@@ -13,7 +21,7 @@ verdict vocabulary, §12 smells, §10 mutation, §11 flaky categories). Step thr
 
 ## Inputs
 
-- **Target**: a `name` from `.claude/stackfoundry/targets.json`; absent in diff mode → every target
+- **Target**: a `name` from `.stackfoundry/targets.json`; absent in diff mode → every target
   `stackfoundry change-targets` reports with test files.
 - **Mode**: **Diff** (default): the target's changed tests plus the production code they cover. **Design**
   (`--design <doc>`): every test the ✍️ rows cite, and the ⬜ rows as MISSING. **Area**: an existing suite folder

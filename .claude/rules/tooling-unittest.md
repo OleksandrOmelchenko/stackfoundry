@@ -1,5 +1,5 @@
 ---
-description: Python stdlib unittest (floor 3.11, CI 3.11 + 3.x on three OSes) rulebook (tooling layer). Researched 2026-11-09; source pack .claude/stackfoundry/packs/tooling-unittest/pack.json.
+description: Python stdlib unittest (floor 3.11, CI 3.11 + 3.x on three OSes) rulebook (tooling layer). Researched 2026-11-09; source pack .stackfoundry/packs/tooling-unittest/pack.json.
 paths:
   - "tests/**"
 ---
@@ -10,7 +10,7 @@ paths:
      Disagree with a rule? Record the repo's way in the pack's repoConvention and re-render, so a refresh keeps
      your decision. -->
 
-Applies to: cli, plugin. Versions in use: Python >= 3.11 (stdlib unittest) (plugins/stackfoundry/bin/stackfoundry (sys.version_info >= (3, 11)); .github/workflows/ci.yml matrix python: ["3.11", "3.x"]).
+Applies to: cli, plugin. Versions in use: Python >= 3.11 (stdlib unittest) (plugins/stackfoundry/scripts/stackfoundry.sh (sys.version_info >= (3, 11)); .github/workflows/ci.yml matrix python: ["3.11", "3.x"]).
 
 ## Rules
 
@@ -20,7 +20,7 @@ Applies to: cli, plugin. Versions in use: Python >= 3.11 (stdlib unittest) (plug
 - **Pass timeout= to every subprocess.run in a test (the repo uses 120 s in tests/_support.py git and run_cli).** timeout defaults to None: a child that blocks (git waiting for an editor or credential, a shell reading stdin) hangs the CI job until the runner's own limit with no test named. With timeout, run() kills the child and raises TimeoutExpired, which fails the one test. Here: tests/_support.py (git, run_cli: timeout=120); missing: tests/test_self_run_fixes.py (guard_bytes); missing: tests/test_fixtures.py (ScaffoldTests.test_scaffold_copies_the_fixture_without_its_answer_key_and_commits, two calls); missing: tests/test_guard.py (test_the_launcher_runs_the_guard). [subprocess-doc]
 - **Give an explicit encoding="utf-8" with every text=True subprocess call and every read_text/write_text/open in tests; for raw-bytes protocol tests (the guard) pass bytes and no text mode.** On 3.11 to 3.14 text mode defaults to the locale encoding (cp1252 and similar on the windows-latest leg): the Cyrillic and other non-ASCII paths these tests use come back mangled or raise UnicodeDecodeError. UTF-8 becomes the default only in 3.15. Until 3.15 makes UTF-8 the default; keep explicit while the floor is below 3.15. Here: tests/_support.py (write, git, run_cli); tests/test_self_run_fixes.py (CYRILLIC, guard_bytes). [subprocess-doc, whatsnew-315]
   This repo: Already followed everywhere in tests/ (grep of read_text/write_text/subprocess.run).
-- **Run the CLI under test as the hook does: through tests/_support.run_cli (sys.executable -I cli.py), not by calling a different interpreter or omitting -I.** -I drops the script directory and user site-packages from sys.path and ignores PYTHON* variables; without it a developer's environment can make a test pass that fails under the real launcher, or the reverse. Here: tests/_support.py (run_cli); plugins/stackfoundry/bin/stackfoundry (launcher runs the CLI isolated). [cmdline-doc]
+- **Run the CLI under test as the hook does: through tests/_support.run_cli (sys.executable -I cli.py), not by calling a different interpreter or omitting -I.** -I drops the script directory and user site-packages from sys.path and ignores PYTHON* variables; without it a developer's environment can make a test pass that fails under the real launcher, or the reverse. Here: tests/_support.py (run_cli); plugins/stackfoundry/scripts/stackfoundry.sh (launcher runs the CLI isolated). [cmdline-doc]
 - **Loop over data with self.subTest(...) and assert the collection is non-empty before the loop (as FixtureProfileTests does with assertTrue(overlays)).** Without subTest the first failing item hides the rest; without the non-empty assertion a glob that matches nothing (a renamed folder) makes the test pass vacuously while checking nothing. Here: tests/test_fixtures.py (FixtureProfileTests.test_every_profile_overlay_passes_the_profile_checks: does both); missing the non-empty check: tests/test_reference.py (test_every_json_file_parses, test_every_template_declares_its_version_and_output). [unittest-doc]
 - **Release resources with a context manager, addCleanup or enterContext (3.11+), not tearDown alone.** If setUp raises, tearDown does not run but registered cleanups do: temp repos and processes leak and later tests on the same box see stale state. Since enterContext/enterClassContext/enterModuleContext: 3.11. Here: tests/_support.py (TempRepo context manager); tests/test_manifests.py (ManifestTests.setUp, read-only, no cleanup needed). [unittest-doc]
 - **Guard tests that need an external tool with @unittest.skipUnless(<probe>, "<reason>") at the class or method, and check the -v CI log on each OS that they actually run there.** A skip is reported as success: a probe that is false on a CI runner means the test never runs anywhere. Since the 3.12 fix an all-skipped run no longer exits 5, so nothing turns red. Here: tests/_support.py (HAS_GIT); tests/test_fixtures.py (ScaffoldTests: HAS_GIT and shutil.which("sh")); tests/test_guard.py (test_the_launcher_runs_the_guard: shutil.which("sh")). [unittest-doc, cpython-113661]
@@ -59,8 +59,8 @@ unittest proves the CLI modules in-process (stackfoundry.* functions) and end to
 
 ## Upgrades
 
-- Pinned in: plugins/stackfoundry/bin/stackfoundry: sys.version_info >= (3, 11); .github/workflows/ci.yml: matrix.python ["3.11", "3.x"] on ubuntu-latest, windows-latest, macos-latest
-- Moves with: The floor in bin/stackfoundry, the "3.11" CI matrix entry and the 'Python 3.11+' statement in .claude/CLAUDE.md move together; raising the floor unlocks the 3.12+ APIs listed in the rules.; Python 3.11 reaches end of life 2027-10 (devguide).
+- Pinned in: plugins/stackfoundry/scripts/stackfoundry.sh: sys.version_info >= (3, 11); .github/workflows/ci.yml: matrix.python ["3.11", "3.x"] on ubuntu-latest, windows-latest, macos-latest
+- Moves with: The floor in scripts/stackfoundry.sh, the "3.11" CI matrix entry and the 'Python 3.11+' statement in .claude/CLAUDE.md move together; raising the floor unlocks the 3.12+ APIs listed in the rules.; Python 3.11 reaches end of life 2027-10 (devguide).
 - Release notes: https://docs.python.org/3/whatsnew/3.12.html · https://docs.python.org/3/whatsnew/3.13.html · https://docs.python.org/3/whatsnew/3.14.html · https://docs.python.org/3/whatsnew/3.15.html
 - Migration guides: https://docs.python.org/3/whatsnew/3.12.html
 

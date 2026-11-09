@@ -6,6 +6,14 @@ argument-hint: "<target> [<area> | diff [--base <ref>] | --design <doc>] [--full
 
 # Write tests
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Generates **behavioural** tests for a target and leaves its suite green, or red only where the product is wrong. It
 writes tests only: a test that cannot pass because the product contradicts its source stays red and becomes a bug
 report. Rules: `.claude/rules/testing.md` (§1 oracles, §5 how a test reads, §6 determinism, §8 no gaming, §9 the
@@ -13,7 +21,7 @@ assurance gate). Step two of the loop: `design-tests` → **write** → `review-
 
 ## Inputs
 
-- **Target**: a `name` from `.claude/stackfoundry/targets.json`; unknown or absent → list the names and ask.
+- **Target**: a `name` from `.stackfoundry/targets.json`; unknown or absent → list the names and ask.
 - **Mode**:
   - **Sweep** (default): every area of the target where coverage is thin, highest risk first.
   - **Area**: a path, type or feature under the target.

@@ -6,6 +6,14 @@ argument-hint: "[N reports] [--file]"
 
 # Radar digest
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Each radar and dependency report is a snapshot. Read one at a time, they hide the pattern: the advisory that has sat
 in `watch` for months, the major deferred four times, the tool suggested every run and never decided. This skill
 reads the last N of them with the decision ledger and says what moved, what did not, and what keeps coming back.
@@ -13,7 +21,7 @@ reads the last N of them with the decision ledger and says what moved, what did 
 ## Inputs
 
 - `N`: how many reports of each kind (default 4).
-- `<docsRoot>` from `.claude/stackfoundry/targets.json`:
+- `<docsRoot>` from `.stackfoundry/targets.json`:
   - `<docsRoot>/radar/*-tech-radar.md` and `*-stackfoundry-radar.md`, newest first;
   - `<docsRoot>/dependency-reports/*-dependency-updates.md`, newest first;
   - `<docsRoot>/radar/decisions.md` and the `ecosystems.json` → `deferredFile`;

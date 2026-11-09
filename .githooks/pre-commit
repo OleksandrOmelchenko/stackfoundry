@@ -26,7 +26,7 @@ if py=$(pick_python); then
   $py -m unittest discover -s tests -t . -q || fail=1
   if [ -f plugins/stackfoundry/scripts/stackfoundry/cli.py ]; then
     echo "pre-commit: plugin plumbing"
-    sh plugins/stackfoundry/bin/stackfoundry verify-plumbing plugins/stackfoundry || fail=1
+    sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry || fail=1
   fi
 else
   echo "pre-commit: no Python >= 3.11 found; skipping unit tests and plumbing checks" >&2

@@ -6,6 +6,14 @@ argument-hint: "[branch [--base <ref>] | commit <range>] [--skip tests|hunt|docs
 
 # Quality sweep
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 The loop that turns "it builds and its own tests pass" into "tested, hunted, fixed, verified and documented". Every
 step is an existing skill; this one fixes their order, what runs in parallel and when to stop. It never commits.
 
@@ -16,7 +24,7 @@ step is an existing skill; this one fixes their order, what runs in parallel and
 - **`--skip tests|hunt|docs`** drops a step the user already covered; the report says so.
 - `/stackfoundry:implement-only` in force means no build, test or runtime: say the sweep cannot run under it, stop.
 - No `targets.json` → "run `/stackfoundry:init`", stop.
-- Effort: the user's words win, else the plugin's `defaultEffort` setting (`${user_config.defaultEffort}`); it is
+- Effort: the user's words win, else the repo's `defaultEffort` (`stackfoundry config defaultEffort`); it is
   passed to every skill below.
 
 ## Steps

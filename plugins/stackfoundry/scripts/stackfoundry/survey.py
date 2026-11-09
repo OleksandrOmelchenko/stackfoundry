@@ -501,7 +501,8 @@ def _claude_inventory(root: Path, files: list[str]) -> dict:
         "agents": sorted(Path(f).stem for f in files if f.startswith(".claude/agents/") and f.endswith(".md")),
         "rules": sorted(Path(f).stem for f in files if f.startswith(".claude/rules/") and f.endswith(".md")),
         "hasSettings": (root / ".claude" / "settings.json").exists(),
-        "hasStackfoundryProfile": (root / ".claude" / "stackfoundry" / "targets.json").exists(),
+        "hasStackfoundryProfile": (root / ".stackfoundry" / "targets.json").exists(),
+        "hasLegacyStackfoundryProfile": (root / ".claude" / "stackfoundry" / "targets.json").exists(),
     }
     settings = root / ".claude" / "settings.json"
     if settings.exists():

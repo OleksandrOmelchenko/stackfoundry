@@ -6,8 +6,8 @@ role agent, what the agent reads, what it returns, and the roster of names.
 
 ## What every role agent reads, in order
 
-1. `.claude/stackfoundry/profile.md`: the product, users, stakes, constraints, working agreements.
-2. `.claude/stackfoundry/targets.json` (its own target's entry) and `.claude/stackfoundry/targets/<target>.md`:
+1. `.stackfoundry/profile.md`: the product, users, stakes, constraints, working agreements.
+2. `.stackfoundry/targets.json` (its own target's entry) and `.stackfoundry/targets/<target>.md`:
    stack, paths, harness, gate, oracle sources, emphasis, traps.
 3. The rulebook of each pack in the target's stack, language first: `.claude/rules/<pack-id>.md`. Its *Bug
    categories*, *Testing*, *Performance* and *Security* sections are where the role's checklist comes from.
@@ -16,7 +16,7 @@ role agent, what the agent reads, what it returns, and the roster of names.
 5. When the dispatch names a materialized agent for this target (`targets.json` → `materialized`), the
    orchestrator dispatches that one instead, and the generic agent is not involved.
 
-A missing profile file is reported in one line ("no `.claude/stackfoundry/targets.json`: run
+A missing profile file is reported in one line ("no `.stackfoundry/targets.json`: run
 `/stackfoundry:init`") and the agent stops. It never invents the facts the profile would hold.
 
 ## What the orchestrator passes (the dispatch brief)
@@ -147,13 +147,17 @@ disable-model-invocation: true     # slash-only skills only
                      `stackfoundry <subcommand>`, AskUserQuestion, Skill → /stackfoundry:<skill>)
 ```
 
-- The helper CLI is on the Bash `PATH` as `stackfoundry` (the plugin's `bin/`), for skills and agents alike. When
-  that cannot be relied on, call `sh "${CLAUDE_PLUGIN_ROOT}/bin/stackfoundry" <subcommand>`.
-- Reference files are linked as `${CLAUDE_PLUGIN_ROOT}/reference/<path>`; the variable resolves in skill and agent
-  bodies.
-- Plugin settings are read as `${user_config.<key>}` (`docsRoot`, `researchRefreshDays`, `defaultEffort`). Write the
-  sentence so it still reads correctly if the value is not substituted, and name the fallback. Values recorded in
-  `targets.json` win over plugin settings.
+- Every skill and agent carries the **portable-form preamble** right under its title, exactly as
+  `scripts/stackfoundry/preamble.py` writes it (`verify-plumbing` checks it). It defines `stackfoundry <subcommand>`
+  as the launcher by path (`scripts/stackfoundry.sh`, or `stackfoundry.ps1` on Windows without `sh`), says what
+  `${CLAUDE_PLUGIN_ROOT}` is where an assistant does not substitute it, and points at `reference/clients.md` for tool
+  equivalents. So write the body in Claude Code's terms (`AskUserQuestion`, `subagent_type`, bare
+  `stackfoundry …`), never per assistant. Dispatching skills give every agent `pluginRoot:` in the brief.
+- Reference files are linked as `${CLAUDE_PLUGIN_ROOT}/reference/<path>`; Claude Code substitutes the variable, other
+  assistants resolve it through the preamble.
+- Settings are the repo's, in `.stackfoundry/config.json` (`clients`, `docsRoot`, `researchRefreshDays`,
+  `defaultEffort`), read with `stackfoundry config <key>`, which fills in the defaults. No `${user_config.*}`: other
+  assistants have no plugin settings.
 - `<docsRoot>` in a skill body means `targets.json` → `docsRoot`; `{{docsRoot}}` is reserved for template
   placeholders.
 - A code-writer skill is named after the **bare** app-model id: pack `app-model-nuxt-ssr` →

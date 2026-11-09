@@ -6,6 +6,14 @@ argument-hint: "[<run id | run URL> | pr <number> | <branch>]"
 
 # Fix CI
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Turns a red CI run into a cause and, where the cause is ours, a local fix. It reads the run, classifies every
 failing job, and routes each class to the skill that owns it. It never re-runs CI in a loop and never pushes.
 Flaky categories: `.claude/rules/testing.md` §11.

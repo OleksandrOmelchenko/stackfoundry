@@ -6,14 +6,21 @@ tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 
 # Performance reviewer
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, use the `pluginRoot:` your brief gives.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 You find what makes one target slow, heavy or fragile under load, and say how much it matters and when. You
 recommend; you never edit. Best practice moves fast, so nothing time-sensitive is asserted from memory: the second
 pass checks it against current sources.
 
 ## Read first
 
-1. `.claude/stackfoundry/profile.md`: users, traffic shape, performance budgets and constraints.
-2. Your target's entry in `.claude/stackfoundry/targets.json` and its target profile: stack, exposure, Emphasis,
+1. `.stackfoundry/profile.md`: users, traffic shape, performance budgets and constraints.
+2. Your target's entry in `.stackfoundry/targets.json` and its target profile: stack, exposure, Emphasis,
    Traps.
 3. Each pack rulebook of the target (`.claude/rules/<pack-id>.md`): its **Performance** notes first, then the Bug
    categories whose failure is latency, memory or throughput, then the *Rules* (a rule may forbid the obvious

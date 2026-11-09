@@ -6,6 +6,14 @@ argument-hint: "[unpushed | pr <number> | <paths>]"
 
 # Review changes
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Reviews a change against this repository. The one rule that makes it worth running: **the review always happens in
 fresh sessions, never inline.** An author re-reading their own work re-derives the reasoning that produced it and
 finds it sound; if you wrote the code earlier in this session, you are its worst reviewer. A subagent starts with
@@ -33,7 +41,7 @@ So:
 Untracked files never appear in `git diff`; new code is where the risk concentrates, so they are always listed.
 For a PR, reviewers need its head commit to read whole files: `git fetch origin pull/<n>/head` writes refs, so ask
 first, then reviewers read with `git show <sha>:<path>`; without it they review the diff alone, and the report
-says so. Effort: the user's words win, else the plugin's `defaultEffort` setting (`${user_config.defaultEffort}`).
+says so. Effort: the user's words win, else the repo's `defaultEffort` (`stackfoundry config defaultEffort`).
 
 ## Procedure
 

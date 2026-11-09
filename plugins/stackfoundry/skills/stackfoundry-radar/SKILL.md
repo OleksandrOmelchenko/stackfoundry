@@ -5,6 +5,14 @@ description: Scheduled read-only check of stackfoundry itself — installed plug
 
 # stackfoundry radar
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Three versions can drift apart: the plugin release on the marketplace, the plugin installed on this machine, and the
 plugin version that generated this repo's profile, rulebooks and code-writer skills. Claude Code itself moves too.
 This skill compares them and writes one dated report saying which step closes each gap. It is unattended: it never
@@ -13,7 +21,7 @@ updates, upgrades or syncs anything.
 ## Inputs
 
 - **Installed**: `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` → `version`.
-- **Repo**: `.claude/stackfoundry/manifest.lock.json` → `pluginVersion`, and `stackfoundry manifest diff --json`
+- **Repo**: `.stackfoundry/manifest.lock.json` → `pluginVersion`, and `stackfoundry manifest diff --json`
   (per generated file: untouched, edited or deleted, and whether its template is newer in the installed plugin).
 - **Latest**: the marketplace's manifest
   `https://raw.githubusercontent.com/OleksandrOmelchenko/stackfoundry/main/plugins/stackfoundry/.claude-plugin/plugin.json`
@@ -22,7 +30,7 @@ updates, upgrades or syncs anything.
   `stackfoundry--v<version>`.
 - **Claude Code**: `claude --version` and its release notes
   `https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md`.
-- `docsRoot` and `timezone` from `.claude/stackfoundry/targets.json`. No profile: report only the installed vs
+- `docsRoot` and `timezone` from `.stackfoundry/targets.json`. No profile: report only the installed vs
   latest comparison in chat and suggest `/stackfoundry:init`; write nothing.
 
 ## Unattended contract

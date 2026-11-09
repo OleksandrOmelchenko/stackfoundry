@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/OleksandrOmelchenko/stackfoundry/schemas/manifest.schema.json",
-  "title": "stackfoundry manifest (.claude/stackfoundry/manifest.lock.json)",
+  "title": "stackfoundry manifest (.stackfoundry/manifest.lock.json)",
   "description": "Written by `stackfoundry manifest record`. What init generated, from which template and version, and the hash it had when written, so upgrade can tell untouched files from edited ones.",
   "type": "object",
   "required": ["schemaVersion", "pluginVersion", "files"],

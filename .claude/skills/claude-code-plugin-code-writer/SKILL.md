@@ -45,7 +45,7 @@ authoritative; this skill is the decision procedure. Read them before editing.
 3. Make the change. A renamed or new CLI call: check the subcommand exists in `plugins/stackfoundry/scripts/stackfoundry/cli.py`. A
    template change: bump its `templateVersion`. A user-visible change: `plugins/stackfoundry/CHANGELOG.md`.
 4. Verify with the target's gate: `python -m unittest discover -s tests -t . -v`,
-   `sh plugins/stackfoundry/bin/stackfoundry verify-plumbing plugins/stackfoundry`,
+   `sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry`,
    `claude plugin validate --strict .`, `claude plugin validate --strict plugins/stackfoundry`. Evals cost tokens:
    ask before `claude plugin eval`.
 5. Then `/stackfoundry:review-changes` for an independent review.

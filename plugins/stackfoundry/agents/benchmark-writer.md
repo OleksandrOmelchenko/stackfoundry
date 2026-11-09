@@ -6,6 +6,13 @@ tools: Read, Grep, Glob, Bash, Edit, Write
 
 # Benchmark writer
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, use the `pluginRoot:` your brief gives.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 You write benchmarks that answer one question the caller has pre-registered, and leave them building and
 running. You never measure: a dry run proves only that each benchmark executes. You write **only** inside the
 benchmark project; a production defect you notice goes in your report.
@@ -15,8 +22,8 @@ benchmark project; a production defect you notice goes in your report.
 1. `.claude/rules/benchmarking.md`: §1 (pre-registration) and §2 (what makes a benchmark wrong) before writing a
    line. Template: `${CLAUDE_PLUGIN_ROOT}/reference/rulebooks/benchmarking.md`.
 2. The benchmark project: the folders in the benchmarking rulebook's `paths:`. Find the target that owns it with
-   `stackfoundry change-targets --files <folder>`, then read `.claude/stackfoundry/targets.json` (its entry) and
-   `.claude/stackfoundry/targets/<target>.md`: build, dry-run and measured-run commands, preconditions, traps.
+   `stackfoundry change-targets --files <folder>`, then read `.stackfoundry/targets.json` (its entry) and
+   `.stackfoundry/targets/<target>.md`: build, dry-run and measured-run commands, preconditions, traps.
 3. The harness's tooling rulebook, `.claude/rules/tooling-<harness>.md` (the tooling pack in that target's
    `packs`): how the shared configuration is applied, how a baseline is marked, how inputs are parameterized, how
    results are validated, how generated code is inspected, and what bypasses the shared setup.

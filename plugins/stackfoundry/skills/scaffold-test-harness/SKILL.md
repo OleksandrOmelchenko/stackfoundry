@@ -6,6 +6,14 @@ argument-hint: "<target>"
 
 # Scaffold a test harness
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Gives a target the smallest harness the test quality loop can run on: a place for tests, a base fixture, doubles at
 the edge, and the commands the assurance gate needs. The framework comes from a **researched** tooling pack, never
 from memory. Nothing is created before the user approves the proposal, and the targets.json change is shown and
@@ -15,7 +23,7 @@ approved separately. Rules: `.claude/rules/testing.md` (§2 layers, §3 doubles,
 
 1. **Load.** No profile → "run `/stackfoundry:init`", stop. Read the target's entry, its profile, the rulebook of
    every pack in its stack (the app-model pack's Testing section says which layer proves what), and each tooling
-   pack's `pack.json` → `testing` under `.claude/stackfoundry/packs/`.
+   pack's `pack.json` → `testing` under `.stackfoundry/packs/`.
 2. **Assess what exists**: test files under `testPaths`, `tests` entries, `gate.test`, base fixtures, fakes, a
    shuffle and a coverage command. A target with a working harness and all of these needs nothing: say so and
    point at `/stackfoundry:write-tests`.
@@ -43,7 +51,7 @@ approved separately. Rules: `.claude/rules/testing.md` (§2 layers, §3 doubles,
    new fixture. It must: pass; **fail** with a readable message when its expectation is broken (flip it, run,
    restore, run again); pass three shuffled runs with different seeds; and make the coverage command produce a
    report. Confirm a filter that matches nothing does not report success.
-7. **Record.** Draft the changes to `.claude/stackfoundry/targets.json` (`testPaths`, a `tests` entry with `name`,
+7. **Record.** Draft the changes to `.stackfoundry/targets.json` (`testPaths`, a `tests` entry with `name`,
    `kind`, `command`, `affectedCommand`, `paths`, `covers`, `shuffle`, `coverage`; `gate.test` and
    `gate.preconditions`), the target profile's *Where things are* and *Gate* sections, and the pins in
    `ecosystems.json`. **Show the diff, ask, then apply.** Check the mapping with

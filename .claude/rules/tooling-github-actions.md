@@ -1,5 +1,5 @@
 ---
-description: GitHub Actions (CI workflows, action pins, Dependabot for actions) rulebook (tooling layer). Researched 2026-11-09; source pack .claude/stackfoundry/packs/tooling-github-actions/pack.json.
+description: GitHub Actions (CI workflows, action pins, Dependabot for actions) rulebook (tooling layer). Researched 2026-11-09; source pack .stackfoundry/packs/tooling-github-actions/pack.json.
 paths:
   - ".github/**"
 ---
@@ -45,7 +45,7 @@ Applies to: cli, plugin. Versions in use: actions/checkout v7.0.1 (3d3c42e5aac5b
 A workflow change is proved only by the CI run it triggers on the pull request: check that every matrix leg ran and the expected jobs appear. Static audit of the YAML (security and syntax) is the cheap layer before that; the repo has none yet.
 
 - Harness: .github/workflows/ci.yml (the workflow itself is the harness; no workflow linter in the repo)
-- Run: `python -m unittest discover -s tests -t . -v (what job unit runs)`; `sh plugins/stackfoundry/bin/stackfoundry verify-plumbing plugins/stackfoundry`; `claude plugin validate --strict . && claude plugin validate --strict plugins/stackfoundry (what job validate runs)`
+- Run: `python -m unittest discover -s tests -t . -v (what job unit runs)`; `sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry`; `claude plugin validate --strict . && claude plugin validate --strict plugins/stackfoundry (what job validate runs)`
 - Trap: `-latest` labels move to a new OS version over 1-2 months after an announcement (ubuntu-26.04 is already published); a green run can turn red with no repo change. Pin an OS version on the matrix leg if the Python 3.11 floor must stay reproducible.
 - Trap: Matrix job order is not guaranteed; never make one leg depend on another's side effects.
 - Trap: A fork PR from a first-time contributor may wait for maintainer approval before CI runs: a missing check is not a pass.
@@ -60,8 +60,8 @@ A workflow change is proved only by the CI run it triggers on the pull request: 
 
 ## Upgrades
 
-- Pinned in: .github/workflows/ci.yml: actions/checkout@3d3c42e5... # v7.0.1 (x2: unit, validate) - latest; .github/workflows/ci.yml: actions/setup-python@6d4fd22b... # v7.1.0 - latest; .github/workflows/ci.yml: actions/setup-node@949feb24... # v7.1.0 - latest; .github/workflows/ci.yml: @anthropic-ai/claude-code@2.1.307 - latest 2.1.319, manual bump; .github/workflows/ci.yml: matrix python ['3.11', '3.x'] - 3.11 is the floor declared by bin/stackfoundry; .github/workflows/ci.yml: node-version lts/* - resolved at run time, unpinned
-- Moves with: actions/checkout SHA in jobs unit and validate (Dependabot group 'actions' bumps both); Claude Code CLI pin in ci.yml with the `claude plugin validate --strict` checks in .claude/CLAUDE.md; Python floor '3.11' in the matrix with the floor enforced by plugins/stackfoundry/bin/stackfoundry
+- Pinned in: .github/workflows/ci.yml: actions/checkout@3d3c42e5... # v7.0.1 (x2: unit, validate) - latest; .github/workflows/ci.yml: actions/setup-python@6d4fd22b... # v7.1.0 - latest; .github/workflows/ci.yml: actions/setup-node@949feb24... # v7.1.0 - latest; .github/workflows/ci.yml: @anthropic-ai/claude-code@2.1.307 - latest 2.1.319, manual bump; .github/workflows/ci.yml: matrix python ['3.11', '3.x'] - 3.11 is the floor declared by scripts/stackfoundry.sh; .github/workflows/ci.yml: node-version lts/* - resolved at run time, unpinned
+- Moves with: actions/checkout SHA in jobs unit and validate (Dependabot group 'actions' bumps both); Claude Code CLI pin in ci.yml with the `claude plugin validate --strict` checks in .claude/CLAUDE.md; Python floor '3.11' in the matrix with the floor enforced by plugins/stackfoundry/scripts/stackfoundry.sh
 - Release notes: https://github.com/actions/checkout/releases · https://github.com/actions/setup-python/releases · https://github.com/actions/setup-node/releases · https://github.com/actions/runner-images
 - Migration guides: https://github.com/actions/checkout/releases/tag/v7.0.0 · https://github.com/actions/setup-python/releases/tag/v7.0.0 · https://github.com/actions/setup-node/releases/tag/v7.0.0
 

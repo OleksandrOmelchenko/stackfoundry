@@ -29,7 +29,7 @@ class GuardEncodingTests(unittest.TestCase):
     def test_a_utf8_event_with_a_non_ascii_project_path_is_still_guarded(self):
         with TempRepo() as tmp:
             project = tmp / CYRILLIC / "repo"
-            write(project, {".claude/stackfoundry/guards.json": json.dumps(
+            write(project, {".stackfoundry/guards.json": json.dumps(
                 {"schemaVersion": 1, "generated": [{"glob": "gen/**", "regenerate": "run codegen"}]})})
             event = {"hook_event_name": "PreToolUse", "tool_name": "Edit",
                      "tool_input": {"file_path": str(project / "gen" / f"{CYRILLIC}.py")}}
@@ -40,8 +40,8 @@ class GuardEncodingTests(unittest.TestCase):
 
     def test_a_byte_order_mark_in_guards_json_does_not_switch_guarding_off(self):
         with TempRepo() as project:
-            (project / ".claude/stackfoundry").mkdir(parents=True)
-            (project / ".claude/stackfoundry/guards.json").write_bytes(
+            (project / ".stackfoundry").mkdir(parents=True)
+            (project / ".stackfoundry/guards.json").write_bytes(
                 b"\xef\xbb\xbf" + json.dumps({"schemaVersion": 1, "git": {"writes": "ask"}}).encode())
             event = {"tool_name": "Bash", "tool_input": {"command": "git push"}}
             proc = guard_bytes(json.dumps(event).encode(), project)
@@ -57,14 +57,14 @@ class GuardScopeTests(unittest.TestCase):
         return json.loads(proc.stdout)["hookSpecificOutput"]["permissionDecision"] if proc.stdout.strip() else None
 
     def test_a_git_write_inside_quotes_is_still_seen(self):
-        with TempRepo({".claude/stackfoundry/guards.json": json.dumps({"schemaVersion": 1, "git": {"writes": "ask"}})}) as r:
+        with TempRepo({".stackfoundry/guards.json": json.dumps({"schemaVersion": 1, "git": {"writes": "ask"}})}) as r:
             for cmd in ("sh -c 'git push'", 'bash -c "git commit -m x"', "echo `git tag v1`"):
                 with self.subTest(cmd=cmd):
                     self.assertEqual(self.guard(r, {"tool_name": "Bash", "tool_input": {"command": cmd}}), "ask")
 
     def test_dot_dot_and_relative_paths_meet_the_globs(self):
         guards = {"schemaVersion": 1, "generated": [{"glob": "gen/**"}]}
-        with TempRepo({".claude/stackfoundry/guards.json": json.dumps(guards)}) as r:
+        with TempRepo({".stackfoundry/guards.json": json.dumps(guards)}) as r:
             for path in (str(r / "gen" / ".." / "gen" / "x.py"), "gen/../gen/x.py", "./gen/x.py"):
                 with self.subTest(path=path):
                     event = {"tool_name": "Write", "cwd": str(r), "tool_input": {"file_path": path}}
@@ -73,8 +73,8 @@ class GuardScopeTests(unittest.TestCase):
     def test_a_nested_worktree_uses_its_own_profile(self):
         outer = {"schemaVersion": 1, "generated": []}
         inner = {"schemaVersion": 1, "generated": [{"glob": "gen/**"}]}
-        with TempRepo({".claude/stackfoundry/guards.json": json.dumps(outer),
-                       "wt/.claude/stackfoundry/guards.json": json.dumps(inner)}) as r:
+        with TempRepo({".stackfoundry/guards.json": json.dumps(outer),
+                       "wt/.stackfoundry/guards.json": json.dumps(inner)}) as r:
             event = {"tool_name": "Edit", "tool_input": {"file_path": str(r / "wt" / "gen" / "x.py")}}
             self.assertEqual(self.guard(r, event), "deny", "CLAUDE_PROJECT_DIR is the outer repo; wt/ governs itself")
 
@@ -84,7 +84,7 @@ class Loop3HardeningTests(unittest.TestCase):
 
     def test_a_rule_cannot_turn_the_guard_into_an_approver(self):
         guards = {"schemaVersion": 1, "commands": [{"pattern": "rm -rf", "decision": "allow", "reason": "x"}]}
-        with TempRepo({".claude/stackfoundry/guards.json": json.dumps(guards)}) as r:
+        with TempRepo({".stackfoundry/guards.json": json.dumps(guards)}) as r:
             proc = guard_bytes(json.dumps({"tool_name": "Bash", "tool_input": {"command": "rm -rf /"}}).encode(), r)
         self.assertEqual(json.loads(proc.stdout)["hookSpecificOutput"]["permissionDecision"], "ask")
 
@@ -128,8 +128,8 @@ class ProfileTests(unittest.TestCase):
     def test_a_byte_order_mark_in_targets_json_is_accepted(self):
         data = {"schemaVersion": 1, "targets": [{"name": "api", "paths": ["src/**"], "packs": []}]}
         with TempRepo() as root:
-            (root / ".claude/stackfoundry").mkdir(parents=True)
-            (root / ".claude/stackfoundry/targets.json").write_bytes(b"\xef\xbb\xbf" + json.dumps(data).encode())
+            (root / ".stackfoundry").mkdir(parents=True)
+            (root / ".stackfoundry/targets.json").write_bytes(b"\xef\xbb\xbf" + json.dumps(data).encode())
             proc = run_cli(["change-targets", "--json", "--root", str(root), "--files", "src/a.py"])
         self.assertEqual(proc.returncode, 0, proc.stderr)
 
@@ -165,14 +165,14 @@ class ManifestTests(unittest.TestCase):
             self.assertEqual(manifest.diff(root)[0]["state"], "untouched")
             write(root, {"CLAUDE.md": "# Team notes\n\n" + block.replace("rows", "changed rows")})
             self.assertEqual(manifest.diff(root)[0]["state"], "edited")
-            leftovers = list((root / ".claude/stackfoundry").glob(".manifest-*"))
+            leftovers = list((root / ".stackfoundry").glob(".manifest-*"))
             self.assertEqual(leftovers, [])
-            raw = (root / ".claude/stackfoundry/manifest.lock.json").read_bytes()
+            raw = (root / ".stackfoundry/manifest.lock.json").read_bytes()
             self.assertNotIn(b"\r\n", raw)
 
     def test_profile_facts_have_no_template_to_upgrade(self):
-        with TempRepo({".claude/stackfoundry/targets.json": "{}"}) as root:
-            manifest.record(root, [".claude/stackfoundry/targets.json"], "profile", "generated")
+        with TempRepo({".stackfoundry/targets.json": "{}"}) as root:
+            manifest.record(root, [".stackfoundry/targets.json"], "profile", "generated")
             row = manifest.diff(root)[0]
         self.assertFalse(row["outdated"])
         self.assertTrue(row["action"].startswith("none"))

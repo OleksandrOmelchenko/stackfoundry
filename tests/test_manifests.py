@@ -34,15 +34,9 @@ class ManifestTests(unittest.TestCase):
         if "version" in entry:
             self.assertEqual(entry["version"], self.plugin["version"])
 
-    def test_user_config_defaults_respect_their_own_bounds(self):
-        for key, spec in self.plugin.get("userConfig", {}).items():
-            with self.subTest(key=key):
-                default = spec.get("default")
-                if "options" in spec:
-                    self.assertIn(default, spec["options"])
-                if spec.get("type") == "number":
-                    self.assertGreaterEqual(default, spec.get("min", default))
-                    self.assertLessEqual(default, spec.get("max", default))
+    def test_settings_live_in_the_repo_not_in_plugin_user_config(self):
+        # Other assistants have no userConfig: settings are .stackfoundry/config.json, read by `stackfoundry config`.
+        self.assertNotIn("userConfig", self.plugin)
 
     def test_icon_is_a_square_png_the_directory_accepts(self):
         # The plugin directory accepts a square PNG of 512 to 2048 px per side, under 2 MB.

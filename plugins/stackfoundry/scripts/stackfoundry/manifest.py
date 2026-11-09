@@ -1,6 +1,6 @@
 """`stackfoundry manifest record|diff|list`: what init generated, from which template, and what changed since.
 
-`.claude/stackfoundry/manifest.lock.json`:
+`.stackfoundry/manifest.lock.json`:
     {"schemaVersion": 1, "pluginVersion": "0.1.0",
      "files": {"<repo-relative path>": {"template": "<plugin path | research | profile>", "templateVersion": "1",
                                         "sha256": "<hex>", "kind": "generated|materialized"}}}

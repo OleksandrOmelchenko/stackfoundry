@@ -23,7 +23,7 @@ paths:
 ## Content
 
 - **Facts come from the repo profile.** A skill reads targets, paths, gates, harnesses and conventions from
-  `.claude/stackfoundry/` (schemas in `reference/schemas/`). It never names a framework rule, a path or a command of
+  `.stackfoundry/` (schemas in `reference/schemas/`). It never names a framework rule, a path or a command of
   its own. If the profile lacks a fact the skill needs, the skill says which field is missing and points at
   `/stackfoundry:sync`, rather than guessing.
 - **Link, don't restate.** Shared rules live in `reference/` (rulebook templates, schemas, tracker formats) and
@@ -43,9 +43,9 @@ paths:
 
 - `scripts/stackfoundry/`: Python ≥ 3.11, standard library only, no network, JSON in and out. Each subcommand's
   docstring says whether it writes. New subcommand → new test module in `tests/`.
-- Hooks call `sh "${CLAUDE_PLUGIN_ROOT}/bin/stackfoundry" <subcommand>` and fail open when no repo profile exists.
+- Hooks call `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` and fail open when no repo profile exists.
 
 ## After adding, renaming or removing a skill or agent
 
-Run `sh plugins/stackfoundry/bin/stackfoundry verify-plumbing plugins/stackfoundry` and
+Run `sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry` and
 `claude plugin validate --strict plugins/stackfoundry`. Update every skill that dispatches it, and `plugins/stackfoundry/CHANGELOG.md`.

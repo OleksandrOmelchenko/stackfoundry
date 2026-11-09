@@ -6,6 +6,14 @@ argument-hint: "<target> [<area> | diff [--base <ref>] | --report <bug report> [
 
 # Design tests
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 Produces a **test design**: the behaviours worth pinning, before any test exists, persisted as a living tracker that
 `write-tests`, `review-tests` and `fix-tests` keep current. It never writes a test or product code, and never
 assumes an expected value the sources don't state. Rules: `.claude/rules/testing.md` (§1 oracles, §2 layers,
@@ -13,7 +21,7 @@ assumes an expected value the sources don't state. Rules: `.claude/rules/testing
 
 ## Inputs
 
-- **Target**: a `name` from `.claude/stackfoundry/targets.json`. Unknown or absent → list the names and ask.
+- **Target**: a `name` from `.stackfoundry/targets.json`. Unknown or absent → list the names and ask.
 - **Mode**:
   - **Area** (default): a path, type, page or feature under the target's `paths`.
   - **Diff** (`diff`): the behaviours a change set adds or alters in the target.
@@ -23,7 +31,7 @@ assumes an expected value the sources don't state. Rules: `.claude/rules/testing
 
 ## Procedure
 
-1. **Load.** No `.claude/stackfoundry/targets.json` → say "run `/stackfoundry:init`" and stop. Read the target's
+1. **Load.** No `.stackfoundry/targets.json` → say "run `/stackfoundry:init`" and stop. Read the target's
    entry (if `roles` excludes `test-designer`, say so and stop), its profile (`targets/<target>.md`: harness, Oracle
    sources, Emphasis, Traps) and `.claude/rules/testing.md`.
 2. **Scope.** Area → the files under it. Diff → `stackfoundry change-targets [--base <ref>] --json`, this target's

@@ -7,6 +7,14 @@ disable-model-invocation: true
 
 # Act on updates
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 `/stackfoundry:check-updates` writes the report and `/stackfoundry:bump-all` applies bumps. A report also holds
 migrations that need a plan, decisions with a deadline, vulnerabilities with no fix yet and tools missing on this
 machine, and those are not bumps. This skill settles each row on its route, asks once, and hands each one to the
@@ -16,9 +24,9 @@ skill that owns it. Routes, the freshness check and every bump rule are in `.cla
 ## Procedure
 
 1. **Load the report**: the path given, else the newest `<docsRoot>/dependency-reports/*-dependency-updates.md`
-   (`docsRoot` from `.claude/stackfoundry/targets.json`).
+   (`docsRoot` from `.stackfoundry/targets.json`).
    - Run the rulebook's freshness check per ecosystem (`git log --since=<report date> -- <pin files>`, the pin
-     files from `.claude/stackfoundry/ecosystems.json`). Rediscover a stale ecosystem with
+     files from `.stackfoundry/ecosystems.json`). Rediscover a stale ecosystem with
      `/stackfoundry:check-updates <id>` before acting on it.
    - A row without a route gets one here, from the rulebook table and its breaking note; say you assigned it.
    - Nothing stays unrouted: the Formats Pass 2 entries, the Not reached list (`machine` when a CLI is missing) and

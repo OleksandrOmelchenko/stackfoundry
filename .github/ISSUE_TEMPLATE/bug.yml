@@ -19,7 +19,7 @@ body:
     id: stack
     attributes:
       label: Your repo's stack
-      description: Languages and app models from `.claude/stackfoundry/targets.json` (no proprietary code, please).
+      description: Languages and app models from `.stackfoundry/targets.json` (no proprietary code, please).
   - type: input
     id: versions
     attributes:

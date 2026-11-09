@@ -1,10 +1,10 @@
-"""`stackfoundry guard`: the PreToolUse hook. Reads the hook event on stdin and `.claude/stackfoundry/guards.json`.
+"""`stackfoundry guard`: the PreToolUse hook. Reads the hook event on stdin and `.stackfoundry/guards.json`.
 
 Decisions:
   - an Edit/Write/MultiEdit/NotebookEdit of a file under a `generated` glob   -> deny, with how to regenerate it;
   - a Bash/PowerShell command matching a `commands` pattern                    -> that entry's decision (deny | ask);
   - a git write (commit, push, reset…) while `git.writes` is "ask" or "deny"   -> ask or deny.
-The guards that apply are the nearest `.claude/stackfoundry/guards.json` above the file being edited (or above the
+The guards that apply are the nearest `.stackfoundry/guards.json` above the file being edited (or above the
 command's working directory), so a linked worktree or a nested repo is guarded by its own profile. Paths are
 normalized first, so `gen/../gen/x` or a relative path still meets the globs.
 No profile, an unreadable profile, an unexpected event or any internal error -> no opinion (exit 0, no output):

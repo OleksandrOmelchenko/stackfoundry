@@ -6,8 +6,16 @@ argument-hint: "<ecosystem-id> [approve: <item> ...]"
 
 # Bump an ecosystem
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 One procedure for every ecosystem; what differs (where pins live, how they are discovered and applied, which
-targets gate them, what has bitten before) is read from `.claude/stackfoundry/ecosystems.json`. The shared rules
+targets gate them, what has bitten before) is read from `.stackfoundry/ecosystems.json`. The shared rules
 (classify first, majors stop, routes, chains, never) are `.claude/rules/dependency-bumps.md`; read it first.
 
 ## Inputs
@@ -16,7 +24,7 @@ targets gate them, what has bitten before) is read from `.claude/stackfoundry/ec
   `ecosystems.json`: say "run `/stackfoundry:init`" and stop.
 - `approve: <item> …`: majors already approved by the caller (bump-all). Without it, every major stops for the
   user.
-- The ecosystem's `pack`: `.claude/rules/<pack>.md` § Upgrades and `.claude/stackfoundry/packs/<pack>/pack.json` →
+- The ecosystem's `pack`: `.claude/rules/<pack>.md` § Upgrades and `.stackfoundry/packs/<pack>/pack.json` →
   `upgrade`. Each target in `gateTargets`: its `gate` in `targets.json` and its profile's traps.
 
 ## Discover (read-only)

@@ -6,14 +6,22 @@ argument-hint: "<pack-id | technology> [--refresh]"
 
 # Research stack
 
-Writes or refreshes **one** pack under `.claude/stackfoundry/packs/<pack-id>/` and the rulebook generated from it,
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
+Writes or refreshes **one** pack under `.stackfoundry/packs/<pack-id>/` and the rulebook generated from it,
 `.claude/rules/<pack-id>.md`. The procedure and the rules for content are
 `${CLAUDE_PLUGIN_ROOT}/reference/pack-research.md`; the shape is `${CLAUDE_PLUGIN_ROOT}/reference/schemas/pack.schema.json`.
 
 ## 1. Resolve the pack
 
 - A pack id (`app-model-wpf`) or a technology name ("WPF", "Vitest"): match it against the `packs` lists in
-  `.claude/stackfoundry/targets.json`. Not in any target → ask which targets use it and which layer it belongs to
+  `.stackfoundry/targets.json`. Not in any target → ask which targets use it and which layer it belongs to
   (`${CLAUDE_PLUGIN_ROOT}/reference/layers.md`); it is added to those targets' `packs` in step 4.
 - Collect the inputs: versions and where they are pinned (the manifests, `ecosystems.json`), the files that use it
   (`Grep`), the existing conventions (formatter and analyzer config, base classes, the current rulebook), and the
@@ -22,9 +30,8 @@ Writes or refreshes **one** pack under `.claude/stackfoundry/packs/<pack-id>/` a
 ## 2. Research
 
 Dispatch `stackfoundry:stack-researcher` with those inputs, `exposure:`/`stakes:` of the targets, and
-`output: .stackfoundry-staging/packs/<pack-id>/pack.json` (outside the protected `.claude/`, so the research
-survives a refused write). With
-`--refresh`, also hand it the current pack, so it reports what changed since `researchedAt` (new releases,
+`output: .stackfoundry/packs/<pack-id>/pack.json` for a new pack, or `.stackfoundry/packs/<pack-id>/pack.next.json` on
+a refresh (the current pack stays until the user takes the new one). With `--refresh`, also hand it the current pack, so it reports what changed since `researchedAt` (new releases,
 deprecations now in use, changed guidance) and keeps every `repoConvention` the team recorded. Then
 `stackfoundry pack check <output>`; errors go back to the researcher, never patched by hand.
 
@@ -37,8 +44,8 @@ deprecations now in use, changed guidance) and keeps every `repoConvention` the 
 
 ## 4. Write
 
-- `.claude/stackfoundry/packs/<pack-id>/pack.json`: move the checked pack in from `.stackfoundry-staging/`, then
-  delete the staging folder.
+- `.stackfoundry/packs/<pack-id>/pack.json`: on a refresh, replace it with the checked `pack.next.json` once the user
+  takes the new pack; otherwise delete `pack.next.json`.
 - The rulebook: `stackfoundry pack render <pack.json> --out .claude/rules/<pack-id>.md`. Check its state first with
   `stackfoundry manifest diff --json`: **edited** by the team → show the regenerated text beside the current one and
   ask (take new · keep mine · merge by hand); untouched or new → write it.

@@ -1,5 +1,5 @@
 ---
-description: Claude Code plugin marketplace (marketplace.json, versions, release tags, team settings) rulebook (capability layer). Researched 2026-11-09; source pack .claude/stackfoundry/packs/capability-claude-code-marketplace/pack.json.
+description: Claude Code plugin marketplace (marketplace.json, versions, release tags, team settings) rulebook (capability layer). Researched 2026-11-09; source pack .stackfoundry/packs/capability-claude-code-marketplace/pack.json.
 paths:
   - ".claude-plugin/**"
   - "docs/release.md"
@@ -49,7 +49,7 @@ Unit tests prove the two manifests agree (names, source path, semver, no conflic
 
 ## Security
 
-- A plugin runs hooks and its bin/ executables with the user's full privileges, outside the sandbox, and auto-update replaces reviewed files without re-approval. Treat any release diff touching hooks/hooks.json, bin/ or scripts/ as security-relevant for every installed user. Here: plugins/stackfoundry/hooks/hooks.json; plugins/stackfoundry/bin/stackfoundry. [security]
+- A plugin runs hooks and its bin/ executables with the user's full privileges, outside the sandbox, and auto-update replaces reviewed files without re-approval. Treat any release diff touching hooks/hooks.json, bin/ or scripts/ as security-relevant for every installed user. Here: plugins/stackfoundry/hooks/hooks.json; plugins/stackfoundry/scripts/stackfoundry.sh. [security]
 - Marketplace names that imitate official Anthropic names, contain non-ASCII characters, or match reserved names are refused, and an already-registered one stops loading with its plugins. `stackfoundry` is not reserved; keep any future marketplace name ASCII and distinct. Here: .claude-plugin/marketplace.json name. [ref, security]
 
 ## Upgrades

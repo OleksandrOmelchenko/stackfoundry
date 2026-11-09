@@ -9,28 +9,13 @@
   "homepage": "https://github.com/OleksandrOmelchenko/stackfoundry",
   "repository": "https://github.com/OleksandrOmelchenko/stackfoundry",
   "license": "MIT",
-  "keywords": ["testing", "code-review", "bug-hunt", "dependencies", "tech-radar", "agents", "skills"],
-  "userConfig": {
-    "docsRoot": {
-      "type": "string",
-      "title": "Docs root",
-      "description": "Folder, relative to the repo root, where trackers live (bug reports, test designs, plans, specifications, dependency and radar reports). init records the value it used in the repo profile, which wins over this default.",
-      "default": "docs"
-    },
-    "researchRefreshDays": {
-      "type": "number",
-      "title": "Research refresh window (days)",
-      "description": "A technology pack older than this is flagged stale by tech-radar and offered for re-research.",
-      "default": 90,
-      "min": 7,
-      "max": 365
-    },
-    "defaultEffort": {
-      "type": "string",
-      "title": "Default fan-out effort",
-      "description": "How wide orchestrators fan out when the request does not say: quick (diff scope, one verify vote), standard, or thorough (deep sweep, three refutation votes on high-risk findings).",
-      "default": "standard",
-      "options": ["quick", "standard", "thorough"]
-    }
-  }
+  "keywords": [
+    "testing",
+    "code-review",
+    "bug-hunt",
+    "dependencies",
+    "tech-radar",
+    "agents",
+    "skills"
+  ]
 }

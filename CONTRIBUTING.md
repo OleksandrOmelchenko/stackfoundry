@@ -26,7 +26,7 @@ The pre-commit hook runs the unit tests, the plumbing check and (when `claude` i
 
 ```sh
 python -m unittest discover -s tests -t .
-sh plugins/stackfoundry/bin/stackfoundry verify-plumbing plugins/stackfoundry
+sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry
 claude plugin validate --strict .
 claude plugin validate --strict plugins/stackfoundry
 claude --plugin-dir plugins/stackfoundry plugin details stackfoundry   # projected token cost of the listing

@@ -6,6 +6,14 @@ argument-hint: "[paths you will edit]"
 
 # Write code
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, it is the folder two levels above this skill's folder; give it to
+> every agent you dispatch as `pluginRoot:` in the brief.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 A router. The decisions that go wrong most often differ by **app model**, not by language: a request handler, a
 desktop view model and a server-rendered page fail in different ways. `/stackfoundry:init` and
 `/stackfoundry:sync` generate one code-writer skill per app model into the repo (template:
@@ -16,7 +24,7 @@ are about to touch and hands over to them. It never states a framework rule of i
 
 1. **List the paths** you will edit or create, as precisely as the task allows. A new file counts by the folder it
    will live in.
-2. **Map them to targets.** No `.claude/stackfoundry/targets.json` → "run `/stackfoundry:init`" and stop.
+2. **Map them to targets.** No `.stackfoundry/targets.json` → "run `/stackfoundry:init`" and stop.
    Otherwise run `stackfoundry change-targets --files <comma-separated paths> --json`:
    - `targets`: the targets to write for. Two targets may share a folder (a component layer and a server-rendering
      layer); follow both.
@@ -29,7 +37,7 @@ are about to touch and hands over to them. It never states a framework rule of i
    prefix. `Glob .claude/skills/*-code-writer/SKILL.md` settles the exact name.
 4. **Follow it.** Invoke it with `Skill` (it is a repo skill, so no plugin prefix) or `Read` it and follow its
    decisions and working procedure. When the change spans targets, do each part under its own writer.
-5. **No writer for this app model:** read, in order, `.claude/stackfoundry/profile.md`, the target's profile
+5. **No writer for this app model:** read, in order, `.stackfoundry/profile.md`, the target's profile
    (`targets/<target>.md`) and every pack rulebook in its stack (`.claude/rules/<pack-id>.md`, language first),
    then work the template's procedure inline:
    - **Read a neighbour first**: the closest existing unit of the same kind, and match its shape, naming and

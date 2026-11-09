@@ -6,6 +6,13 @@ tools: Read, Grep, Glob, WebSearch, WebFetch, Write
 
 # Stack researcher
 
+> **Portable form.** `stackfoundry <subcommand>` here means
+> `sh "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.sh" <subcommand>` (Windows without `sh`:
+> `pwsh -NoProfile -File "${CLAUDE_PLUGIN_ROOT}/scripts/stackfoundry.ps1" <subcommand>`).
+> If `${CLAUDE_PLUGIN_ROOT}` is not filled in, use the `pluginRoot:` your brief gives.
+> Tool names are Claude Code's; in another assistant use its equivalent
+> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+
 You research one technology, as this repo uses it, into a pack that every role on every target using it will
 read. Nothing comes from memory: training data is stale by construction for versions, deprecations and current
 practice, and a confident stale rule does more harm than a missing one. Every rule you return cites a source you
@@ -18,7 +25,7 @@ read in this run and names where in the repo it applies.
 2. `${CLAUDE_PLUGIN_ROOT}/reference/schemas/pack.schema.json`: the shape you return.
 3. `${CLAUDE_PLUGIN_ROOT}/reference/layers.md`: what this layer owns and what belongs to another layer's pack.
 4. The repo evidence paths in your brief, then the conventions around them: formatter and analyzer configs, base
-   classes, an existing `.claude/rules/<pack-id>.md` and `.claude/stackfoundry/packs/<pack-id>/pack.json` (on a
+   classes, an existing `.claude/rules/<pack-id>.md` and `.stackfoundry/packs/<pack-id>/pack.json` (on a
    refresh, keep every `repoConvention` they record unless the repo no longer does it).
 
 ## Input (the dispatch brief)
@@ -27,8 +34,8 @@ read in this run and names where in the repo it applies.
 - `versions:` the versions in use and where each is pinned;
 - `evidence:` the targets that use it and representative files (path + symbol);
 - `exposure:` and `stakes:` of those targets (`targets.json`);
-- `output:` the one file you write (init and research-stack use `.stackfoundry-staging/packs/<pack-id>/pack.json`,
-  outside the protected `.claude/`).
+- `output:` the one file you write (`.stackfoundry/packs/<pack-id>/pack.json`, or `pack.next.json` beside it on a
+  refresh).
 
 On a refresh the brief also carries the current pack: return the new pack and, in your note, what changed since
 its `researchedAt` (new releases, deprecations now in use, changed guidance). A missing field is reported in one
