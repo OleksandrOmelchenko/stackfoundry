@@ -77,6 +77,7 @@ Every skill starts from a plain request. A few to begin with:
 | Why is CI failing? | `fix-ci` |
 | Review my changes | `review-changes` |
 | Security review of the API | `security-review-target` |
+| What should we build next? | `whats-next` |
 | What's left in the backlog? | `backlog` |
 | Keep me posted on our stack | `schedule` (next section) |
 
@@ -98,6 +99,7 @@ desktop app it prints the cron, Task Scheduler or GitHub Actions setup instead. 
 | `stackfoundry-radar` | whether the plugin, or the files it generated in your repo, are behind | "update stackfoundry's files in this repo" |
 | `flaky-watch` | tests that both passed and failed across shuffled runs, with their seeds | "fix the flaky tests" |
 | `docs-reconciler` (report only) | docs that drifted from the code | "fix the stale docs" |
+| `whats-next` (report only) | the next product and technical steps: what a product of your kind is expected to have and you lack, present weaknesses, where your domain is moving, each with a source and a path | "what's next" (to plan the ones you pick) |
 
 "Radar summary" digests the last few reports: what was acted on, and what keeps coming back.
 

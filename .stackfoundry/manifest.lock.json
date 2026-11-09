@@ -152,6 +152,12 @@
       "sha256": "11fae456bd328d39d360e8ed953919b9d8b44ea9c66f49bfa3f6c265f98beec6",
       "kind": "generated"
     },
+    ".stackfoundry/product.json": {
+      "template": "profile",
+      "templateVersion": "profile",
+      "sha256": "7935446cd97761655ee178f389200a657b3766b7f88fe6009fbfa9d6caee71ff",
+      "kind": "generated"
+    },
     ".stackfoundry/profile.md": {
       "template": "reference/templates/profile.md",
       "templateVersion": "1",

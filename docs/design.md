@@ -148,10 +148,31 @@ an ask becomes a deny that says to get the user's go-ahead). It reads `.stackfou
 command patterns that are forbidden (direct database writes, raw service launches), and the git-write policy. No
 profile means no opinion: the hook exits 0.
 
+## Product direction
+
+`whats-next` points a team at its next product and technical steps for any kind of product. Three files make it
+generic without shipping any domain knowledge:
+
+- `.stackfoundry/product.json` says what kind of product this is (category, audiences, markets, stage, goals). The
+  surveyor infers it from what the code is about, init confirms it, `sync` notices when the product outgrows it.
+- `.stackfoundry/domain/<domainId>.json` is a **domain brief**: what a product of that kind is expected to offer
+  (table stakes, expected, differentiators), the regulations of its markets, its metrics, how such products
+  usually fail and where the domain moves. Like a pack, it is researched from current sources by an agent
+  (`domain-researcher`, procedure `reference/product-research.md`), every item cited, and refreshed when it ages or
+  the product's scope moves. It describes the domain, not this repo, so the same brief serves any product of the
+  kind.
+- The audit is per run: `product-analyst` agents mark each capability present, partial, planned or missing with
+  path evidence, and the skill adds the technical picture from what the repo already tracks (findings, threat
+  models, radar and dependency reports, untested hot areas). Items are ranked by risk and value weighted by the
+  targets' stakes, every one with a domain source and a repo path; picked items become backlog plans.
+
+The plugin ships the method (schemas, the research procedure, the ranking), never a list of features for any
+domain: that list would be stale and generic, which is exactly what a researched, cited brief avoids.
+
 ## Scheduled skills
 
-Unattended skills (`check-updates`, `tech-radar`, `stackfoundry-radar`, `flaky-watch`, report-only `docs-reconciler`)
-follow one contract: no questions, no installs, no git writes, exactly one output file, and a `git status` comparison
+Unattended skills (`check-updates`, `tech-radar`, `stackfoundry-radar`, `flaky-watch`, report-only `docs-reconciler`
+and `whats-next`) follow one contract: no questions, no installs, no git writes, exactly one output file, and a `git status` comparison
 that lists any side effect in the report. Their interactive consumers (`act-on-updates`, `act-on-radar`) ask once,
 then dispatch each item to the skill that owns it.
 

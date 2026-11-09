@@ -16,26 +16,16 @@ import sys
 import tempfile
 from pathlib import Path
 
+from .cited import DATE, check_cited, check_plain_text, check_sources
+
 LAYERS = ("language", "app-model", "capability", "tooling")
 ID = re.compile(r"^(language|app-model|capability|tooling)-[a-z0-9-]+$")
-DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-ENTITY = re.compile(r"&(?:gt|lt|amp|quot|apos|#\d+|#x[0-9a-fA-F]+);")
-CITED_SECTIONS = ("rules", "bugCategories", "wiring", "performance", "security")
+CITED_SECTIONS = {"rules": ("rule", "why"), "bugCategories": ("name", "lookFor", "failure"), "wiring": (),
+                  "performance": (), "security": ()}
 
 
 def load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8-sig"))
-
-
-def _strings(node, where=""):
-    if isinstance(node, str):
-        yield where, node
-    elif isinstance(node, dict):
-        for k, v in node.items():
-            yield from _strings(v, f"{where}.{k}" if where else k)
-    elif isinstance(node, list):
-        for i, v in enumerate(node):
-            yield from _strings(v, f"{where}[{i}]")
 
 
 def check(pack: dict) -> tuple[list[str], list[str]]:
@@ -54,40 +44,15 @@ def check(pack: dict) -> tuple[list[str], list[str]]:
         errors.append("researchedAt must be a YYYY-MM-DD date")
     if not isinstance(pack.get("versions"), list):
         errors.append("versions must be a list (empty when the version is not pinned anywhere)")
-    sources = pack.get("sources")
-    if not isinstance(sources, dict) or not sources:
-        errors.append("sources must be a non-empty object")
-        sources = {}
-    for key, src in sources.items():
-        if not isinstance(src, dict) or not str(src.get("url", "")).startswith(("http://", "https://")):
-            errors.append(f"source [{key}] needs an http(s) url")
-        elif not DATE.match(str(src.get("accessed", ""))):
-            errors.append(f"source [{key}] needs an accessed date (YYYY-MM-DD)")
+    sources = check_sources(pack, errors)
     if not pack.get("rules"):
         errors.append("rules must be a non-empty list")
-    for section in CITED_SECTIONS:
-        for i, item in enumerate(pack.get(section, []) or []):
-            where = f"{section}[{i}]"
-            cited = item.get("sources") if isinstance(item, dict) else None
-            if not cited:
-                errors.append(f"{where} cites no source")
-                continue
-            missing = [k for k in cited if k not in sources]
-            if missing:
-                errors.append(f"{where} cites unknown source key(s): {', '.join(missing)}")
-            if section == "rules":
-                for field in ("rule", "why"):
-                    if not item.get(field):
-                        errors.append(f"{where} needs '{field}'")
-                if not item.get("where"):
-                    warnings.append(f"{where} has no 'where' (ground it, or say 'not used here yet')")
-            if section == "bugCategories":
-                for field in ("name", "lookFor", "failure"):
-                    if not item.get(field):
-                        errors.append(f"{where} needs '{field}'")
-    for where, text in _strings(pack):
-        if ENTITY.search(text):
-            errors.append(f"{where}: HTML-escaped text ({ENTITY.search(text).group(0)}); write plain characters")
+    for section, required in CITED_SECTIONS.items():
+        check_cited(pack.get(section), section, sources, errors, required)
+    for i, item in enumerate(pack.get("rules", []) or []):
+        if isinstance(item, dict) and item.get("sources") and not item.get("where"):
+            warnings.append(f"rules[{i}] has no 'where' (ground it, or say 'not used here yet')")
+    check_plain_text(pack, errors)
     for section in ("bugCategories", "testing"):
         if not pack.get(section):
             warnings.append(f"no {section} section")

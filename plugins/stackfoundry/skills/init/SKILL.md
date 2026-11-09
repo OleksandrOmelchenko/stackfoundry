@@ -72,9 +72,12 @@ Show one table: target · paths · stack (packs by layer) · exposure · stakes 
    team uses (`clients`: claude-code, codex, copilot, cursor, gemini; `${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
 4. Roles to enable per target (default: all), and how to treat existing `.claude/` content (keep side by side
    recommended).
+5. The product (the surveyor's `product` draft, with its evidence): confirm or correct the category in plain words,
+   the markets it serves, its stage, and any goals or non-goals the team wants recorded. This only records what
+   the product is; what a product of that kind should offer is researched later, by `/stackfoundry:whats-next`.
 
-**2b. Interview-first** (an empty or new repo): ask what is being built: the targets, the language and app model of
-each, the test framework, the CI. The answers replace the survey; continue at step 3. Say that gates and harnesses
+**2b. Interview-first** (an empty or new repo): ask what is being built: the product (category, audiences,
+markets, stage, goals), the targets, the language and app model of each, the test framework, the CI. The answers replace the survey; continue at step 3. Say that gates and harnesses
 come later (`/stackfoundry:scaffold-test-harness` once code exists).
 
 ## 3. Research
@@ -102,6 +105,7 @@ marking each **new** or **merge** (an existing file of the same name), and ask o
 | `.stackfoundry/profile.md` | `reference/templates/profile.md` + the interview | `reference/templates/profile.md` |
 | `.stackfoundry/config.json` | the interview: `clients`, `docsRoot` (defaults: `stackfoundry config`) | `profile` |
 | `.stackfoundry/targets.json`, `ecosystems.json`, `guards.json` | the agreed map; schemas in `reference/schemas/` | `profile` |
+| `.stackfoundry/product.json` | the confirmed product draft, without the surveyor's `confidence` (schema `reference/schemas/product.schema.json`); `profile.md`'s "The product" says the same in prose | `profile` |
 | `.stackfoundry/packs/<pack-id>/pack.json` | written by its researcher (step 3) | `research` |
 | `.stackfoundry/targets/<target>.md` | `reference/templates/target.md` | that template |
 | `.stackfoundry/rules/<pack-id>.md` | `stackfoundry pack render <pack.json> --out <rule>`, never by hand | `research` |
@@ -133,8 +137,9 @@ marking each **new** or **merge** (an existing file of the same name), and ask o
   `profile`, exactly as the table gives them.
 - Check as you write: `stackfoundry config` right after `config.json`, `stackfoundry guard --check` right after
   `guards.json` (an invalid file is silently ignored by the hook), `stackfoundry change-targets --files <one file per
-  target>` right after `targets.json` (it loads and validates it), and `stackfoundry verify-plumbing .` right after
-  the code-writer skills (description caps).
+  target>` right after `targets.json` (it loads and validates it), `stackfoundry product check
+  .stackfoundry/product.json` right after `product.json`, and `stackfoundry verify-plumbing .` right after the
+  code-writer skills (description caps).
 - Record every file: `stackfoundry manifest record <files> --template <id from the table>`.
 
 ## 5. Prove
@@ -156,7 +161,8 @@ marking each **new** or **merge** (an existing file of the same name), and ask o
 
 The target map, the files written (new vs merged), gates proven and failed, research not reached, open questions,
 and next steps: `/stackfoundry:bug-hunt <target>`, `/stackfoundry:design-tests <target>`,
-`/stackfoundry:threat-model <target>` for public targets, `/stackfoundry:schedule`. Remind that each collaborator
+`/stackfoundry:threat-model <target>` for public targets, `/stackfoundry:schedule`, and "what's next"
+(`/stackfoundry:whats-next`) for the product and technical direction. Remind that each collaborator
 installs the plugin once in their assistant (the README's install table; not for the marketplace repo itself). **Do not commit**: say
 what is ready to commit.
 
@@ -170,7 +176,7 @@ what is ready to commit.
 - `Agent` with `subagent_type: "stackfoundry:surveyor"`, then `"stackfoundry:stack-researcher"` (one per pack, one
   message).
 - `AskUserQuestion` for the interview rounds and the one write confirmation.
-- `Bash` for `stackfoundry survey|config|outputs|pack|render-rule|render-rulebook|manifest|extensions|verify-plumbing|globs-check|change-targets|guard` and the gate
+- `Bash` for `stackfoundry survey|config|outputs|pack|product|render-rule|render-rulebook|manifest|extensions|verify-plumbing|globs-check|change-targets|guard` and the gate
   commands (`run_in_background` for long suites). `Read`/`Write`/`Edit` for the files.
 - `Skill` → `stackfoundry:skill-agent-verifier` for the load probe.
 - Non-interactive runs: `.claude/` is a protected path, and neither `acceptEdits` nor an allow rule covers it.

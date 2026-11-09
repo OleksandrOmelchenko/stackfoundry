@@ -45,7 +45,7 @@ Every skill of the plugin is in exactly one row, most-asked first (`verify-plumb
 | Find and fix problems | `bug-hunt`, `debug`, `fix-ci`, `fix-verify`, `security-review-target`, `threat-model`, `performance-review`, `flaky-watch` |
 | Stay current: stack news, updates and scheduled checks | `tech-radar`, `check-updates`, `schedule`, `act-on-radar`, `act-on-updates`, `radar-digest`, `bump`, `bump-all`, `check-formats`, `stackfoundry-radar` |
 | Review a change | `review-changes`, `quality-review`, `quality-sweep`, `change-targets`, `prune-comments` |
-| Plans, docs and backlog | `backlog`, `plan-feature`, `implement-plan`, `retire-plan`, `elaborate-plan`, `docs-reconciler` |
+| Plan what's next | `whats-next`, `backlog`, `plan-feature`, `implement-plan`, `retire-plan`, `elaborate-plan`, `docs-reconciler` |
 | Ways of working and git | `with-plan`, `plan-execute`, `implement-only`, `ask-me`, `github-prs`, `cleanup-merged` |
 | stackfoundry itself | `init`, `customize`, `sync`, `upgrade`, `research-stack`, `materialize`, `configure-guards`, `skill-agent-author`, `skill-agent-verifier` |
 
@@ -77,7 +77,8 @@ With no profile, ask first (header `Setup`):
 - **Goal**: one question, "What do you want to do?", with the groups as options. A list longer than four is paged:
   three options plus **More…**, in table order. "Other" takes any request in words: match it against the
   descriptions; "change how X works" goes to `customize` with X; news, "what's new", "keep me posted" or "in the
-  background" goes to the Stay-current group, `tech-radar` first.
+  background" goes to the Stay-current group, `tech-radar` first; "what next", "roadmap", "what's missing" or
+  "what should we build" goes to the Plan-what's-next group, `whats-next` first.
 - **Skill**: a second question over the group's skills, paged the same way. Each option's label is the skill name and
   its description is the skill's own trigger phrase (the `Use for …` clause), so the user learns how to ask. A skill
   this repo extends or replaces adds "(changed in this repo)" to its option description.

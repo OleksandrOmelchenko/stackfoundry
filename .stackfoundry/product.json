@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "name": "stackfoundry",
+  "summary": "A plugin for AI coding assistants that researches a repository's stack and sets up repo-grounded specialist skills and agents: code writers, test writers and reviewers, bug hunters, reviewers, dependency bumpers and a tech radar.",
+  "category": "developer tool: open-source plugin for AI coding assistants (Claude Code, Codex, GitHub Copilot, Cursor, Gemini CLI)",
+  "domainId": "ai-coding-assistant-plugin",
+  "audiences": ["software teams", "individual developers"],
+  "channels": ["Claude Code", "Codex", "GitHub Copilot", "Cursor", "Gemini CLI"],
+  "markets": ["global"],
+  "monetization": "none (MIT open source)",
+  "stage": "mvp",
+  "evidence": [
+    {"claim": "a plugin marketplace for several assistants", "where": ".claude-plugin/marketplace.json, .agents/plugins/marketplace.json, .github/plugin/marketplace.json"},
+    {"claim": "skills and agents for development roles", "where": "plugins/stackfoundry/skills/, plugins/stackfoundry/agents/"},
+    {"claim": "open source under MIT", "where": "LICENSE"},
+    {"claim": "not yet released (unreleased changelog)", "where": "plugins/stackfoundry/CHANGELOG.md"}
+  ]
+}

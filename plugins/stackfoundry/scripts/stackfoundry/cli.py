@@ -15,7 +15,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from stackfoundry import (backlog, change_targets, checks, clients, config, extensions, guard,  # noqa: E402
-                          manifest, pack, plumbing, rulebooks, select_tests, survey, tracker, volatile)
+                          manifest, pack, plumbing, product, rulebooks, select_tests, survey, tracker, volatile)
 from stackfoundry.gitutil import GitError  # noqa: E402
 from stackfoundry.profile import ProfileError  # noqa: E402
 
@@ -124,6 +124,12 @@ def build() -> argparse.ArgumentParser:
     pk.add_argument("--out", help="render: write the rulebook here instead of stdout")
     pk.add_argument("--json", action="store_true")
     pk.set_defaults(func=pack.main)
+
+    pr = sub.add_parser("product", help="(read-only) check the product profile or a domain brief, or show their status")
+    pr.add_argument("action", choices=["check", "status"])
+    pr.add_argument("file", nargs="?", help="check: .stackfoundry/product.json or .stackfoundry/domain/<id>.json")
+    pr.add_argument("--root", help="status: repo root (default: the nearest folder with .stackfoundry/)")
+    pr.set_defaults(func=product.main)
 
     m = sub.add_parser("manifest", help="record|forget write manifest.lock.json; diff|list are read-only")
     m.add_argument("action", choices=["record", "forget", "diff", "list"])

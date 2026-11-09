@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "name": "Orders API",
+  "summary": "The order API of an online shop: signed-in customers read their own orders through a gateway.",
+  "category": "B2C online store for physical goods (the customer-facing order API)",
+  "domainId": "b2c-ecommerce",
+  "audiences": ["consumers"],
+  "channels": ["web", "API"],
+  "markets": ["EU"],
+  "monetization": "product sales",
+  "stage": "mvp",
+  "evidence": [
+    {"claim": "customers read their own orders", "where": "app/main.py get_order, list_orders"},
+    {"claim": "orders belong to signed-in customers", "where": "docs/specifications/orders.md"}
+  ]
+}

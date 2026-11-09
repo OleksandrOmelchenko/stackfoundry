@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "b2c-ecommerce",
+  "title": "B2C online store for physical goods (EU)",
+  "researchedAt": "2026-11-09",
+  "scope": {"category": "B2C online store for physical goods (the customer-facing order API)", "audiences": ["consumers"], "markets": ["EU"], "stage": "mvp"},
+  "capabilities": [
+    {"id": "order-history", "name": "Order history", "tier": "table-stakes",
+     "why": "Customers need to find what they bought, for returns and records.",
+     "signals": ["orders list", "my orders", "order history"], "sources": ["crd"]},
+    {"id": "order-status", "name": "Order status and delivery tracking", "tier": "table-stakes",
+     "why": "Customers ask where their order is; the trader must inform them about delivery arrangements.",
+     "signals": ["status", "shipment", "tracking", "shipped", "delivered"], "sources": ["crd"]},
+    {"id": "order-cancellation", "name": "Order cancellation and withdrawal", "tier": "table-stakes",
+     "why": "Consumers may withdraw from a distance contract within 14 days without giving a reason.",
+     "signals": ["cancel", "withdrawal", "refund", "return"], "sources": ["crd"]},
+    {"id": "order-receipts", "name": "Order confirmation and receipts", "tier": "expected",
+     "why": "The consumer must receive confirmation of the contract on a durable medium.",
+     "signals": ["receipt", "invoice", "confirmation email"], "sources": ["crd"]}
+  ],
+  "regulations": [
+    {"name": "Consumer Rights Directive (2011/83/EU)", "appliesWhen": "selling to consumers in the EU",
+     "obligations": ["a 14-day right of withdrawal from distance contracts", "confirmation of the contract on a durable medium"],
+     "signals": ["withdrawal", "cancel", "confirmation"], "sources": ["crd"]},
+    {"name": "GDPR right of access (Art. 15)", "appliesWhen": "processing personal data of people in the EU",
+     "obligations": ["give a customer a copy of their personal data on request"],
+     "signals": ["export", "data access", "download my data"], "sources": ["gdpr15"]}
+  ],
+  "metrics": [
+    {"name": "Order lookups answered without support contact", "why": "Status questions are a top support cost when tracking is missing.", "sources": ["crd"]}
+  ],
+  "weaknesses": [
+    {"name": "Broken object-level authorization on order endpoints",
+     "failure": "A customer reads another customer's order by changing the id in the URL.",
+     "lookFor": "an order fetched by id without comparing its owner with the caller", "sources": ["owaspapi1"]}
+  ],
+  "trends": [],
+  "sources": {
+    "crd": {"url": "https://eur-lex.europa.eu/eli/dir/2011/83/oj", "title": "Directive 2011/83/EU on consumer rights", "accessed": "2026-11-09"},
+    "gdpr15": {"url": "https://gdpr-info.eu/art-15-gdpr/", "title": "GDPR Art. 15, right of access", "accessed": "2026-11-09"},
+    "owaspapi1": {"url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/", "title": "OWASP API Security Top 10 2023, API1", "accessed": "2026-11-09"}
+  },
+  "notReached": [],
+  "questions": []
+}

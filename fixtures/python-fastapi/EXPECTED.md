@@ -28,3 +28,11 @@ Exposure: authenticated (customers see their own orders). Stakes: pii.
 ## Outdated pins
 
 - `fastapi` and `pydantic` are pinned several releases behind.
+
+## What's next (with the profile overlay's product.json and domain brief)
+
+- **Missing, table stakes:** order status and delivery tracking (`Order` in `app/main.py` has no status field).
+- **Planned, not new:** order cancellation (follow-up in `docs/specifications/orders.md`).
+- **Present:** order history (`list_orders`).
+- **Domain weakness found:** broken object-level authorization in `get_order` (the planted IDOR).
+- **Regulation gap:** no way for a customer to get a copy of their data (GDPR Art. 15).

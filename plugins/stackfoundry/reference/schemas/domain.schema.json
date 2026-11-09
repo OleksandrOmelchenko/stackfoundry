@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/OleksandrOmelchenko/stackfoundry/schemas/domain.schema.json",
+  "title": "stackfoundry domain brief (.stackfoundry/domain/<domainId>.json)",
+  "description": "What a product of this kind is expected to offer, the rules it must follow, how it is measured, how it usually fails and where it is heading, researched from current sources (reference/product-research.md). Every item cites `sources`. Written by the domain-researcher agent; checked with `stackfoundry product check`.",
+  "type": "object",
+  "required": ["schemaVersion", "id", "title", "researchedAt", "scope", "capabilities", "sources"],
+  "$defs": {
+    "cite": {"type": "array", "minItems": 1, "items": {"type": "string", "description": "A key of `sources`."}}
+  },
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "Equals product.json's domainId."},
+    "title": {"type": "string"},
+    "researchedAt": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "scope": {
+      "type": "object",
+      "description": "What the research covered, copied from product.json, so a later change of markets or audiences shows the brief is out of date.",
+      "properties": {
+        "category": {"type": "string"},
+        "audiences": {"type": "array", "items": {"type": "string"}},
+        "markets": {"type": "array", "items": {"type": "string"}},
+        "stage": {"type": "string"}
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "tier", "why", "signals", "sources"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"},
+          "name": {"type": "string"},
+          "tier": {"enum": ["table-stakes", "expected", "differentiator"], "description": "table-stakes: users leave or the product cannot operate without it; expected: most comparable products have it; differentiator: few have it, and it wins users."},
+          "why": {"type": "string", "description": "The user or business reason."},
+          "signals": {"type": "array", "minItems": 1, "items": {"type": "string"}, "description": "What in a codebase shows it exists: entity, table, route, job or UI words. Generic, never a path in this repo."},
+          "appliesWhen": {"type": "string", "description": "A condition on the product (an audience, a channel, a stage); empty when it always applies."},
+          "sources": {"$ref": "#/$defs/cite"}
+        }
+      }
+    },
+    "regulations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "appliesWhen", "obligations", "sources"],
+        "properties": {
+          "name": {"type": "string"},
+          "appliesWhen": {"type": "string", "description": "Market, audience or activity that triggers it."},
+          "obligations": {"type": "array", "items": {"type": "string"}, "description": "What the product must do, each checkable in code or process."},
+          "signals": {"type": "array", "items": {"type": "string"}},
+          "sources": {"$ref": "#/$defs/cite"}
+        }
+      }
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "why", "sources"],
+        "properties": {"name": {"type": "string"}, "why": {"type": "string"}, "howMeasured": {"type": "string"}, "sources": {"$ref": "#/$defs/cite"}}
+      }
+    },
+    "weaknesses": {
+      "type": "array",
+      "description": "How products of this kind commonly fail or lose users, as patterns to look for in code.",
+      "items": {
+        "type": "object",
+        "required": ["name", "failure", "lookFor", "sources"],
+        "properties": {"name": {"type": "string"}, "failure": {"type": "string"}, "lookFor": {"type": "string"}, "sources": {"$ref": "#/$defs/cite"}}
+      }
+    },
+    "trends": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "what", "maturity", "sources"],
+        "properties": {
+          "name": {"type": "string"},
+          "what": {"type": "string"},
+          "maturity": {"enum": ["emerging", "growing", "mainstream", "declining"]},
+          "sources": {"$ref": "#/$defs/cite"}
+        }
+      }
+    },
+    "sources": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["url", "accessed"],
+        "properties": {"url": {"type": "string"}, "title": {"type": "string"}, "accessed": {"type": "string"}}
+      }
+    },
+    "notReached": {"type": "array", "items": {"type": "string"}},
+    "questions": {"type": "array", "items": {"type": "string"}}
+  }
+}

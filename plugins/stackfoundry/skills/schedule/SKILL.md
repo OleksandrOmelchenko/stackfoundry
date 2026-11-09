@@ -1,6 +1,6 @@
 ---
 name: schedule
-description: Register the unattended skills (check-updates, tech-radar, stackfoundry-radar, flaky-watch, docs-reconciler) as scheduled tasks; shows headless and CI alternatives. Asks first. Use for "schedule background checks", "run the radar weekly".
+description: Register the unattended report-only skills (tech-radar, check-updates, whats-next, flaky-watch and more) as scheduled tasks; shows headless and CI alternatives. Asks first. Use for "schedule background checks", "run the radar weekly".
 argument-hint: "[skill ...]"
 ---
 
@@ -33,6 +33,7 @@ and catch up a missed run on the next launch. It creates nothing before the user
 | `stackfoundry-radar` | monthly | `0 7 2 * *` | always |
 | `flaky-watch` | nightly or weekly | `0 2 * * *` or `0 2 * * 6` | some target has a `tests[].shuffle` command |
 | `docs-reconciler` (report-only) | weekly | `0 7 * * 5` | `<docsRoot>` exists |
+| `whats-next` (report-only) | quarterly | `0 7 1 1,4,7,10 *` | `.stackfoundry/product.json` exists |
 
 Arguments pick a subset. Skip a row whose condition fails and say why. Nightly flaky-watch suits a machine that is on
 overnight with the gate preconditions met; otherwise weekly.
@@ -55,7 +56,7 @@ overnight with the gate preconditions met; otherwise weekly.
    This is an unattended run: ask nothing; anything that needs a decision goes into the report.
    ```
 
-   `<args>` is empty except for docs-reconciler, which gets `--report` (its report-only mode). Tell the user that tasks run
+   `<args>` is empty except for docs-reconciler and whats-next, which get `--report` (their report-only mode). Tell the user that tasks run
    while the desktop app is open and a missed run happens on the next launch, and that a command the session's
    permissions do not allow stalls or is denied: allow the ecosystems' `discover` commands and the suites' test
    commands in `.claude/settings.json` → `permissions.allow` (the user edits it) before relying on the schedule.

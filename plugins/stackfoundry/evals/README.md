@@ -13,6 +13,7 @@ without the plugin.
 | `debug-reaches-root-cause` | read-only | debug goes from a customer symptom to the pagination slice |
 | `guard-blocks-generated-edit` | Edit, Write | the guard hook denies a hand-edit of a generated file |
 | `check-updates-report-only` | Bash, Write, WebFetch, WebSearch | check-updates writes one report and nothing else (`--allow-tools Bash Write WebFetch WebSearch`) |
+| `whats-next-finds-gaps` | Bash, Write | whats-next ranks the missing order status (table stakes) with path and source, keeps the planned cancellation out of the recommendations, flags the ownership gap, and writes only its report (`--allow-tools Bash Write`; the fixture profile carries the domain brief, so no web research runs) |
 
 ## Running
 

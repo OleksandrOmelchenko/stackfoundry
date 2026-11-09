@@ -30,6 +30,13 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   `upgrade` three-way merges the plugin's changes into them. New `customize` skill, `stackfoundry extensions
   list|check|new|base|merge|forget`, and an extensions step in `upgrade` and `stackfoundry-radar`. `walkthrough`
   tells users every skill can be customized and marks the ones this repo changed.
+- `whats-next`: the next product and technical steps for any kind of product, ranked by risk and value and
+  weighted by the targets' stakes, each with a domain source and a repo path; picked items become backlog plans,
+  and `--report` runs quarterly from `schedule`. It reads `.stackfoundry/product.json` (what kind of product this
+  is: inferred by the surveyor, confirmed at init, watched by sync) and a researched, cited domain brief
+  (`.stackfoundry/domain/<id>.json`: table-stakes, expected and differentiating capabilities, regulations, metrics,
+  failure patterns, trends). New agents `domain-researcher` and `product-analyst`, procedure
+  `reference/product-research.md`, schemas `product` and `domain`, and `stackfoundry product check|status`.
 
 ### Changed
 

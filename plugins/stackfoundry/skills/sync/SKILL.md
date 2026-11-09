@@ -40,6 +40,7 @@ Run `stackfoundry survey` (`--pretty` is not needed) and compare with `targets.j
 | A new manifest or lock file | survey manifests vs `ecosystems.json` pins | add it to an ecosystem |
 | An assistant in use that `config.json` does not list, or one listed that is gone | survey `assistants.detected` vs `stackfoundry config clients` | add or drop it in `clients`, then write or remove its files (below) |
 | An assistant's copy missing or differing from its source | `stackfoundry outputs` vs the files; `stackfoundry render-rule <canonical> --client <assistant>` vs the copy | re-render it (an edited copy: ask first) |
+| The product grew past its profile | a new unit or dependency that names a business capability `product.json` does not reflect (payments, a mobile app, a new market's locale or currency), or no `product.json` at all | propose the edit to `product.json` (or a draft, as the surveyor writes it); a changed `category`, `audiences` or `markets` makes the domain brief stale for `/stackfoundry:whats-next` |
 
 Confirm each candidate against the code before proposing it: a hint is evidence, not a decision.
 

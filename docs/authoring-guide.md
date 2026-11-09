@@ -85,6 +85,8 @@ reason the code does not show · 🔵 suggestion · 🟢 done well.
 |---|---|---|---|
 | `surveyor` | no | Read, Grep, Glob, Bash | Runs `stackfoundry survey`, confirms each hint against code, drafts the target map and the questions for the user |
 | `stack-researcher` | its pack file only | Read, Grep, Glob, WebSearch, WebFetch, Write | Researches one technology into a pack (`reference/pack-research.md`) and writes it to the `output:` path its brief names |
+| `domain-researcher` | its domain brief only | Read, Grep, Glob, WebSearch, WebFetch, Write | Researches what a product of one kind is expected to offer, its regulations, metrics, failure patterns and trends into a cited domain brief (`reference/product-research.md`) |
+| `product-analyst` | no | Read, Grep, Glob, Bash | Maps a domain brief onto the code: each capability present, partial, planned or missing with path evidence; regulation obligations; weaknesses found |
 | `bug-hunter` | no | Read, Grep, Glob, Bash | Hunts one category in one target's scope; findings with concrete failures |
 | `fix-verifier` | no | Read, Grep, Glob, Bash | Adversarially verifies one landed fix; one verdict |
 | `web-fix-verifier` | no | Read, Grep, Glob, Bash + browser tools | Same, with a live browser repro for UI targets |
@@ -114,7 +116,7 @@ reason the code does not show · 🔵 suggestion · 🟢 done well.
 | Tests | `design-tests`, `write-tests`, `review-tests`, `fix-tests`, `run-tests`, `scaffold-test-harness`, `setup-mutation` |
 | Bugs and review | `bug-hunt`, `fix-verify`, `review-changes`, `quality-review`, `change-targets`, `quality-sweep`, `performance-review`, `security-review-target`, `threat-model` |
 | Reactive | `debug`, `fix-ci` |
-| Docs and backlog | `backlog`, `plan-feature`, `implement-plan`, `retire-plan`, `docs-reconciler` |
+| Docs and backlog | `whats-next`, `backlog`, `plan-feature`, `implement-plan`, `retire-plan`, `docs-reconciler` |
 | Work modes | `with-plan`, `plan-execute`, `implement-only`, `elaborate-plan`, `ask-me`, `prune-comments` |
 | Git | `github-prs`, `cleanup-merged` |
 | Benchmarks | `write-benchmarks`, `run-benchmarks` |
