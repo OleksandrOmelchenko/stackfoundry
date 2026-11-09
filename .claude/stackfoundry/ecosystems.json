@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "deferredFile": "docs/plans/deferred-upgrades.md",
+  "ecosystems": [
+    {
+      "id": "python-platform",
+      "kind": "platform",
+      "pack": "language-python",
+      "pins": [
+        {"file": "plugins/stackfoundry/bin/stackfoundry", "anchor": "sys.version_info >= (3, 11)", "policy": "floor"},
+        {"file": ".githooks/pre-commit", "anchor": "sys.version_info >= (3, 11)", "policy": "floor"},
+        {"file": ".github/workflows/ci.yml", "anchor": "jobs.unit.strategy.matrix.python", "policy": "floor"}
+      ],
+      "discover": ["curl -s https://endoflife.date/api/python.json"],
+      "apply": "Move the floor in every chain member and every outsideManifest prose copy together; keep CI's matrix at [floor, \"3.x\"]",
+      "gateTargets": ["cli", "plugin"],
+      "chains": [{"name": "python-floor", "members": ["plugins/stackfoundry/bin/stackfoundry sys.version_info >= (3, 11)", ".githooks/pre-commit sys.version_info >= (3, 11)", ".github/workflows/ci.yml matrix.python \"3.11\""]}],
+      "outsideManifest": ["README.md 'Python 3.11+'", "plugins/stackfoundry/README.md 'Python 3.11 or newer'", "plugins/stackfoundry/scripts/stackfoundry/cli.py module docstring",
+                          "plugins/stackfoundry/skills/init/SKILL.md preconditions", "docs/design.md launcher section", ".claude/CLAUDE.md layout",
+                          "error messages in bin/stackfoundry and .githooks/pre-commit"],
+      "sources": ["https://docs.python.org/3/whatsnew/", "https://devguide.python.org/versions/"],
+      "traps": ["The floor moved to 3.11 in plugins/stackfoundry/CHANGELOG.md ('3.10 reached end of life'): the prose copies must move with the code pins."]
+    },
+    {
+      "id": "actions",
+      "kind": "ci",
+      "pack": "tooling-github-actions",
+      "pins": [{"file": ".github/workflows/ci.yml", "anchor": "uses: <owner>/<action>@<sha> # vX.Y.Z", "policy": "digest"}],
+      "discover": ["gh api repos/actions/checkout/releases/latest --jq .tag_name", "gh api repos/actions/setup-python/releases/latest --jq .tag_name", "gh api repos/actions/setup-node/releases/latest --jq .tag_name"],
+      "apply": "Replace the full commit SHA and its trailing version comment together; .github/dependabot.yml also opens these PRs",
+      "gateTargets": ["cli", "plugin"]
+    },
+    {
+      "id": "claude-cli",
+      "kind": "tooling",
+      "pack": "app-model-claude-code-plugin",
+      "pins": [{"file": ".github/workflows/ci.yml", "anchor": "npm install -g @anthropic-ai/claude-code@", "policy": "exact"}],
+      "discover": ["npm view @anthropic-ai/claude-code version"],
+      "apply": "Edit the exact version in ci.yml (pinned so a CLI release cannot change what 'valid' means between two runs of the same commit)",
+      "gateTargets": ["plugin"],
+      "outsideManifest": ["the developer's local claude used by .githooks/pre-commit is unpinned"]
+    }
+  ]
+}

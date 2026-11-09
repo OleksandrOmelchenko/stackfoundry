@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "generated": [],
+  "commands": [
+    {
+      "pattern": "\\bclaude\\s+plugin\\s+tag\\b(?!.*--dry-run)",
+      "decision": "deny",
+      "reason": "Release tags (stackfoundry--v<version>) are the owner's (.claude/CLAUDE.md, docs/release.md). Use 'claude plugin tag plugins/stackfoundry --dry-run' to check and leave tagging to the owner."
+    },
+    {
+      "pattern": "\\bclaude\\s+plugin\\s+eval\\b",
+      "decision": "ask",
+      "reason": "Each eval case runs fresh claude -p sessions and spends real tokens (CONTRIBUTING.md, plugins/stackfoundry/evals/README.md). Ask first and say which cases."
+    },
+    {
+      "pattern": "--no-verify\\b",
+      "decision": "ask",
+      "reason": "Bypasses the pre-commit hook (unit tests, plumbing, manifest validation), which .githooks/pre-commit calls discouraged."
+    }
+  ],
+  "git": {
+    "writes": "ask",
+    "reason": "Commits happen only when the user asks in that turn; release tags and pushes are the owner's (.claude/CLAUDE.md, Git)."
+  }
+}

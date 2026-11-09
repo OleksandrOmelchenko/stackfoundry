@@ -1,0 +1,255 @@
+{
+  "schemaVersion": 1,
+  "id": "app-model-python-cli",
+  "layer": "app-model",
+  "title": "Standard-library Python CLI that is also a Claude Code PreToolUse hook",
+  "researchedAt": "2026-11-09",
+  "versions": [
+    {"version": ">= 3.11 (floor; argparse/json/sys from the stdlib)", "pinnedIn": "plugins/stackfoundry/bin/stackfoundry (ok(): sys.version_info >= (3, 11))", "latest": "3.15 (released 2026-10-09; docs at 3.15.2)"},
+    {"version": "Claude Code hooks contract (PreToolUse, hookSpecificOutput; onFailure needs >= v2.1.295)", "pinnedIn": "plugins/stackfoundry/hooks/hooks.json (not pinned: tracks the user's Claude Code)", "latest": "docs read 2026-11-09"}
+  ],
+  "targets": ["cli"],
+  "rulebookPaths": ["plugins/stackfoundry/scripts/**", "plugins/stackfoundry/hooks/**"],
+  "rules": [
+    {
+      "rule": "On the hook path (`guard` without --check, and the launcher when its first argument is `guard`), exit 0 in every outcome. Never let exit code 2 reach Claude Code: not from cli.main's 'could not run' branch, not from an argparse usage error, not from a new early return.",
+      "why": "For PreToolUse, exit 2 is a blocking error: Claude Code stops the tool call and shows stderr as the reason, even if the JSON says allow. argparse exits 2 on any usage error, so one renamed subcommand or one extra argument in hooks.json would block every Edit, Write, Bash and PowerShell call in the session. Other non-zero codes without JSON are non-blocking, so they fail open.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/guard.py main (except Exception -> return 0)", "plugins/stackfoundry/scripts/stackfoundry/cli.py main (returns 2 for ProfileError/GitError/OSError/ValueError) and build() 'guard' parser", "plugins/stackfoundry/bin/stackfoundry ([ \"${1:-}\" = \"guard\" ] && exit 0)"],
+      "sources": ["cc-hooks", "cc-hooks-guide", "py-argparse"]
+    },
+    {
+      "rule": "Only emit `deny` or `ask` from the guard, and enforce that whitelist in decide() itself, not only in `guard --check`. Never pass a decision value read from guards.json through unchecked.",
+      "why": "`allow` skips the permission prompt and `defer` ends the turn. guards.json is repo content (untrusted). decide() currently returns `c.get(\"decision\", \"deny\")` as-is, so a guards.json entry with `\"pattern\": \".*\", \"decision\": \"allow\"` would turn the guard into an auto-approver for every shell command. check_file() flags the value, but the hook never calls check_file().",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/guard.py decide (commands loop, _decision(c.get(\"decision\", \"deny\"), ...))", "plugins/stackfoundry/scripts/stackfoundry/guard.py check_file (validates deny|ask only for --check)"],
+      "sources": ["cc-hooks", "cc-hooks-guide"]
+    },
+    {
+      "rule": "Return the decision as `hookSpecificOutput` with `hookEventName: \"PreToolUse\"`, `permissionDecision` and `permissionDecisionReason`. Do not use the top-level `decision`/`reason` fields, and do not use `updatedInput`.",
+      "why": "The top-level `decision`/`reason` fields are deprecated for PreToolUse. A field at the wrong level is ignored with no error in the transcript, so the guard silently stops guarding. `updatedInput` replaces the whole tool input, and rewrites from several hooks are not merged.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/guard.py _decision"],
+      "sources": ["cc-hooks", "cc-hooks-guide"]
+    },
+    {
+      "rule": "On the hook path, stdout carries exactly one JSON object and nothing else: no print() for diagnostics, no banner, no BOM. Put diagnostics on stderr and print 'no opinion' as empty stdout.",
+      "why": "Claude Code only parses stdout as JSON when it starts with `{`. Otherwise it logs the output as plain text and drops the decision, and the transcript shows no error, so a protected file becomes editable without anyone noticing.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/guard.py main (print(json.dumps(result)) only when result)"],
+      "sources": ["cc-hooks", "cc-hooks-guide"]
+    },
+    {
+      "rule": "Read the hook event from sys.stdin.buffer and decode it explicitly with utf-8-sig, never through text-mode sys.stdin. Read every repo JSON file with encoding=\"utf-8-sig\".",
+      "why": "Before 3.15, a pipe on Windows uses the ANSI code page, so non-ASCII paths get mangled and stop matching their globs. -I also ignores PYTHONUTF8/PYTHONIOENCODING. json raises ValueError on a leading BOM, and the guard turns that ValueError into 'no opinion'.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/guard.py main (sys.stdin.buffer.read().decode(\"utf-8-sig\"))", "plugins/stackfoundry/scripts/stackfoundry/profile.py, pack.py load, manifest.py (read_text(encoding=\"utf-8-sig\"))"],
+      "sources": ["py-sys", "py-json", "py-cmdline"]
+    },
+    {
+      "rule": "Pass encoding= (and newline=\"\\n\" on writes) to every open/read_text/write_text and to subprocess text=True. Do not rely on the UTF-8 default that arrived in Python 3.15.",
+      "why": "The floor is 3.11. On 3.11 to 3.14 without an explicit encoding, Windows uses the locale code page. Launching with -I ignores PYTHONUTF8, so a user cannot fix it from the environment. The result is mojibake in reports and file names that drop out of change sets.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/*.py (every read_text/write_text call already passes encoding)", "plugins/stackfoundry/scripts/stackfoundry/gitutil.py run (text=True, encoding=\"utf-8\")"],
+      "until": "the floor reaches 3.15 (UTF-8 mode default, PEP 686)",
+      "sources": ["py-whatsnew-315", "py-cmdline", "py-sys"]
+    },
+    {
+      "rule": "Keep the guard fast and local: no git subprocess, no repo walk, no unbounded work on the hook path. Stay well inside the 10 s timeout in hooks.json.",
+      "why": "A timed-out PreToolUse command hook does not block the tool call; with onFailure \"continue\" it proceeds through the normal permission flow. A slow guard therefore disables itself silently, and it runs on every Edit, Write, Bash and PowerShell call.",
+      "where": ["plugins/stackfoundry/hooks/hooks.json (\"timeout\": 10, \"onFailure\": \"continue\")", "plugins/stackfoundry/scripts/stackfoundry/guard.py decide, _governing_root"],
+      "sources": ["cc-hooks", "cc-hooks-guide"]
+    },
+    {
+      "rule": "Choose the governing guards.json from the edited file's path (or the command's cwd), not from CLAUDE_PROJECT_DIR alone. Normalize first: tool_input.file_path is absolute but arrives with backslashes on Windows, and `..` and case must be folded before the paths meet the globs.",
+      "why": "CLAUDE_PROJECT_DIR stays at the original root inside a worktree, so a nested repo would be guarded by the wrong profile. Comparing raw strings lets `gen/../gen/x` or a different-case path bypass a deny.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/guard.py _governing_root, _absolute, _relative"],
+      "sources": ["cc-hooks"]
+    },
+    {
+      "rule": "Keep the exit-code contract for every subcommand: 0 = ran clean, 1 = ran and found something, 2 = could not run (bad input or a usage error). A crash must not read as a verdict.",
+      "why": "Callers branch on the code. argparse already uses 2 for usage errors and Unix convention uses 2 for syntax errors, so a missing file that returned 1 would read as 'found problems'.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/cli.py main", "plugins/stackfoundry/scripts/stackfoundry/pack.py main"],
+      "repoConvention": "cli.py main documents and enforces 0/1/2. The guard is the deliberate exception and always exits 0 (see the first rule).",
+      "sources": ["py-argparse", "py-sys"]
+    },
+    {
+      "rule": "Register each subcommand under add_subparsers(dest=\"command\", required=True) with set_defaults(func=...), and start its help with '(read-only)' or name exactly what it writes. Keep the module docstring's list of writers in step with the help text.",
+      "why": "A parser without set_defaults(func) fails at args.func with an AttributeError instead of a usage error. Without required=True, a bare `stackfoundry` gets no command. Skills decide whether a call is safe from the '(read-only)' marker, so a writer labelled read-only gets called where writes are forbidden.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/cli.py build", "plugins/stackfoundry/scripts/stackfoundry/cli.py module docstring (record|forget, pack render --out)"],
+      "sources": ["py-argparse"]
+    },
+    {
+      "rule": "Write files only from the subcommands documented as writers, through a temp file in the destination folder followed by os.replace. Read-only subcommands open nothing for writing.",
+      "why": "os.replace is atomic only on success and may fail across filesystems, so the temp file must sit next to the target. An interrupted direct write leaves a truncated manifest or rulebook. A stray write from a read-only subcommand breaks the promise the skills rely on.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/manifest.py write_json (mkstemp dir=path.parent)", "plugins/stackfoundry/scripts/stackfoundry/pack.py main (--out: .<name>.tmp + os.replace)"],
+      "sources": ["py-os"]
+    },
+    {
+      "rule": "Run external programs by absolute path with a list argv, never shell=True and never a bare name resolved from the user's repo directory.",
+      "why": "On Windows, a bare name passed with shell=False is searched for without cwd overriding the lookup. Batch files (.bat/.cmd) are run through a shell that parses their arguments with no escaping. Either lets a planted binary in an untrusted repo run.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/gitutil.py git_exe, run"],
+      "sources": ["py-subprocess"]
+    },
+    {
+      "rule": "In hooks.json, wrap ${CLAUDE_PLUGIN_ROOT} in double quotes in the shell-form command (or switch to exec form with args), and never write state under the plugin root.",
+      "why": "Unquoted, the path splits on spaces, which are common in Windows user paths, so the hook fails to start. The plugin root changes when the plugin updates, so state written there is lost. Use ${CLAUDE_PLUGIN_DATA} or the repo's .claude/stackfoundry/ instead.",
+      "where": ["plugins/stackfoundry/hooks/hooks.json PreToolUse command"],
+      "sources": ["cc-plugins-ref", "cc-hooks"]
+    },
+    {
+      "rule": "Pass full long option names when calling the CLI from skills and tests. When adding an option, check it does not make an existing prefix ambiguous.",
+      "why": "argparse's allow_abbrev defaults to True. An abbreviation that works today (`--ro` for `--root`) becomes an 'ambiguous option' usage error, exit 2, once a second option shares the prefix.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/cli.py build (ArgumentParser without allow_abbrev=False)"],
+      "sources": ["py-argparse"]
+    }
+  ],
+  "bugCategories": [
+    {
+      "name": "hook-blocking-exit",
+      "lookFor": "Any path from hook start to exit that can end in code 2: a raise or return outside guard.main's try, argparse errors from hooks.json arguments, cli.main's `return 2`, or the launcher not exiting 0 for `guard`.",
+      "failure": "Claude Code treats exit 2 as deny, so every Edit/Write/Bash/PowerShell call in the session is blocked with a stderr message.",
+      "severityHint": "blocker",
+      "sources": ["cc-hooks", "cc-hooks-guide", "py-argparse"]
+    },
+    {
+      "name": "hook-decision-escalation",
+      "lookFor": "A permissionDecision whose value comes from repo content without a deny|ask whitelist, or any code path that emits `allow`, `defer` or `updatedInput`.",
+      "failure": "Repo-controlled config auto-approves tool calls (allow skips the permission prompt) or rewrites them.",
+      "severityHint": "blocker",
+      "sources": ["cc-hooks"]
+    },
+    {
+      "name": "hook-stdout-pollution",
+      "lookFor": "print() or warnings written to stdout on the hook path, JSON preceded by text or a BOM, or a decision field placed outside hookSpecificOutput.",
+      "failure": "Claude Code treats the output as plain text and ignores the decision with no visible error, so the protection is off.",
+      "severityHint": "blocker",
+      "sources": ["cc-hooks", "cc-hooks-guide"]
+    },
+    {
+      "name": "guard-silent-fail-open",
+      "lookFor": "A new guards.json key, regex or tool name that decide() skips on error (re.error, KeyError caught by the broad except, a tool missing from EDIT_TOOLS/SHELL_TOOLS or from the hooks.json matcher) with no matching check in check_file(). Also new slow work on the hook path.",
+      "failure": "The rule the user configured is never applied and nothing reports it, because fail-open is by design and timeouts also proceed.",
+      "severityHint": "confirm",
+      "sources": ["cc-hooks", "cc-hooks-guide"]
+    },
+    {
+      "name": "path-match-bypass",
+      "lookFor": "Comparing a tool_input path to a glob without normpath, backslash-to-slash conversion, case folding on Windows, or resolving against the event cwd. Also choosing guards from CLAUDE_PROJECT_DIR instead of the target's nearest profile.",
+      "failure": "A generated file is hand-edited through a relative, `..`, backslash or different-case spelling, or a worktree is guarded by the wrong profile.",
+      "severityHint": "blocker",
+      "sources": ["cc-hooks"]
+    },
+    {
+      "name": "locale-encoding-io",
+      "lookFor": "open/read_text/write_text/subprocess text mode without encoding=, text-mode sys.stdin for hook input, json.loads on text that may carry a BOM, or print of non-ASCII output before cli.main's reconfigure.",
+      "failure": "On Windows with Python 3.11 to 3.14: mojibake, UnicodeDecodeError (exit 2), or non-ASCII paths that no longer match their globs.",
+      "severityHint": "confirm",
+      "sources": ["py-sys", "py-json", "py-whatsnew-315"]
+    },
+    {
+      "name": "read-only-writes",
+      "lookFor": "A subcommand labelled '(read-only)' that calls write_text, open(..., 'w'), mkdir, os.replace, or a git write; a writer without temp-file + os.replace.",
+      "failure": "Skills call it where writes are forbidden and it changes the user's repo, or an interrupted write leaves a truncated manifest or rulebook.",
+      "severityHint": "blocker",
+      "sources": ["py-os", "py-argparse"]
+    }
+  ],
+  "testing": {
+    "layers": "Subprocess tests prove the contract: run the CLI as Claude Code does, with `python -I cli.py <subcommand>`, JSON bytes on stdin, and CLAUDE_PROJECT_DIR set, then assert the exit code and parse stdout as JSON. In-process tests of decide()/check_file() cover the matching logic. One launcher test runs through `sh bin/stackfoundry` to prove the interpreter lookup and the fail-open exit.",
+    "harness": [
+      "tests/_support.py run_cli, TempRepo, write",
+      "tests/test_guard.py GuardTests.run_guard (asserts returncode 0 and parses hookSpecificOutput)",
+      "tests/test_self_run_fixes.py guard_bytes, GuardEncodingTests, GuardScopeTests",
+      "tests/test_survey.py SurveyTests.test_cli_prints_json_and_writes_nothing"
+    ],
+    "commands": ["python -m unittest discover -s tests -t ."],
+    "traps": [
+      "run_cli sends stdin as text. To prove non-ASCII handling, feed raw UTF-8 bytes with guard_bytes, as Claude Code does.",
+      "Set CLAUDE_PROJECT_DIR in the test env, or the guard picks up the developer's own repo profile.",
+      "The launcher test is skipped when `sh` is missing (Windows without Git Bash), so the fail-open exit of bin/stackfoundry goes untested there.",
+      "Not covered yet: a test that a guards.json `\"decision\": \"allow\"` is never emitted; a test that `guard` with an unexpected argument still exits 0 (today argparse exits 2); a writes-nothing check for each read-only subcommand beyond survey."
+    ],
+    "sources": ["cc-hooks", "py-sys"]
+  },
+  "wiring": [
+    {
+      "check": "The hooks.json PreToolUse matcher lists exactly the tools in guard.EDIT_TOOLS and guard.SHELL_TOOLS. Matchers are case-sensitive exact names when they contain only letters and `|`.",
+      "failure": "A tool decide() handles never reaches the hook, or the hook runs for tools it ignores.",
+      "where": ["plugins/stackfoundry/hooks/hooks.json matcher", "plugins/stackfoundry/scripts/stackfoundry/guard.py EDIT_TOOLS, SHELL_TOOLS"],
+      "sources": ["cc-hooks", "cc-hooks-guide"]
+    },
+    {
+      "check": "The hooks.json command calls the `guard` subcommand that cli.build() registers, with no arguments argparse would reject.",
+      "failure": "argparse exits 2 and blocks every matched tool call.",
+      "where": ["plugins/stackfoundry/hooks/hooks.json command", "plugins/stackfoundry/scripts/stackfoundry/cli.py build ('guard')"],
+      "sources": ["py-argparse", "cc-hooks"]
+    },
+    {
+      "check": "hooks.json keeps the top-level `hooks` wrapper, a `timeout` in seconds, and `onFailure: \"continue\"` (honoured from Claude Code v2.1.295).",
+      "failure": "Without the wrapper the hooks file does not load. A missing timeout falls back to the 600 s default.",
+      "where": ["plugins/stackfoundry/hooks/hooks.json"],
+      "sources": ["cc-plugins-ref", "cc-hooks"]
+    },
+    {
+      "check": "Every sub-parser in cli.build() calls set_defaults(func=...) and its help says '(read-only)' or what it writes; each new subcommand has a test module in tests/.",
+      "failure": "AttributeError at args.func, or a writer that skills treat as read-only.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/cli.py build"],
+      "sources": ["py-argparse"]
+    }
+  ],
+  "performance": [
+    {
+      "note": "The guard runs before every matched tool call, and matching hooks run in parallel. Keep it to one stdin read, one upward walk for guards.json and in-memory regex checks. Interpreter start-up is already part of each call, so do not add imports of heavy modules or subprocesses to guard.py.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/guard.py", "plugins/stackfoundry/scripts/stackfoundry/cli.py (imports every subcommand module at start-up)"],
+      "sources": ["cc-hooks", "cc-hooks-guide"]
+    }
+  ],
+  "security": [
+    {
+      "note": "Command hooks run with the user's full permissions, and in -p/SDK sessions the folder counts as trusted with no dialog. Treat the hook event, guards.json and every repo file as untrusted input: validate types (guards.json may not be an object), never eval it, and launch Python with -I so a planted module in the repo is never imported.",
+      "where": ["plugins/stackfoundry/bin/stackfoundry (python -I)", "plugins/stackfoundry/scripts/stackfoundry/cli.py (sys.path.insert of the package parent only)", "plugins/stackfoundry/scripts/stackfoundry/guard.py decide"],
+      "sources": ["cc-hooks", "py-cmdline"]
+    },
+    {
+      "note": "Claude reads the permissionDecisionReason of a deny, and the user reads it in the prompt for an ask. The `reason` and `regenerate` strings come from repo content, so they are a channel for injected instructions. Keep them short and prefixed (the guard already prefixes 'stackfoundry guard:'), and consider capping their length.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/guard.py decide, _decision"],
+      "sources": ["cc-hooks"]
+    },
+    {
+      "note": "guards.json `commands` patterns are repo-supplied regexes run against every shell command. A pathological pattern can run the guard into its timeout, and the call then proceeds unguarded. Large or deeply nested JSON can also consume CPU and memory, so the docs recommend limiting the size of input you parse.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/guard.py decide (re.search(c[\"pattern\"], cmd))"],
+      "sources": ["py-json", "cc-hooks"]
+    },
+    {
+      "note": "A PreToolUse hook does not fire for @-referenced files, and a hook's own `if` filter is best-effort. The guard protects generated files against tool edits only. It is not a hard access control, so for hard denies use permission rules.",
+      "where": ["plugins/stackfoundry/scripts/stackfoundry/guard.py (module docstring)"],
+      "sources": ["cc-hooks"]
+    }
+  ],
+  "upgrade": {
+    "pins": ["plugins/stackfoundry/bin/stackfoundry ok(): sys.version_info >= (3, 11)", "plugins/stackfoundry/scripts/stackfoundry/*.py: `from __future__ import annotations` and `X | None` hints"],
+    "lockStep": ["The floor in bin/stackfoundry, the 'Python 3.11+' statements in CLAUDE.md and .claude/rules/authoring.md, and the CI matrix move together.", "The guard's output shape moves with the Claude Code hooks contract (hookSpecificOutput fields, onFailure availability)."],
+    "releaseNotes": ["https://docs.python.org/3/whatsnew/3.15.html", "https://devguide.python.org/versions/", "https://code.claude.com/docs/en/hooks"],
+    "migrationGuides": ["https://docs.python.org/3/whatsnew/3.15.html"],
+    "deprecationsInUse": []
+  },
+  "sources": {
+    "cc-hooks": {"url": "https://code.claude.com/docs/en/hooks", "title": "Claude Code hooks reference", "version": "current (mentions v2.1.295/v2.1.296 features)", "accessed": "2026-11-09"},
+    "cc-hooks-guide": {"url": "https://code.claude.com/docs/en/hooks-guide", "title": "Automate actions with hooks (exit codes, limitations, troubleshooting)", "version": "current", "accessed": "2026-11-09"},
+    "cc-plugins-ref": {"url": "https://code.claude.com/docs/en/plugins-reference", "title": "Plugin manifest reference (hooks files, CLAUDE_PLUGIN_ROOT, quoting)", "version": "current", "accessed": "2026-11-09"},
+    "py-argparse": {"url": "https://docs.python.org/3/library/argparse.html", "title": "argparse", "version": "3.15.2", "accessed": "2026-11-09"},
+    "py-sys": {"url": "https://docs.python.org/3/library/sys.html", "title": "sys (exit, standard stream encoding)", "version": "3.15.2", "accessed": "2026-11-09"},
+    "py-json": {"url": "https://docs.python.org/3/library/json.html", "title": "json", "version": "3.15.2", "accessed": "2026-11-09"},
+    "py-cmdline": {"url": "https://docs.python.org/3/using/cmdline.html", "title": "Command line and environment (-I, -E, -X utf8)", "version": "3.15", "accessed": "2026-11-09"},
+    "py-whatsnew-315": {"url": "https://docs.python.org/3/whatsnew/3.15.html", "title": "What's New in Python 3.15", "version": "3.15", "accessed": "2026-11-09"},
+    "py-versions": {"url": "https://devguide.python.org/versions/", "title": "Status of Python versions", "version": "3.11-3.16", "accessed": "2026-11-09"},
+    "py-subprocess": {"url": "https://docs.python.org/3/library/subprocess.html", "title": "subprocess (executable resolution, security considerations)", "version": "3.15.2", "accessed": "2026-11-09"},
+    "py-os": {"url": "https://docs.python.org/3/library/os.html#os.replace", "title": "os.replace", "version": "3.15", "accessed": "2026-11-09"},
+    "py-security": {"url": "https://www.python.org/dev/security/", "title": "Python security (advisory channels)", "version": "n/a", "accessed": "2026-11-09"}
+  },
+  "notReached": [
+    "Python security advisories: python.org/dev/security names the channels (security-announce list, github.com/psf/advisory-database), but this run did not search the advisory database for entries affecting argparse/json/subprocess/os on 3.11-3.15.",
+    "What's New in 3.15: the Removed/Deprecated sections were truncated in the fetch; no deprecation in argparse/json/sys/subprocess/tempfile/os.path was visible, but 3.12-3.14 What's New pages were not read separately (argparse version notes come from the argparse page itself). deprecationsInUse is empty on that partial evidence.",
+    "Claude Code hooks reference: the tool_input shapes of MultiEdit and NotebookEdit (notebook_path) were not in the fetched sections, so the guard's EDIT_TOOLS names are not confirmed against the current tool list."
+  ],
+  "questions": [
+    "guard.decide() passes the guards.json `decision` value through without a deny|ask whitelist, so a repo-supplied `\"allow\"` would auto-approve matching shell commands. check_file() rejects it only under --check. Should decide() enforce the whitelist (recommended), or is --check at init time considered enough?",
+    "An argparse usage error on `guard` (for example an extra argument added to hooks.json) exits 2, which Claude Code treats as deny for every matched call. Should the guard parser override ArgumentParser.exit/error (or parse with exit_on_error=False) to fail open, or is the fixed hooks.json command enough protection?",
+    "Are MultiEdit and NotebookEdit still Claude Code tool names? Their input shapes were not on the hooks reference pages read. If a tool was renamed, the matcher and EDIT_TOOLS miss it silently."
+  ]
+}
