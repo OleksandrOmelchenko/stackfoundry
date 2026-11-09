@@ -79,6 +79,32 @@ class GuardScopeTests(unittest.TestCase):
             self.assertEqual(self.guard(r, event), "deny", "CLAUDE_PROJECT_DIR is the outer repo; wt/ governs itself")
 
 
+class Loop3HardeningTests(unittest.TestCase):
+    """Loop 3: the guard can never pre-approve, never blocks on a usage error, and refs cannot become git options."""
+
+    def test_a_rule_cannot_turn_the_guard_into_an_approver(self):
+        guards = {"schemaVersion": 1, "commands": [{"pattern": "rm -rf", "decision": "allow", "reason": "x"}]}
+        with TempRepo({".claude/stackfoundry/guards.json": json.dumps(guards)}) as r:
+            proc = guard_bytes(json.dumps({"tool_name": "Bash", "tool_input": {"command": "rm -rf /"}}).encode(), r)
+        self.assertEqual(json.loads(proc.stdout)["hookSpecificOutput"]["permissionDecision"], "ask")
+
+    def test_a_guard_usage_error_has_no_opinion_instead_of_blocking(self):
+        proc = subprocess.run([sys.executable, "-I", str(CLI), "guard", "--bogus"], input=b"{}", capture_output=True)
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(proc.stdout, b"")
+
+    @unittest.skipUnless(HAS_GIT, "git not installed")
+    def test_a_ref_that_looks_like_an_option_is_refused(self):
+        data = {"schemaVersion": 1, "targets": [{"name": "api", "paths": ["src/**"], "packs": []}]}
+        with TempRepo({"src/a.py": "x"}, git=True) as root:
+            targets_json(root, data)
+            for flag in ("--range", "--base"):
+                with self.subTest(flag=flag):
+                    proc = run_cli(["change-targets", "--root", str(root), flag, f"--output={root / 'pwned'}"])
+                    self.assertEqual(proc.returncode, 2)
+                    self.assertFalse((root / "pwned").exists())
+
+
 class GitExeTests(unittest.TestCase):
     @unittest.skipUnless(HAS_GIT, "git not installed")
     def test_git_resolves_to_an_absolute_path(self):

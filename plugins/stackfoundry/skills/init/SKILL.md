@@ -33,7 +33,9 @@ code and returns a draft target map, ecosystems, guards and questions. Read the 
 yourself (a unit with no app model, an app model the survey only guessed, a test project with no target).
 
 - Units the survey marks `"fixture": true` (under `fixtures/`, `testdata/`, `samples/`…) are test data or examples,
-  never targets: they go in `targets.json` → `ignored`, and the profile says why (so no hunter "fixes" them).
+  never targets, and the profile says why (so no hunter "fixes" them). When tests consume them, map the fixture
+  folder through a `rules` entry to the targets whose tests read it, so a fixture change selects those tests;
+  otherwise put it in `ignored`.
 - `looseSources` lists source folders no manifest covers (a CLI run by a launcher, a scripts folder): each is a
   candidate target or part of one; ask when unclear.
 - A `claude-plugin` unit is a Claude Code plugin; its packs come from the plugin's own layers (skills, agents,
@@ -100,6 +102,9 @@ Then write:
 - A name collision with an existing rule, skill or doc: write `stackfoundry-<name>` beside it and list it for the
   user to merge, never replace.
 - Every generated file is grounded: a placeholder the repo cannot fill is left out, never invented.
+- Check as you write: `stackfoundry guard --check` right after `guards.json` (an invalid file is silently ignored
+  by the hook), `stackfoundry change-targets --files <one file per target>` right after `targets.json` (it loads and
+  validates it), and `stackfoundry verify-plumbing .` right after the code-writer skills (description caps).
 - Record every file: `stackfoundry manifest record <files> --template <id from the table>`.
 
 ## 5. Prove

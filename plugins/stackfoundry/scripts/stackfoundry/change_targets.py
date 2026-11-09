@@ -103,12 +103,13 @@ def resolve_files(root: Path, base: str | None, files_arg, range_arg: str | None
         values = [files_arg] if isinstance(files_arg, str) else files_arg
         return [f.strip().replace("\\", "/") for v in values for f in v.split(",") if f.strip()]
     if range_arg:  # a commit range exactly, nothing uncommitted (fix-verify commit mode)
-        return gitutil.paths(["diff", "--name-only", range_arg], root)
+        return gitutil.paths(["diff", "--name-only", gitutil.check_ref(range_arg)], root)
     return gitutil.changed_files(root, base)
 
 
-def render_markdown(result: dict, specs: list[dict], base: str | None) -> str:
-    lines = [f"# Change targets ({'against ' + base if base else 'uncommitted tree + untracked'})", ""]
+def render_markdown(result: dict, specs: list[dict], base: str | None, source: str | None = None) -> str:
+    scope = source or (f"against {base}" if base else "uncommitted tree + untracked")
+    lines = [f"# Change targets ({scope})", ""]
     if not result["targets"]:
         lines.append("**Targets:** none")
     else:
@@ -143,5 +144,6 @@ def main(args) -> int:
     if args.json:
         print(json.dumps({**result, "specialists": specs, "base": args.base}, indent=2))
     else:
-        print(render_markdown(result, specs, args.base), end="")
+        source = "the files given" if args.files else (f"range {args.range}" if args.range else None)
+        print(render_markdown(result, specs, args.base, source), end="")
     return 0

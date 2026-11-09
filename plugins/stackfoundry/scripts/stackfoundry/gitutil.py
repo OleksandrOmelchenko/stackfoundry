@@ -28,13 +28,24 @@ def git_exe() -> str:
     raise GitError("git is not on PATH")
 
 
-def run(args: list[str], cwd: Path) -> str:
+def check_ref(value: str) -> str:
+    """A revision or range from the command line. One starting with '-' would reach git as an option
+    (`--output=<file>` turns a read-only diff into a write), so it is refused."""
+    if not value or value.startswith("-"):
+        raise GitError(f"not a revision or range: {value!r}")
+    return value
+
+
+def run(args: list[str], cwd: Path, timeout: int = 120) -> str:
     try:
         proc = subprocess.run(
             [git_exe(), *args], cwd=str(cwd), capture_output=True, text=True, encoding="utf-8", errors="replace",
+            timeout=timeout,
         )
     except FileNotFoundError as exc:  # git not installed
         raise GitError("git is not on PATH") from exc
+    except subprocess.TimeoutExpired as exc:
+        raise GitError(f"git {' '.join(args)} did not finish within {timeout}s") from exc
     if proc.returncode != 0:
         raise GitError(f"git {' '.join(args)}: {proc.stderr.strip() or proc.stdout.strip()}")
     return proc.stdout
@@ -53,7 +64,7 @@ def paths(args: list[str], root: Path) -> list[str]:
 def changed_files(root: Path, base: str | None = None) -> list[str]:
     """Files changed against `base` (merge-base form, `base...HEAD`), or the uncommitted tree plus untracked files."""
     if base:
-        files = paths(["diff", "--name-only", f"{base}...HEAD"], root)
+        files = paths(["diff", "--name-only", f"{check_ref(base)}...HEAD"], root)
         # A branch review also covers what is still uncommitted on top of it.
         files += paths(["diff", "--name-only", "HEAD"], root)
     else:

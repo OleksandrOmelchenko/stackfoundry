@@ -91,7 +91,11 @@ def decide(event: dict, project: Path) -> dict | None:
                 continue
             try:
                 if re.search(c["pattern"], cmd):
-                    return _decision(c.get("decision", "deny"), c.get("reason", "blocked by the repo's guards.json"))
+                    # The guard only ever denies or asks: a rule cannot use it to pre-approve a command.
+                    decision = c.get("decision", "deny")
+                    if decision not in ("deny", "ask"):
+                        decision = "ask"
+                    return _decision(decision, c.get("reason", "blocked by the repo's guards.json"))
             except re.error:
                 continue
         policy = (guards.get("git") or {}).get("writes", "allow")

@@ -13,6 +13,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 from pathlib import Path
 
 LAYERS = ("language", "app-model", "capability", "tooling")
@@ -227,9 +228,14 @@ def main(args) -> int:
     if args.out:
         out = Path(args.out)
         out.parent.mkdir(parents=True, exist_ok=True)
-        tmp = out.with_name(f".{out.name}.tmp")
-        tmp.write_text(text, encoding="utf-8", newline="\n")
-        os.replace(tmp, out)  # atomic: an interrupted render never leaves a truncated rulebook
+        fd, tmp = tempfile.mkstemp(prefix=f".{out.name}.", dir=str(out.parent))
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
+                fh.write(text)
+            os.replace(tmp, out)  # atomic: an interrupted render never leaves a truncated rulebook
+        except BaseException:
+            Path(tmp).unlink(missing_ok=True)
+            raise
         print(f"wrote {args.out}")
     else:
         sys.stdout.write(text)

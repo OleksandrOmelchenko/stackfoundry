@@ -113,7 +113,15 @@ def main(argv: list[str] | None = None) -> int:
             stream.reconfigure(encoding="utf-8", errors="backslashreplace")  # emoji markers on a Windows console
         except (AttributeError, ValueError):
             pass
-    args = build().parse_args(argv)
+    argv = sys.argv[1:] if argv is None else argv
+    try:
+        args = build().parse_args(argv)
+    except SystemExit as exc:
+        # As a PreToolUse hook, exit 2 would block every tool call. A guard that cannot parse its command line
+        # has no opinion instead.
+        if argv[:1] == ["guard"] and exc.code not in (0, None):
+            return 0
+        raise
     try:
         return args.func(args)
     except (ProfileError, GitError, OSError, ValueError) as exc:

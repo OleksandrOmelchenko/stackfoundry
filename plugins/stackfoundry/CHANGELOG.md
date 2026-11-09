@@ -41,6 +41,9 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 
 ### Fixed
 
+- A `guards.json` rule could set `"decision": "allow"` and make the guard pre-approve a command; the guard now only
+  denies or asks. A usage error on the guard's command line no longer exits 2 (which blocked every tool call).
+  `--base` and `--range` values starting with `-` are refused instead of reaching git as options.
 - The guard let edits of protected files through when the project path had non-ASCII characters on Windows (the
   hook event was decoded with the code page instead of UTF-8).
 - JSON files with a byte-order mark were unreadable (guarding silently stopped).
