@@ -15,7 +15,7 @@ argument-hint: "<pack-id | technology> [--refresh]"
 > (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
 
 Writes or refreshes **one** pack under `.stackfoundry/packs/<pack-id>/` and the rulebook generated from it,
-`.claude/rules/<pack-id>.md`. The procedure and the rules for content are
+`.stackfoundry/rules/<pack-id>.md`, with each assistant's copy. The procedure and the rules for content are
 `${CLAUDE_PLUGIN_ROOT}/reference/pack-research.md`; the shape is `${CLAUDE_PLUGIN_ROOT}/reference/schemas/pack.schema.json`.
 
 ## 1. Resolve the pack
@@ -46,12 +46,14 @@ deprecations now in use, changed guidance) and keeps every `repoConvention` the 
 
 - `.stackfoundry/packs/<pack-id>/pack.json`: on a refresh, replace it with the checked `pack.next.json` once the user
   takes the new pack; otherwise delete `pack.next.json`.
-- The rulebook: `stackfoundry pack render <pack.json> --out .claude/rules/<pack-id>.md`. Check its state first with
+- The rulebook: `stackfoundry pack render <pack.json> --out .stackfoundry/rules/<pack-id>.md`, then each assistant's
+  copy: `stackfoundry render-rule .stackfoundry/rules/<pack-id>.md --client <assistant> --write` for every entry of
+  `stackfoundry outputs` → rules. Check each file's state first with
   `stackfoundry manifest diff --json`: **edited** by the team → show the regenerated text beside the current one and
   ask (take new · keep mine · merge by hand); untouched or new → write it.
-- New pack: add it to the targets' `packs`, add its row to the `CLAUDE.md` stackfoundry block, and regenerate the
+- New pack: add it to the targets' `packs`, add its row to each instruction file's stackfoundry block, and regenerate the
   code-writer skill of each app model it changes (same edited-file rule).
-- `stackfoundry manifest record <pack.json> <rulebook> --template research`.
+- `stackfoundry manifest record <pack.json> <rulebook> <its copies> --template research`.
 
 ## 5. Report
 

@@ -18,7 +18,7 @@ Dispatches `security-reviewer` in threat-model mode for one target and keeps the
 `<docsRoot>/security/<target>-threat-model.md`: what is worth attacking, who can reach it, where it enters, which
 boundaries it crosses, what stops each threat in the code, and which threats nothing stops yet. Gaps are tracked
 with stable ids and flow to `/stackfoundry:security-review-target` and `/stackfoundry:plan-feature`. Read-only on
-code. Living-doc rules: `.claude/rules/documentation.md` (path + symbol, never `file:line`; no dates or counts).
+code. Living-doc rules: `.stackfoundry/rules/documentation.md` (path + symbol, never `file:line`; no dates or counts).
 
 ## Procedure
 

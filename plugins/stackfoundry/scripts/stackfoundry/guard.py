@@ -30,7 +30,6 @@ from pathlib import Path
 from .globs import match
 from .profile import GUARDS
 
-CLIENTS = ("claude-code", "codex", "copilot", "cursor", "gemini")
 # A command can start after a separator, a parenthesis, whitespace or an opening quote (sh -c 'git push').
 _START = r"""(?:^|[;&|(\s'"`])"""
 GIT_WRITE = re.compile(

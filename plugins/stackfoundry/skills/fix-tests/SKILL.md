@@ -14,7 +14,7 @@ argument-hint: "<target> [--flaky <test> | --review <report or design>]"
 > Tool names are Claude Code's; in another assistant use its equivalent
 > (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
 
-Resolves each red, flaky or weak test by its **cause**. Rules: `.claude/rules/testing.md` (§14 the classification,
+Resolves each red, flaky or weak test by its **cause**. Rules: `.stackfoundry/rules/testing.md` (§14 the classification,
 §11 flaky categories and their fixes, §8 what may never be done to make a test pass). Step four of the loop:
 `design-tests` → `write-tests` → `review-tests` → **fix**.
 
@@ -28,7 +28,7 @@ Resolves each red, flaky or weak test by its **cause**. Rules: `.claude/rules/te
 ## Procedure
 
 1. **Load.** No profile → "run `/stackfoundry:init`", stop. Read the target entry (`roles` must allow
-   `test-fixer`), its profile and `.claude/rules/testing.md`. Check the gate's `preconditions` (ask before stopping
+   `test-fixer`), its profile and `.stackfoundry/rules/testing.md`. Check the gate's `preconditions` (ask before stopping
    anything you did not start), then run the gate (Red) or collect the findings.
 2. **Cluster.** Tests failing for one shared cause (a fixture, a fake, a setup step) form one cluster.
 3. **Fix, one builder at a time.** Dispatch one `test-fixer` per cluster, **sequentially** (fixers build and

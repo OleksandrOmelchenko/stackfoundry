@@ -16,7 +16,7 @@
     }
   ],
   "targets": ["cli"],
-  "rulebookPaths": ["plugins/stackfoundry/bin/**", ".githooks/**", "**/*.sh"],
+  "rulebookPaths": [".githooks/**", "**/*.sh"],
   "rules": [
     {
       "rule": "In a #!/bin/sh file use only POSIX features: no [[ ]], ==, local, source, $'...', arrays, function keyword, echo -e/-n. A script that needs bash says #!/bin/bash (as the eval scaffolds do) and is run with bash.",

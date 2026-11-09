@@ -1,6 +1,6 @@
 ---
 templateVersion: 1
-output: .claude/rules/benchmarking.md
+output: .stackfoundry/rules/benchmarking.md
 ---
 ---
 description: Benchmarking rulebook — pre-register question, hypothesis and decision rule; what makes a micro-benchmark wrong; a quiet machine that the tooling never reconfigures; comparing runs and the verdict vocabulary; reports.
@@ -10,7 +10,7 @@ paths:
 
 # Benchmarking rulebook
 
-The harness for this repo is named in the benchmarking tooling pack (`.claude/rules/tooling-<harness>.md`) and the
+The harness for this repo is named in the benchmarking tooling pack (`.stackfoundry/rules/tooling-<harness>.md`) and the
 target profile. The procedure is `/stackfoundry:write-benchmarks` and `/stackfoundry:run-benchmarks`. This file is
 the rules they share.
 

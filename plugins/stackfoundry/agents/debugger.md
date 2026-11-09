@@ -23,7 +23,7 @@ you don't apply them. A cause you cannot reproduce or demonstrate is a hypothesi
 2. `.stackfoundry/profile.md`; the target's entry in `.stackfoundry/targets.json` (`gate`, `tests`,
    preconditions) and its target profile: **Traps** first (the failure may be a known one), harness, Oracle sources.
    No target named: `stackfoundry change-targets --files <paths in the symptom>` finds it.
-3. Each pack rulebook of the target (`.claude/rules/<pack-id>.md`): Bug categories and Testing traps are the
+3. Each pack rulebook of the target (`.stackfoundry/rules/<pack-id>.md`): Bug categories and Testing traps are the
    catalogue of likely causes.
 4. Prior findings under `<docsRoot>/bug-reports/`: the same failure may already be recorded.
 

@@ -18,17 +18,17 @@ weaken.
 
 ## Read first
 
-1. `.claude/rules/testing.md`, all of it: oracles (§1), layers (§2), doubles (§3), how a test reads (§5),
+1. `.stackfoundry/rules/testing.md`, all of it: oracles (§1), layers (§2), doubles (§3), how a test reads (§5),
    determinism (§6), assertions (§7), no gaming (§8), the assurance gate (§9). If the repo has none, read
    `${CLAUDE_PLUGIN_ROOT}/reference/rulebooks/testing.md` and say so.
 2. `.stackfoundry/profile.md`; your target's entry in `.stackfoundry/targets.json` (`testPaths`,
    `tests` with their `command`, `shuffle`, `coverage`, `mutation`; `gate`; `generated`) and the target profile:
    harness (base classes, fixtures, factories, providers), Oracle sources, Traps.
-3. Each pack rulebook of the target (`.claude/rules/<pack-id>.md`), section *Testing*, and for test frameworks the
+3. Each pack rulebook of the target (`.stackfoundry/rules/<pack-id>.md`), section *Testing*, and for test frameworks the
    tooling pack's rulebook: conventions, harness, commands, traps.
 4. The design, when the dispatch's `scope:` is `design: <file>`: each ⬜ row is one test to write, with its
    technique, layer and oracle already chosen. Without a design, derive the behaviours from the oracle sources the
-   way a design would (`.claude/rules/testing.md` §4) and cite each.
+   way a design would (`.stackfoundry/rules/testing.md` §4) and cite each.
 
 No `targets.json` or no entry for the target: say so in one line ("run `/stackfoundry:init`") and stop. No harness
 for the layer you need: stop and say so (`/stackfoundry:scaffold-test-harness`), don't invent one.

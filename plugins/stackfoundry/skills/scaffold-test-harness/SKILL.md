@@ -17,7 +17,7 @@ argument-hint: "<target>"
 Gives a target the smallest harness the test quality loop can run on: a place for tests, a base fixture, doubles at
 the edge, and the commands the assurance gate needs. The framework comes from a **researched** tooling pack, never
 from memory. Nothing is created before the user approves the proposal, and the targets.json change is shown and
-approved separately. Rules: `.claude/rules/testing.md` (§2 layers, §3 doubles, §6 determinism, §9 the gate).
+approved separately. Rules: `.stackfoundry/rules/testing.md` (§2 layers, §3 doubles, §6 determinism, §9 the gate).
 
 ## Procedure
 

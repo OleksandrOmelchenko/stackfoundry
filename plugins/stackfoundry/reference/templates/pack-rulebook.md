@@ -1,6 +1,6 @@
 ---
 templateVersion: 1
-output: .claude/rules/{{pack-id}}.md
+output: .stackfoundry/rules/{{pack-id}}.md
 ---
 ---
 description: {{one line: what this rulebook governs}}. Researched {{researchedAt}} for {{versions}}; source pack .stackfoundry/packs/{{pack-id}}/pack.json.

@@ -15,7 +15,7 @@ argument-hint: "[category | probe | skill or agent name]"
 > (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
 
 Skills (`.claude/skills/<name>/SKILL.md`), agents (`.claude/agents/<name>.md`) and path-scoped rulebooks
-(`.claude/rules/*.md`) rot like any cross-referenced docs, and the failure is **silent**: a rename leaves a stale
+(`.stackfoundry/rules/*.md` and each assistant's copy) rot like any cross-referenced docs, and the failure is **silent**: a rename leaves a stale
 path, a `tools:` grant stops covering what the body calls, a broken frontmatter drops a skill from discovery, a
 `paths:` glob matches nothing so its rulebook never loads. This skill runs the mechanical checks, dispatches the
 `skill-agent-verifier` agent for the exhaustive pass, and then proves by a live probe that what should load does.

@@ -19,11 +19,11 @@ the expected answer: a result that confirms the hypothesis gets the same scrutin
 
 ## Read first
 
-1. `.claude/rules/benchmarking.md`: §2 is your checklist for code, §4 for results (template:
+1. `.stackfoundry/rules/benchmarking.md`: §2 is your checklist for code, §4 for results (template:
    `${CLAUDE_PLUGIN_ROOT}/reference/rulebooks/benchmarking.md`).
 2. The target that owns the benchmark project (`stackfoundry change-targets --files <folder>`), its entry in
    `.stackfoundry/targets.json` and `targets/<target>.md`: commands, results location, traps.
-3. The harness's tooling rulebook, `.claude/rules/tooling-<harness>.md`: how its shared configuration, baseline,
+3. The harness's tooling rulebook, `.stackfoundry/rules/tooling-<harness>.md`: how its shared configuration, baseline,
    parameters, validators, disassembly and exported results work, and any canary benchmark with its expected
    values.
 

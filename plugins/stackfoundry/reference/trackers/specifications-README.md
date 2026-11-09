@@ -4,7 +4,7 @@ output: "{{docsRoot}}/specifications/README.md"
 ---
 # Specifications
 
-Living specs of built or in-flight features. A spec is the first **oracle** for tests (`.claude/rules/testing.md`
+Living specs of built or in-flight features. A spec is the first **oracle** for tests (`.stackfoundry/rules/testing.md`
 §1): keep its behaviours precise.
 
 ## What a spec holds

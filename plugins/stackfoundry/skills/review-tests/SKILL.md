@@ -15,7 +15,7 @@ argument-hint: "<target> [diff [--base <ref>] | --design <doc> | <area>]"
 > (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
 
 Decides, per test, whether it **would fail if the behaviour it claims to pin broke**: the adversarial counterpart
-to `write-tests`. Read-only on tests and code; fixing is `fix-tests`. Rules: `.claude/rules/testing.md` (§13 the
+to `write-tests`. Read-only on tests and code; fixing is `fix-tests`. Rules: `.stackfoundry/rules/testing.md` (§13 the
 verdict vocabulary, §12 smells, §10 mutation, §11 flaky categories). Step three of the loop:
 `design-tests` → `write-tests` → **review** → `fix-tests`.
 
@@ -30,7 +30,7 @@ verdict vocabulary, §12 smells, §10 mutation, §11 flaky categories). Step thr
 ## Procedure
 
 1. **Load and enumerate.** No profile → "run `/stackfoundry:init`", stop. Read the target entry (`roles` must allow
-   `test-reviewer`), its profile and `.claude/rules/testing.md`. List the tests in scope and group them by the
+   `test-reviewer`), its profile and `.stackfoundry/rules/testing.md`. List the tests in scope and group them by the
    production unit they exercise.
 2. **Central gate, once, before fan-out.** Check the gate's `preconditions` (ask before stopping anything you did
    not start), build, then run the scope **three times with the suite's `shuffle` command and three seeds**. A red

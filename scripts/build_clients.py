@@ -32,7 +32,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / "plugins" / "stackfoundry"
 sys.path.insert(0, str(PLUGIN / "scripts"))
 
-from stackfoundry.frontmatter import split  # noqa: E402
+from stackfoundry.clients import render_agent  # noqa: E402
 
 AGENT_PLUGINS_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 AGENT_PLUGINS_KEYS = {"$schema", "name", "version", "description", "author", "homepage", "repository", "license",
@@ -42,17 +42,6 @@ AGENT_PLUGINS_NAME = re.compile(r"^(?!.*(?:--|\.\.))[a-z0-9](?:[a-z0-9.-]*[a-z0-
 GUARD_SH = "scripts/stackfoundry.sh"
 GUARD_PS1 = "scripts/stackfoundry.ps1"
 
-# Claude Code tool grant -> Copilot custom-agent tool aliases (docs.github.com, custom agents configuration).
-COPILOT_TOOLS = {"Read": "read", "Grep": "search", "Glob": "search", "Bash": "execute", "PowerShell": "execute",
-                 "Edit": "edit", "Write": "edit", "MultiEdit": "edit", "NotebookEdit": "edit", "WebSearch": "web",
-                 "WebFetch": "web", "Agent": "agent", "TodoWrite": "todo"}
-# Claude Code tool grant -> Gemini CLI built-in tools (geminicli.com, tools reference). Subagents cannot call
-# subagents there, so Agent maps to nothing.
-GEMINI_TOOLS = {"Read": ["read_file", "read_many_files"], "Grep": ["grep_search"], "Glob": ["glob", "list_directory"],
-                "Bash": ["run_shell_command"], "PowerShell": ["run_shell_command"], "Edit": ["replace"],
-                "MultiEdit": ["replace"], "Write": ["write_file"], "NotebookEdit": ["write_file"],
-                "WebSearch": ["google_web_search"], "WebFetch": ["web_fetch"], "AskUserQuestion": ["ask_user"],
-                "TodoWrite": ["write_todos"], "Agent": []}
 
 CODEX_INTERFACE = {
     "displayName": "stackfoundry",
@@ -146,7 +135,7 @@ def build_plugin_files(src: dict) -> dict[str, str]:
         "timeoutSec": 10,
     }]}})
     for agent in sorted((PLUGIN / "agents").glob("*.md")):
-        files[f"com.github.copilot/agents/{agent.stem}.agent.md"] = copilot_agent(agent)
+        files[f"com.github.copilot/agents/{agent.stem}.agent.md"] = render_agent(agent.read_text(encoding="utf-8"), "copilot")
 
     # Cursor: plugin hooks run from the plugin's install folder, so the launcher path is relative.
     cursor_manifest = {**_metadata(src), "hooks": "./com.cursor/hooks.json"}
@@ -193,50 +182,6 @@ def build_marketplace_files(src: dict, market: dict) -> dict[str, str]:
     return files
 
 
-def _frontmatter_text(fields: dict) -> str:
-    lines = ["---"]
-    for key, value in fields.items():
-        if isinstance(value, list):
-            lines.append(f"{key}: [{', '.join(json.dumps(v) for v in value)}]")
-        else:
-            lines.append(f"{key}: {json.dumps(value, ensure_ascii=False) if needs_quotes(value) else value}")
-    lines.append("---")
-    return "\n".join(lines) + "\n"
-
-
-def needs_quotes(value) -> bool:
-    return isinstance(value, str) and (value == "" or bool(re.search(r"[:#\[\]{}&*!|>'\"%@`]|^\s|\s$", value)))
-
-
-def _grant(fields: dict) -> list[str]:
-    tools = fields.get("tools", [])
-    if isinstance(tools, str):
-        tools = [t.strip() for t in tools.split(",") if t.strip()]
-    return list(tools)
-
-
-def copilot_agent(path: Path) -> str:
-    fields, body, _ = split(path.read_text(encoding="utf-8"))
-    tools: list[str] = []
-    for t in _grant(fields):
-        alias = COPILOT_TOOLS.get(t)
-        if alias and alias not in tools:
-            tools.append(alias)
-    out = {"name": fields["name"], "description": fields["description"], "tools": tools}
-    return _frontmatter_text(out) + body.lstrip("\n")
-
-
-def gemini_agent(path: Path) -> str:
-    fields, body, _ = split(path.read_text(encoding="utf-8"))
-    tools: list[str] = []
-    for t in _grant(fields):
-        for g in GEMINI_TOOLS.get(t, []):
-            if g not in tools:
-                tools.append(g)
-    out = {"name": fields["name"], "description": fields["description"], "kind": "local", "tools": tools}
-    return _frontmatter_text(out) + body.lstrip("\n")
-
-
 def build_gemini(src: dict, out: Path) -> None:
     """A complete Gemini CLI extension at `out` (replaced if it exists)."""
     if out.exists():
@@ -250,7 +195,8 @@ def build_gemini(src: dict, out: Path) -> None:
         shutil.copy2(PLUGIN / name, out / name)
     (out / "agents").mkdir()
     for agent in sorted((PLUGIN / "agents").glob("*.md")):
-        (out / "agents" / agent.name).write_text(gemini_agent(agent), encoding="utf-8", newline="\n")
+        (out / "agents" / agent.name).write_text(render_agent(agent.read_text(encoding="utf-8"), "gemini"),
+                                                encoding="utf-8", newline="\n")
     (out / "hooks").mkdir()
     (out / "hooks" / "hooks.json").write_text(dump({"hooks": {"BeforeTool": [{
         "matcher": "write_file|replace|run_shell_command",

@@ -3,9 +3,9 @@
   "pluginVersion": "0.1.0",
   "files": {
     ".claude/CLAUDE.md": {
-      "template": "reference/templates/claude-md-block.md",
-      "templateVersion": "1",
-      "sha256": "ae16dcc94e81d251ae26e54cb9ef93f80b6fb82336e15db391cb5401009cc383",
+      "template": "reference/templates/instructions-block.md",
+      "templateVersion": "2",
+      "sha256": "3a06aa87011d742927e23284c707210a99091c620fdb2f9a519e7b7e04299aaa",
       "kind": "generated"
     },
     ".claude/rules/app-model-claude-code-plugin.md": {
@@ -41,7 +41,7 @@
     ".claude/rules/language-posix-sh.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "96f17471cd64fe9319c03d399287d1aca4f5e0e07f017574224876c8025f312b",
+      "sha256": "da49d82bd0f83cbfc5018e1946d3b34ac913f698f78d5c8410e1b7971d0550b7",
       "kind": "generated"
     },
     ".claude/rules/language-python.md": {
@@ -101,7 +101,7 @@
     ".stackfoundry/guards.json": {
       "template": "profile",
       "templateVersion": "profile",
-      "sha256": "97c4c6b8390392cc1f85ab6c2111865a6dbaf8999f91690a336b0eda6a5e18d0",
+      "sha256": "87b294f5d332e4cef3aa2e40480635b8aae761a8a3bb90bc6100ee2cf7c77ba5",
       "kind": "generated"
     },
     ".stackfoundry/packs/app-model-claude-code-plugin/pack.json": {
@@ -125,7 +125,7 @@
     ".stackfoundry/packs/language-posix-sh/pack.json": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "e4b56be5cd7e9e2c3fada4b020d6df657ad3d88f28b2b59852db18f2a96540b6",
+      "sha256": "d518f9ca0c06160bfae5e6ccbfe13d4fd8ae553fb334d77adb99e5d7c494d3de",
       "kind": "generated"
     },
     ".stackfoundry/packs/language-python/pack.json": {
@@ -158,22 +158,88 @@
       "sha256": "d3a12e627c79b705ea9d87edd8e0303720cf61b47d4d3aae64c20270628084ce",
       "kind": "generated"
     },
+    ".stackfoundry/rules/app-model-claude-code-plugin.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "3c285d101900e3661ed25f7163630d154d73a448aacc917c152f5710219e0a1f",
+      "kind": "generated"
+    },
+    ".stackfoundry/rules/app-model-python-cli.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "0729cdfb3c8e6280aaa43336dd243220721df6ff01705d8cb84294f922c658ed",
+      "kind": "generated"
+    },
+    ".stackfoundry/rules/capability-claude-code-marketplace.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "9f4411795b9d398efaa6b17e30d591c37a0e3fd795d6aaa45c50dadb77827afd",
+      "kind": "generated"
+    },
+    ".stackfoundry/rules/dependency-bumps.md": {
+      "template": "reference/rulebooks/dependency-bumps.md",
+      "templateVersion": "1",
+      "sha256": "31e63aa28141e6258a18ccaa68c6eb5193f73d687d61caa367146314c0bd942f",
+      "kind": "generated"
+    },
+    ".stackfoundry/rules/documentation.md": {
+      "template": "reference/rulebooks/documentation.md",
+      "templateVersion": "1",
+      "sha256": "617f2661d28f2b9fab1dd58c7ec4077f87c8bbac83416cf829fc1aa0bb9702e3",
+      "kind": "generated"
+    },
+    ".stackfoundry/rules/language-posix-sh.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "da49d82bd0f83cbfc5018e1946d3b34ac913f698f78d5c8410e1b7971d0550b7",
+      "kind": "generated"
+    },
+    ".stackfoundry/rules/language-python.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "a71c7875b5c9d2ce83fa2a6ebf57cc22ebfe16eed9b2d7cc026c97e47159d040",
+      "kind": "generated"
+    },
+    ".stackfoundry/rules/testing.md": {
+      "template": "reference/rulebooks/testing.md",
+      "templateVersion": "1",
+      "sha256": "2463584fcd518dcec5592e72e39b3aa3a6a22bd42c281da1cef319b3118a98db",
+      "kind": "generated"
+    },
+    ".stackfoundry/rules/tooling-claude-plugin-eval.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "ba06a6405dc33174af08117db5435198a8d40a5a8944657d9560cec13fb854a1",
+      "kind": "generated"
+    },
+    ".stackfoundry/rules/tooling-github-actions.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "c607fa6e2243ea19f4064c1de0ba14b1a85bfbfac6cabc982cbf46ba1a3276eb",
+      "kind": "generated"
+    },
+    ".stackfoundry/rules/tooling-unittest.md": {
+      "template": "research",
+      "templateVersion": "research",
+      "sha256": "204290e124f905dd76b5ffd3b0ecf44807d2912d8bb5fa60e2b6ab259e64fe6b",
+      "kind": "generated"
+    },
     ".stackfoundry/targets.json": {
       "template": "profile",
       "templateVersion": "profile",
-      "sha256": "2d18f51c4a82a032888d04e765d7314be612e9e785c16a79e914697c6928b5e6",
+      "sha256": "6e5b323bd9ee03e01217c613841434f5f8c9309da1cf5987bfe112b7c8cb74eb",
       "kind": "generated"
     },
     ".stackfoundry/targets/cli.md": {
       "template": "reference/templates/target.md",
       "templateVersion": "1",
-      "sha256": "a7a09502c6d573d92b3acdc5e7727333f8621f88563b77f930f402a1d2947c9f",
+      "sha256": "6313360c2eb1698acbbd8b8f2d1496f48b3378c840003101cb6fdde47bfb9587",
       "kind": "generated"
     },
     ".stackfoundry/targets/plugin.md": {
       "template": "reference/templates/target.md",
       "templateVersion": "1",
-      "sha256": "ff397a0a2b08c3626987d97a3f514fb2d3bb8aaf41e21ee14360c32e9fe356eb",
+      "sha256": "60e34d45285ae9a2bed38898cef243102e0d8221ea3df6b5cf4e70ece0fceab5",
       "kind": "generated"
     },
     "docs/bug-reports/README.md": {
@@ -239,7 +305,7 @@
     "docs/specifications/README.md": {
       "template": "reference/trackers/specifications-README.md",
       "templateVersion": "1",
-      "sha256": "8d0457316ce6d8468ca14727d37368145833373f809cd7c8aab2be3e4807f815",
+      "sha256": "5e5a98816c518d7d20938ea9ad79dee201c616aefc6134ca60477c8d676843b8",
       "kind": "generated"
     },
     "docs/test-designs/README.md": {

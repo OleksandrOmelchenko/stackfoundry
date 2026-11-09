@@ -455,6 +455,8 @@ def survey(root: Path) -> dict:
         "fixtureRoots": fixture_roots,
         "docs": {"root": "docs" if any(f.startswith("docs/") for f in files) else None, "sections": docs},
         "claude": claude,
+        "assistants": _assistants([f for f in files
+                                   if not any(f.startswith(r.rstrip("/") + "/") for r in fixture_roots)]),
         "git": git,
     }
 
@@ -513,6 +515,31 @@ def _claude_inventory(root: Path, files: list[str]) -> dict:
         except ValueError:
             inv["settingsError"] = "invalid JSON"
     return inv
+
+
+# Files that show an assistant is in use (reference/clients.md). AGENTS.md alone is shared by Codex, Copilot and
+# Cursor, so it is evidence for each but proves none. A plugin's own manifests (.cursor-plugin/, .agents/plugins/)
+# show distribution, not use, so they are not signals.
+ASSISTANT_SIGNALS = {
+    "claude-code": ("CLAUDE.md", ".claude/"),
+    "codex": (".codex/",),
+    "copilot": (".github/copilot-instructions.md", ".github/instructions/", ".github/agents/", ".github/skills/",
+                ".github/hooks/"),
+    "cursor": (".cursor/", ".cursorrules"),
+    "gemini": ("GEMINI.md", ".gemini/"),
+}
+
+
+def _assistants(files: list[str]) -> dict:
+    """Per assistant, the repo files that show it is in use (outside fixtures); plus the shared AGENTS.md files."""
+    found: dict = {}
+    for client, signals in ASSISTANT_SIGNALS.items():
+        hits = sorted(f for f in files if any(
+            (f.startswith(s) or f"/{s}" in f"/{f}") if s.endswith("/") else Path(f).name == s for s in signals))
+        if hits:
+            found[client] = hits[:10]
+    agents_md = sorted(f for f in files if Path(f).name == "AGENTS.md")
+    return {"detected": [c for c in ASSISTANT_SIGNALS if c in found], "evidence": found, "agentsMd": agents_md[:10]}
 
 
 def main(args) -> int:

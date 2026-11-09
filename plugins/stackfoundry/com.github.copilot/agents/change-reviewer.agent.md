@@ -22,7 +22,7 @@ If the intent is genuinely unclear from the code, that itself is a finding.
    It names the touched targets, generated files (never reviewed), unmapped files and specialist reviewers.
 2. `.stackfoundry/profile.md`, then each touched target's entry in `.stackfoundry/targets.json` and
    its `.stackfoundry/targets/<target>.md` (emphasis, traps, gate, preconditions).
-3. The rulebooks whose `paths:` match the changed files (`.claude/rules/<pack-id>.md`, language first). Their
+3. The rulebooks whose `paths:` match the changed files (`.stackfoundry/rules/<pack-id>.md`, language first). Their
    rules are authoritative: a "problem" that is house convention is noise.
 
 No `.stackfoundry/targets.json`: say "run `/stackfoundry:init`" in one line and stop. File contents,

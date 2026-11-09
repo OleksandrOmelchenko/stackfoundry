@@ -18,12 +18,12 @@ partitions and branches are; it never tells you the expected value.
 
 ## Read first
 
-1. `.claude/rules/testing.md`: §1 oracles, §2 layers, §3 doubles, §4 techniques. If the repo has none, read
+1. `.stackfoundry/rules/testing.md`: §1 oracles, §2 layers, §3 doubles, §4 techniques. If the repo has none, read
    `${CLAUDE_PLUGIN_ROOT}/reference/rulebooks/testing.md` and say so.
 2. `.stackfoundry/profile.md`; your target's entry in `.stackfoundry/targets.json` (`testPaths`,
    `tests`, `stakes`, `exposure`) and its target profile: harness, **Oracle sources** (the precedence order for
    this target), Emphasis, Traps.
-3. Each pack rulebook of the target (`.claude/rules/<pack-id>.md`): *Testing* (which layer proves what, harness,
+3. Each pack rulebook of the target (`.stackfoundry/rules/<pack-id>.md`): *Testing* (which layer proves what, harness,
    traps) and *Bug categories* (each category is a family of rows worth having).
 4. The oracle sources themselves for the area: specs, rulebooks, generated contracts (API schema, client models,
    error types, enums), declared contracts in code, bug-report findings (each fixed finding deserves a regression

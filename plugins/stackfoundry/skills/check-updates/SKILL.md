@@ -18,14 +18,14 @@ The read-only half of `/stackfoundry:bump-all`. It runs the `discover` commands 
 `.stackfoundry/ecosystems.json`, classifies and routes every finding, and writes one dated report. It is
 unattended (a scheduled task runs it), so it leaves the tree as it found it apart from that report. Acting on the
 report is `/stackfoundry:act-on-updates`, after a person has read it. Classification, routes, freshness and chains
-are in `.claude/rules/dependency-bumps.md` (template: `${CLAUDE_PLUGIN_ROOT}/reference/rulebooks/dependency-bumps.md`).
+are in `.stackfoundry/rules/dependency-bumps.md` (template: `${CLAUDE_PLUGIN_ROOT}/reference/rulebooks/dependency-bumps.md`).
 
 ## Inputs
 
 - `.stackfoundry/ecosystems.json`: the ecosystems in apply order, their `discover` commands,
   `outsideManifest` pins, `chains`, `sources` and `deferredFile`. Arguments pick a subset by `id`; none means all.
 - `.stackfoundry/targets.json`: `docsRoot` and `timezone`.
-- Each ecosystem's pack: `.claude/rules/<pack>.md` § Upgrades and `.stackfoundry/packs/<pack>/pack.json` →
+- Each ecosystem's pack: `.stackfoundry/rules/<pack>.md` § Upgrades and `.stackfoundry/packs/<pack>/pack.json` →
   `upgrade` (release notes, migration guides, deprecations in use).
 
 No `ecosystems.json`: print one line ("no `.stackfoundry/ecosystems.json`: run `/stackfoundry:init`") and
@@ -65,7 +65,7 @@ Ask nothing, install nothing, never write git, write exactly one file (the repor
 
 `<docsRoot>/dependency-reports/YYYY-MM-DD-dependency-updates.md`, dated in `targets.json` → `timezone`
 (`stackfoundry today --verbose`; when the zone database is missing, the machine's date, said in the report). A second run on
-the same day overwrites that day's file. It is a snapshot (`.claude/rules/documentation.md`), never re-synced.
+the same day overwrites that day's file. It is a snapshot (`.stackfoundry/rules/documentation.md`), never re-synced.
 
 1. **Summary**: majors (one line each), unblocked deferrals, vulnerable or deprecated items, split chains, and
    ecosystems not reached.

@@ -19,13 +19,13 @@ stays red: that is the test doing its job.
 
 ## Read first
 
-1. `.claude/rules/testing.md`: §14 classification, §11 flaky categories and their fixes, §8 forbidden moves, §1
+1. `.stackfoundry/rules/testing.md`: §14 classification, §11 flaky categories and their fixes, §8 forbidden moves, §1
    oracles, §6 determinism. If the repo has none, read `${CLAUDE_PLUGIN_ROOT}/reference/rulebooks/testing.md` and
    say so.
 2. `.stackfoundry/profile.md`; your target's entry in `.stackfoundry/targets.json` (`testPaths`,
    `tests` with `command`, `affectedCommand`, `shuffle`; `gate` and its preconditions; `generated`) and the target
    profile: harness, Oracle sources, **Traps** (known failure signatures here).
-3. The tooling pack rulebook of the test framework (`.claude/rules/tooling-<id>.md`), section *Testing*: runner
+3. The tooling pack rulebook of the test framework (`.stackfoundry/rules/tooling-<id>.md`), section *Testing*: runner
    flags for filtering, repeating, seeding and serial runs, and its traps.
 4. The input: failing output, a reviewer's verdicts (WEAK, BRITTLE, FLAKY-RISK, MISPLACED…) or a flaky report.
 

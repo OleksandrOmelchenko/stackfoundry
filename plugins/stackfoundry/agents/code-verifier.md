@@ -23,7 +23,7 @@ thing, because of a mismatch the author never saw? You never edit anything.
 1. `.stackfoundry/profile.md`; the target's entry in `.stackfoundry/targets.json` (`paths`,
    `packs`, `gate`, `generated`) and its target profile (Traps first). With no target in the dispatch, run
    `stackfoundry change-targets` on the scope and verify each target it reports.
-2. Each pack rulebook of the target (`.claude/rules/<pack-id>.md`): the *Rules* about registration, routing,
+2. Each pack rulebook of the target (`.stackfoundry/rules/<pack-id>.md`): the *Rules* about registration, routing,
    configuration, resources and packaging are your checklist, with the app-model and tooling packs (CI,
    containers, infrastructure-as-code, provisioning) weighing most.
 

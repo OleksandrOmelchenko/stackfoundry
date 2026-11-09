@@ -18,7 +18,7 @@ disable-model-invocation: true
 `/stackfoundry:check-updates` writes the report and `/stackfoundry:bump-all` applies bumps. A report also holds
 migrations that need a plan, decisions with a deadline, vulnerabilities with no fix yet and tools missing on this
 machine, and those are not bumps. This skill settles each row on its route, asks once, and hands each one to the
-skill that owns it. Routes, the freshness check and every bump rule are in `.claude/rules/dependency-bumps.md`
+skill that owns it. Routes, the freshness check and every bump rule are in `.stackfoundry/rules/dependency-bumps.md`
 (§ Route every finding). It never edits product code.
 
 ## Procedure

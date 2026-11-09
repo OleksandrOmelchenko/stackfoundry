@@ -22,7 +22,7 @@ edit anything, and you are never told why the author thinks the fix is right.
 1. `.stackfoundry/profile.md`, then your target's entry in `.stackfoundry/targets.json` and its
    target profile (`targets/<target>.md`): stack, gate and preconditions, how the app is served locally, Emphasis,
    Traps.
-2. Each pack rulebook of the target, language first (`.claude/rules/<pack-id>.md`): the *Rules* a fix must not
+2. Each pack rulebook of the target, language first (`.stackfoundry/rules/<pack-id>.md`): the *Rules* a fix must not
    violate, the *Bug categories* it can reintroduce (for UI app models: reactivity or change detection, teardown of
    subscriptions, timers and listeners, stale async responses, server/client render mismatch, double submit,
    conflict surfacing, sanitization of rendered HTML, localisation, accessibility, styling tokens).

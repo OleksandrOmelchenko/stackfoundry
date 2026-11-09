@@ -12,17 +12,17 @@ rulebooks, trackers and code into users' repos).
 
 | Layer | Pack | Rulebook |
 |---|---|---|
-| app-model | `app-model-claude-code-plugin` | `.claude/rules/app-model-claude-code-plugin.md` |
-| capability | `capability-claude-code-marketplace` | `.claude/rules/capability-claude-code-marketplace.md` |
-| tooling | `tooling-claude-plugin-eval` | `.claude/rules/tooling-claude-plugin-eval.md` |
-| tooling | `tooling-unittest` | `.claude/rules/tooling-unittest.md` |
+| app-model | `app-model-claude-code-plugin` | `.stackfoundry/rules/app-model-claude-code-plugin.md` |
+| capability | `capability-claude-code-marketplace` | `.stackfoundry/rules/capability-claude-code-marketplace.md` |
+| tooling | `tooling-claude-plugin-eval` | `.stackfoundry/rules/tooling-claude-plugin-eval.md` |
+| tooling | `tooling-unittest` | `.stackfoundry/rules/tooling-unittest.md` |
 
 ## Where things are
 
 - Source: `plugins/stackfoundry/skills/**` (`<name>/SKILL.md`), `agents/**` (`<name>.md`), `reference/**`
   (layers, schemas, templates, rulebooks, trackers), `evals/**`, `plugins/stackfoundry/.claude-plugin/plugin.json`,
   root `.claude-plugin/marketplace.json`. Entry point: `plugin.json` (name, version, `userConfig`).
-- Authoring rules: `.claude/rules/authoring.md`; design: `docs/design.md`.
+- Authoring rules: `.stackfoundry/rules/authoring.md`; design: `docs/design.md`.
 - Tests: `tests/test_reference.py`, `tests/test_manifests.py` (stdlib `unittest`, harness `tests/_support.py`);
   `verify-plumbing` (`plugins/stackfoundry/scripts/stackfoundry/plumbing.py`); eval cases in `plugins/stackfoundry/evals/<case>/` scaffolded
   from `fixtures/` by `fixtures/scaffold-lib.sh`. `fixtures/*/EXPECTED.md` are answer keys: never show them to an agent.
@@ -47,7 +47,7 @@ Local URL for live repros: not served locally.
 
 ## Oracle sources
 
-In precedence order: `docs/design.md` and `docs/specifications/` (when present), the rulebooks in `.claude/rules/`
+In precedence order: `docs/design.md` and `docs/specifications/` (when present), the rulebooks in `.stackfoundry/rules/`
 (including `authoring.md`), the official Claude Code docs cited in the plugin packs, the schemas in
 `plugins/stackfoundry/reference/schemas/`, `docs/release.md`, bug reports under `docs/bug-reports/`.
 
@@ -61,6 +61,6 @@ leaking into the plugin; path references that do not resolve under `${CLAUDE_PLU
 ## Traps
 
 - The marketplace entry may carry a `version`; `tests/test_manifests.py` only requires it to equal `plugin.json`
-  (`.claude/rules/capability-claude-code-marketplace.md`).
+  (`.stackfoundry/rules/capability-claude-code-marketplace.md`).
 - `guard-blocks-generated-edit` can pass without Edit/Write allowed, proving nothing
-  (`.claude/rules/tooling-claude-plugin-eval.md`).
+  (`.stackfoundry/rules/tooling-claude-plugin-eval.md`).

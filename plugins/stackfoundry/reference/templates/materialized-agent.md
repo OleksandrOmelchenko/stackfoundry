@@ -1,6 +1,6 @@
 ---
 templateVersion: 1
-output: .claude/agents/{{target}}-{{role}}.md
+output: .stackfoundry/agents/{{target}}-{{role}}.md (then each assistant's copy via stackfoundry render-agent)
 ---
 ---
 name: {{target}}-{{role}}

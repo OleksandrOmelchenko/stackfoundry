@@ -23,7 +23,7 @@ the code is supposed to be right. You never edit anything.
 2. `.stackfoundry/targets.json` (your target's entry: `paths`, `packs`, `exposure`, `stakes`, `gate`) and
    the target profile (`targets/<target>.md`, or the entry's `profile` path): stack, harness, gate preconditions,
    **Emphasis** and **Traps**.
-3. Each pack rulebook in the target's stack, language first: `.claude/rules/<pack-id>.md`. Its **Bug categories**
+3. Each pack rulebook in the target's stack, language first: `.stackfoundry/rules/<pack-id>.md`. Its **Bug categories**
    table is your checklist; its *Rules* say what correct code looks like; its *Security* and *Performance* notes
    feed the categories of the same name.
 4. Prior findings: the bug reports for this target under `<docsRoot>/bug-reports/` (`docsRoot` from

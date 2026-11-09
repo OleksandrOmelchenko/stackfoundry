@@ -64,7 +64,7 @@ the C# rules plus the ASP.NET Core rules for an API file.
 | The plugin ships (and updates) | `init` writes into your repo (and you own) |
 |---|---|
 | orchestrator skills: `bug-hunt`, `write-tests`, `check-updates`, `tech-radar`… | `.stackfoundry/`: profile, targets, ecosystems, guards, researched packs, manifest |
-| generic role agents: `bug-hunter`, `test-writer`, `fix-verifier`… | `.claude/rules/<layer>-<tech>.md`: grounded, path-scoped rulebooks |
+| generic role agents: `bug-hunter`, `test-writer`, `fix-verifier`… | `.stackfoundry/rules/<layer>-<tech>.md`: grounded, path-scoped rulebooks, copied into each assistant's format |
 | the method: layer taxonomy, schemas, research procedure, rulebook and tracker templates | `.claude/skills/<app-model>-code-writer/`: the decisions that go wrong most often, per app model |
 | the `stackfoundry` helper CLI and guard hooks | tracker scaffolds: bug reports, test designs, plans, specifications, dependency and radar reports |
 

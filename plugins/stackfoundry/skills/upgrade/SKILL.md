@@ -25,7 +25,11 @@ first, so every assistant can read it: move the folder with its contents unchang
 `.claude/stackfoundry/` path inside `manifest.lock.json`. The plugin settings that lived in Claude Code's plugin
 configuration (`docsRoot`, `researchRefreshDays`, `defaultEffort`) go to `.stackfoundry/config.json` with
 `clients: ["claude-code"]` (schema `${CLAUDE_PLUGIN_ROOT}/reference/schemas/config.schema.json`); ask the user for
-the values they had set, since the plugin can no longer read them. Then continue with step 1.
+the values they had set, since the plugin can no longer read them. The rulebooks in `.claude/rules/` that the
+manifest records become canonical: copy each to `.stackfoundry/rules/` (same name), keep the `.claude/rules/` file
+as Claude Code's copy, and move each manifest entry's record to the canonical file while also recording the copy.
+A `materialized` agent in `.claude/agents/` moves the same way to `.stackfoundry/agents/`. Then continue with
+step 1.
 
 ## 1. Plan
 
@@ -57,7 +61,7 @@ new · keep mine · merge by hand (you produce the merged text and show it befor
   (`stackfoundry change-targets --files <any>` loads and checks `targets.json`).
 - `stackfoundry manifest record <files> --template <template>` for every file written or kept by choice, so the
   manifest's version and hash move forward.
-- The `CLAUDE.md` block is regenerated between its markers only.
+- Each instruction file's block (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`) is regenerated between its markers only.
 
 ## 4. Verify and report
 

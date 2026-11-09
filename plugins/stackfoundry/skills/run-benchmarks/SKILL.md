@@ -15,7 +15,7 @@ argument-hint: "[<benchmark target>] <filter> [--runs N] [--baseline <result fol
 > (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
 
 Measures what `/stackfoundry:write-benchmarks` wrote and turns the numbers into a verdict a reviewer accepts. Rules:
-`.claude/rules/benchmarking.md` (§3 environment, §4 comparing and the verdicts, §5 reports). The commands (kind,
+`.stackfoundry/rules/benchmarking.md` (§3 environment, §4 comparing and the verdicts, §5 reports). The commands (kind,
 preflight, measured run, comparison, preconditions) come from the entry and profile of the target that owns the
 benchmark project (`stackfoundry change-targets --files <benchmark folder>`; the argument picks one when there are
 several) and from its benchmark tooling pack's rulebook. A missing one is named, with `/stackfoundry:sync` to

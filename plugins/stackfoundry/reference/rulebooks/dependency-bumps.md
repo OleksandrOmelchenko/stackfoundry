@@ -1,6 +1,6 @@
 ---
 templateVersion: 1
-output: .claude/rules/dependency-bumps.md
+output: .stackfoundry/rules/dependency-bumps.md
 ---
 ---
 description: How any version pin is bumped — classify patch/minor/major first, a major waits for the user, route every finding, move lock-step chains together, read the technology's own release sources, one ecosystem per change.

@@ -35,7 +35,8 @@ overnight with the gate preconditions met; otherwise weekly.
 
 ## Procedure
 
-1. **Read the profile**: `.stackfoundry/targets.json` (`docsRoot`, targets with `tests[].shuffle`), the
+1. **Read the profile**: `stackfoundry config` (`docsRoot`, `clients`), `.stackfoundry/targets.json` (targets with
+   `tests[].shuffle`), the
    presence of `ecosystems.json` and packs, and the repo's absolute path (`git rev-parse --show-toplevel`). No
    profile: say "run `/stackfoundry:init` first" and stop.
 2. **Load the scheduling tools**: `ToolSearch` with the query `scheduled task`. When they load, list the existing
@@ -69,6 +70,13 @@ command it needs must be allowed in settings or with `--allowedTools`:
 # Windows Task Scheduler
 schtasks /Create /TN "stackfoundry check-updates" /SC WEEKLY /D MON /ST 07:00 /TR "cmd /c cd /d C:\path\to\repo && claude -p \"/stackfoundry:check-updates\" --permission-mode acceptEdits"
 ```
+
+**Another assistant on the OS scheduler.** The same cron or Task Scheduler line with that assistant's headless
+command in place of `claude -p` (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`, *Headless run*), and a prompt that names
+the skill in words, since slash forms differ: `codex exec "Run the stackfoundry check-updates skill. This is an
+unattended run: ask nothing."`, likewise `copilot -p`, `gemini -p` or `cursor-agent -p`. Each has its own way to
+allow the commands a run needs without prompting; say which setting it is from that assistant's docs, and never
+suggest a flag that approves every tool.
 
 **GitHub Actions** with `anthropics/claude-code-action`, which installs the plugin from its marketplace. The runner
 needs the same toolchain the discover commands use (add the setup steps), and the report stays on the runner unless

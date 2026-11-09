@@ -38,7 +38,7 @@ are about to touch and hands over to them. It never states a framework rule of i
 4. **Follow it.** Invoke it with `Skill` (it is a repo skill, so no plugin prefix) or `Read` it and follow its
    decisions and working procedure. When the change spans targets, do each part under its own writer.
 5. **No writer for this app model:** read, in order, `.stackfoundry/profile.md`, the target's profile
-   (`targets/<target>.md`) and every pack rulebook in its stack (`.claude/rules/<pack-id>.md`, language first),
+   (`targets/<target>.md`) and every pack rulebook in its stack (`.stackfoundry/rules/<pack-id>.md`, language first),
    then work the template's procedure inline:
    - **Read a neighbour first**: the closest existing unit of the same kind, and match its shape, naming and
      comment density.

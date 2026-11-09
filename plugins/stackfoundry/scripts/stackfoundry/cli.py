@@ -1,7 +1,7 @@
 """stackfoundry helper CLI. Run through scripts/stackfoundry.sh, which picks Python >= 3.11 and isolates it (-I).
 
-Every subcommand is read-only except `manifest record|forget` (they write .stackfoundry/manifest.lock.json)
-and `pack render --out` (writes the rulebook it names).
+Every subcommand is read-only except `manifest record|forget` (they write .stackfoundry/manifest.lock.json),
+`pack render --out` and `render-rule|render-agent --out|--write` (each writes the one file it names).
 None makes a network call.
 """
 from __future__ import annotations
@@ -13,8 +13,8 @@ from pathlib import Path
 # -I leaves the script directory off sys.path; add this package's parent explicitly (our own code only).
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from stackfoundry import (backlog, change_targets, checks, config, guard, manifest, pack,  # noqa: E402
-                          plumbing, select_tests, survey, tracker, volatile)
+from stackfoundry import (backlog, change_targets, checks, clients, config, guard, manifest,  # noqa: E402
+                          pack, plumbing, select_tests, survey, tracker, volatile)
 from stackfoundry.gitutil import GitError  # noqa: E402
 from stackfoundry.profile import ProfileError  # noqa: E402
 
@@ -68,7 +68,7 @@ def build() -> argparse.ArgumentParser:
     vp.set_defaults(func=plumbing.main)
 
     gc = sub.add_parser("globs-check", help="(read-only) rulebook paths: globs that match no file in the repo")
-    gc.add_argument("paths", nargs="*", default=[".claude/rules"], help="rulebook files or folders (default .claude/rules)")
+    gc.add_argument("paths", nargs="*", default=[".stackfoundry/rules"], help="rulebook files or folders (default .stackfoundry/rules)")
     gc.add_argument("--root")
     gc.add_argument("--json", action="store_true")
     gc.set_defaults(func=checks.main_globs)
@@ -88,6 +88,25 @@ def build() -> argparse.ArgumentParser:
     cf.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/, else the git root)")
     cf.add_argument("--json", action="store_true")
     cf.set_defaults(func=config.main)
+
+    op = sub.add_parser("outputs", help="(read-only) where rulebooks, instruction blocks, skills and agents go for the repo's assistants")
+    op.add_argument("--clients", help="comma-separated instead of config.json's clients")
+    op.add_argument("--root")
+    op.add_argument("--json", action="store_true")
+    op.set_defaults(func=clients.main_outputs)
+
+    for name, kind, src_help, choices in (
+        ("render-rule", "rule", "a canonical rulebook (.stackfoundry/rules/<id>.md)", ["claude-code", "copilot", "cursor"]),
+        ("render-agent", "agent", "a Claude Code agent file (.stackfoundry/agents/<name>.md)", list(clients.CLIENTS)),
+    ):
+        rr = sub.add_parser(name, help=f"convert {src_help} to an assistant's format: stdout, or writes --out | --write")
+        rr.add_argument("source")
+        rr.add_argument("--client", required=True, choices=choices)
+        dest = rr.add_mutually_exclusive_group()
+        dest.add_argument("--out", help="write here")
+        dest.add_argument("--write", action="store_true", help="write to the assistant's standard location")
+        rr.add_argument("--root", help="repo root for --write (default: the nearest folder with .stackfoundry/)")
+        rr.set_defaults(func=lambda a, k=kind: clients.main_render(a, k))
 
     pk = sub.add_parser("pack", help="check a researched pack (read-only), or render its rulebook (writes only --out)")
     pk.add_argument("action", choices=["check", "render"])

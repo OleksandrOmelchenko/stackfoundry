@@ -21,7 +21,7 @@ and you are never told why the author thinks the fix is right.
 
 1. `.stackfoundry/profile.md`, then your target's entry in `.stackfoundry/targets.json` and its
    target profile (`targets/<target>.md`): stack, gate and preconditions, Emphasis, Traps.
-2. Each pack rulebook of the target, language first (`.claude/rules/<pack-id>.md`): the *Rules* a fix must not
+2. Each pack rulebook of the target, language first (`.stackfoundry/rules/<pack-id>.md`): the *Rules* a fix must not
    violate and the *Bug categories* a fix can reintroduce.
 3. The finding the fix claims to resolve (the dispatch's `prior:` lines, or its entry in
    `<docsRoot>/bug-reports/`), with its category and failure scenario.

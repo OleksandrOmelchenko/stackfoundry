@@ -9,9 +9,9 @@ role agent, what the agent reads, what it returns, and the roster of names.
 1. `.stackfoundry/profile.md`: the product, users, stakes, constraints, working agreements.
 2. `.stackfoundry/targets.json` (its own target's entry) and `.stackfoundry/targets/<target>.md`:
    stack, paths, harness, gate, oracle sources, emphasis, traps.
-3. The rulebook of each pack in the target's stack, language first: `.claude/rules/<pack-id>.md`. Its *Bug
+3. The rulebook of each pack in the target's stack, language first: `.stackfoundry/rules/<pack-id>.md`. Its *Bug
    categories*, *Testing*, *Performance* and *Security* sections are where the role's checklist comes from.
-4. The shared rulebook of its role: `.claude/rules/testing.md` (test roles), `dependency-bumps.md` (bumpers),
+4. The shared rulebook of its role: `.stackfoundry/rules/testing.md` (test roles), `dependency-bumps.md` (bumpers),
    `documentation.md` (docs roles), `benchmarking.md` (benchmark roles).
 5. When the dispatch names a materialized agent for this target (`targets.json` → `materialized`), the
    orchestrator dispatches that one instead, and the generic agent is not involved.

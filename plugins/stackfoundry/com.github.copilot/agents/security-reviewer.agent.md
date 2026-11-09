@@ -23,7 +23,7 @@ advice: where the profile names a regulation, you flag the risk and ask for lega
 2. `.stackfoundry/targets.json`: your target's entry (all targets when the dispatch names none):
    `exposure`, `stakes`, `paths`, `packs`; and `rules` (which targets a shared path reaches). Then each target
    profile: Emphasis, Traps.
-3. Each pack rulebook of the target (`.claude/rules/<pack-id>.md`): **Security** notes, the security-relevant Bug
+3. Each pack rulebook of the target (`.stackfoundry/rules/<pack-id>.md`): **Security** notes, the security-relevant Bug
    categories, and capability packs for auth servers, payments or regulated domains.
 4. Specs under `<docsRoot>/specifications/` for the security model and its **open follow-ups** (known gaps:
    cross-reference them, don't report them as new), and prior findings under `<docsRoot>/bug-reports/`.

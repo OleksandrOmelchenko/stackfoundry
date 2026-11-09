@@ -160,7 +160,7 @@ class ManifestTests(unittest.TestCase):
     def test_the_claude_md_block_is_hashed_alone_and_writes_are_atomic(self):
         block = "<!-- stackfoundry:begin -->\nrows\n<!-- stackfoundry:end -->\n"
         with TempRepo({"CLAUDE.md": "# Team notes\n\n" + block}) as root:
-            manifest.record(root, ["CLAUDE.md"], "reference/templates/claude-md-block.md", "generated")
+            manifest.record(root, ["CLAUDE.md"], "reference/templates/instructions-block.md", "generated")
             write(root, {"CLAUDE.md": "# Team notes, edited by the team\n\nMore.\n\n" + block})
             self.assertEqual(manifest.diff(root)[0]["state"], "untouched")
             write(root, {"CLAUDE.md": "# Team notes\n\n" + block.replace("rows", "changed rows")})
@@ -218,8 +218,8 @@ class SurveyTests(unittest.TestCase):
 class GlobsCheckTests(unittest.TestCase):
     def test_bin_folders_count(self):
         rule = '---\npaths:\n  - "tool/bin/**"\n---\n# Rule\n'
-        with TempRepo({"tool/bin/run": "x", ".claude/rules/r.md": rule}, git=True) as root:
-            proc = run_cli(["globs-check", "--root", str(root)])
+        with TempRepo({"tool/bin/run": "x", ".stackfoundry/rules/r.md": rule}, git=True) as root:
+            proc = run_cli(["globs-check", "--root", str(root)], cwd=root)
         self.assertEqual(proc.returncode, 0, proc.stdout)
 
 

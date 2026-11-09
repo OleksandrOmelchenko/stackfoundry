@@ -94,3 +94,17 @@ class SurveyTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AssistantDetectionTests(unittest.TestCase):
+    def test_each_assistant_is_detected_by_its_own_files_and_fixtures_do_not_count(self):
+        from tests._support import TempRepo
+        from stackfoundry.survey import survey
+        files = {"CLAUDE.md": "x", ".github/instructions/web.instructions.md": "x", ".cursor/rules/a.mdc": "x",
+                 "GEMINI.md": "x", ".codex/agents/a.toml": "x", "AGENTS.md": "x",
+                 "fixtures/demo/.gemini/settings.json": "{}", "fixtures/demo/package.json": "{}"}
+        with TempRepo(files, git=True) as root:
+            found = survey(root)["assistants"]
+        self.assertEqual(found["detected"], ["claude-code", "codex", "copilot", "cursor", "gemini"])
+        self.assertEqual(found["agentsMd"], ["AGENTS.md"])
+        self.assertNotIn("fixtures/demo/.gemini/settings.json", found["evidence"]["gemini"])

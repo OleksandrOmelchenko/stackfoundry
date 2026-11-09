@@ -25,7 +25,7 @@ read in this run and names where in the repo it applies.
 2. `${CLAUDE_PLUGIN_ROOT}/reference/schemas/pack.schema.json`: the shape you return.
 3. `${CLAUDE_PLUGIN_ROOT}/reference/layers.md`: what this layer owns and what belongs to another layer's pack.
 4. The repo evidence paths in your brief, then the conventions around them: formatter and analyzer configs, base
-   classes, an existing `.claude/rules/<pack-id>.md` and `.stackfoundry/packs/<pack-id>/pack.json` (on a
+   classes, an existing `.stackfoundry/rules/<pack-id>.md` and `.stackfoundry/packs/<pack-id>/pack.json` (on a
    refresh, keep every `repoConvention` they record unless the repo no longer does it).
 
 ## Input (the dispatch brief)

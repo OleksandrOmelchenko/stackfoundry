@@ -16,7 +16,7 @@ argument-hint: "<target> [<area> | diff [--base <ref>] | --design <doc>] [--full
 
 Generates **behavioural** tests for a target and leaves its suite green, or red only where the product is wrong. It
 writes tests only: a test that cannot pass because the product contradicts its source stays red and becomes a bug
-report. Rules: `.claude/rules/testing.md` (§1 oracles, §5 how a test reads, §6 determinism, §8 no gaming, §9 the
+report. Rules: `.stackfoundry/rules/testing.md` (§1 oracles, §5 how a test reads, §6 determinism, §8 no gaming, §9 the
 assurance gate). Step two of the loop: `design-tests` → **write** → `review-tests` → `fix-tests`.
 
 ## Inputs
@@ -35,7 +35,7 @@ assurance gate). Step two of the loop: `design-tests` → **write** → `review-
 ## Procedure
 
 1. **Load.** No profile → "run `/stackfoundry:init`", stop. Read the target entry (`roles` must allow
-   `test-writer`), its profile and `.claude/rules/testing.md`. **Harness check**: no `tests` entry, no test files
+   `test-writer`), its profile and `.stackfoundry/rules/testing.md`. **Harness check**: no `tests` entry, no test files
    under `testPaths`, or no base fixture → stop and offer `/stackfoundry:scaffold-test-harness <target>`. A suite
    without `shuffle` cannot pass the assurance gate: say so and offer the same skill to record it.
 2. **Prioritize.** Run the suite's `coverage` command where one exists and rank thin spots by risk (a branch at 0%

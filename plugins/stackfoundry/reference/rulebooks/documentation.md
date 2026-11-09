@@ -1,6 +1,6 @@
 ---
 templateVersion: 1
-output: .claude/rules/documentation.md
+output: .stackfoundry/rules/documentation.md
 ---
 ---
 description: Documentation rulebook — write what stays true. Living vs snapshot vs tracker docs, what not to write (counts, file:line, dates, SHAs, versions as background), always-loaded files stay small, and the plans → specifications lifecycle.
@@ -21,7 +21,7 @@ lying. `stackfoundry volatile-facts <path>` reports the mechanical cases; every 
 
 | Kind | Where | Rule |
 |---|---|---|
-| **Living**: must stay true | specs, plans, READMEs, `.claude/rules/`, `CLAUDE.md` files, skills, agents | everything here applies |
+| **Living**: must stay true | specs, plans, READMEs, `.stackfoundry/rules/`, `CLAUDE.md` files, skills, agents | everything here applies |
 | **Snapshot**: records a moment | dated reports under `{{docsRoot}}/` (bug reports, dependency, radar, performance) | counts and `file:line` are fine as that moment's anchor; never re-synced, except the anchor of a finding still open |
 | **Tracker**: per-row status | test designs; the findings of a bug report | status lives on each row; the summary lists **open ids**, never tallies |
 

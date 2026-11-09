@@ -15,7 +15,7 @@ argument-hint: "[<benchmark target>] <question> [--models <path::symbol,...>]"
 > (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
 
 Turns a performance question into benchmarks a reviewer trusts, before anything is measured. Rules:
-`.claude/rules/benchmarking.md` (§1 pre-registration, §2 what makes a benchmark wrong). Measuring is
+`.stackfoundry/rules/benchmarking.md` (§1 pre-registration, §2 what makes a benchmark wrong). Measuring is
 `/stackfoundry:run-benchmarks`. One skill serves both kinds of harness:
 
 - **micro**: an in-process harness timing one operation (allocation, a call shape, a parser);
@@ -24,7 +24,7 @@ Turns a performance question into benchmarks a reviewer trusts, before anything 
 ## 1. Find the harness
 
 No profile → "run `/stackfoundry:init`", stop. The benchmark projects are the folders in
-`.claude/rules/benchmarking.md`'s `paths:`; the target that owns one is
+`.stackfoundry/rules/benchmarking.md`'s `paths:`; the target that owns one is
 `stackfoundry change-targets --files <folder>` (the argument picks one when there are several; otherwise ask). Read
 that target's entry and profile and the rulebook of the benchmark tooling pack in its `packs`. Needed: the kind
 (micro or load), the build, dry-run and measured-run commands, how results are exported and compared, the

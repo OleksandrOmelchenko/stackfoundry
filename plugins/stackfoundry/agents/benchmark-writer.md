@@ -19,12 +19,12 @@ benchmark project; a production defect you notice goes in your report.
 
 ## Read first
 
-1. `.claude/rules/benchmarking.md`: §1 (pre-registration) and §2 (what makes a benchmark wrong) before writing a
+1. `.stackfoundry/rules/benchmarking.md`: §1 (pre-registration) and §2 (what makes a benchmark wrong) before writing a
    line. Template: `${CLAUDE_PLUGIN_ROOT}/reference/rulebooks/benchmarking.md`.
 2. The benchmark project: the folders in the benchmarking rulebook's `paths:`. Find the target that owns it with
    `stackfoundry change-targets --files <folder>`, then read `.stackfoundry/targets.json` (its entry) and
    `.stackfoundry/targets/<target>.md`: build, dry-run and measured-run commands, preconditions, traps.
-3. The harness's tooling rulebook, `.claude/rules/tooling-<harness>.md` (the tooling pack in that target's
+3. The harness's tooling rulebook, `.stackfoundry/rules/tooling-<harness>.md` (the tooling pack in that target's
    `packs`): how the shared configuration is applied, how a baseline is marked, how inputs are parameterized, how
    results are validated, how generated code is inspected, and what bypasses the shared setup.
 4. The language and app-model rulebooks of the benchmark project and of the code it models.

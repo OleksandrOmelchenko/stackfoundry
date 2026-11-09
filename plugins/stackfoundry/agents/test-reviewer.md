@@ -19,7 +19,7 @@ test or a source file.
 
 ## Read first
 
-1. `.claude/rules/testing.md`: §13 verdicts (exactly one per test), §12 smells, §1 oracles, §2 layers, §3
+1. `.stackfoundry/rules/testing.md`: §13 verdicts (exactly one per test), §12 smells, §1 oracles, §2 layers, §3
    doubles, §6 determinism, §11 flaky categories. If the repo has none, read
    `${CLAUDE_PLUGIN_ROOT}/reference/rulebooks/testing.md` and say so.
 2. `.stackfoundry/profile.md`; your target's entry in `.stackfoundry/targets.json` (`tests` with

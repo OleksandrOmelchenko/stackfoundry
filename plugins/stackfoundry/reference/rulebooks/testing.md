@@ -1,6 +1,6 @@
 ---
 templateVersion: 1
-output: .claude/rules/testing.md
+output: .stackfoundry/rules/testing.md
 ---
 ---
 description: The testing rulebook for every suite — where an expected value may come from, test layers, doubles, design techniques, determinism, assertions, no-gaming rules, the assurance gate, mutation/property/a11y testing, flaky tests, smells, review verdicts and fixer classes.
@@ -12,12 +12,12 @@ paths:
 
 One rulebook for every suite. Per-target facts (harness, base classes, commands, traps) live in
 `.stackfoundry/targets/<target>.md`; per-framework notes live in each tooling pack's rulebook
-(`.claude/rules/tooling-*.md`, section Testing). Not here.
+(`.stackfoundry/rules/tooling-*.md`, section Testing). Not here.
 
 ## 1. Oracles: where an expected value may come from
 
 - **Every expected value cites a source.** In precedence order: the specs under `{{docsRoot}}/specifications/` →
-  the rulebooks in `.claude/rules/` → a generated contract (an API schema, generated client models, error types,
+  the rulebooks in `.stackfoundry/rules/` → a generated contract (an API schema, generated client models, error types,
   enums) → a declared contract in code (documentation comments, an interface's documented behaviour) → a
   bug-report finding → the user's answer. Cite it in the design row, or in a one-line comment when the test name
   does not make it obvious.

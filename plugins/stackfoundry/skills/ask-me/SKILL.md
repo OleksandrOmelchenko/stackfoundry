@@ -37,8 +37,8 @@ unrelated work). Collect every item that waits on the user:
 
 ## 2. Filter
 
-- **Drop what you can settle yourself.** If the code, the repo's rules (`CLAUDE.md`, `.claude/rules/`, the
-  stackfoundry profile) or a read-only command answers it, check and settle it instead of asking; mention each in
+- **Drop what you can settle yourself.** If the code, the repo's rules (`CLAUDE.md` or `AGENTS.md`, `.stackfoundry/rules/`,
+  the stackfoundry profile) or a read-only command answers it, check and settle it instead of asking; mention each in
   one line.
 - Drop what the user already answered, and cosmetic trivia nobody would choose differently.
 - Merge duplicates: items one decision settles become one question.

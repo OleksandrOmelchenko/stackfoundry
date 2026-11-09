@@ -63,3 +63,61 @@ class ConfigTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ClientOutputsTests(unittest.TestCase):
+    RULE = "---\ndescription: Web rulebook.\npaths:\n  - \"web/**/*.ts\"\n  - \"web/**/*.vue\"\n---\n\n# Web\n\n- **Rule.** Why.\n"
+    AGENT = ("---\nname: web-bug-hunter\ndescription: Hunts bugs in web. Read-only.\ntools: Read, Grep, Bash, WebSearch\n"
+             "---\n\n# Web bug hunter\n\nBody with ''' quotes.\n")
+
+    def test_no_assistant_gets_a_copy_another_one_already_reads_for_it(self):
+        from stackfoundry.clients import outputs
+        claude_only = outputs(["claude-code"])
+        self.assertEqual([r["folder"] for r in claude_only["rules"]], [".claude/rules"])
+        self.assertEqual(claude_only["skills"], [".claude/skills"])
+        everyone = outputs(["claude-code", "codex", "copilot", "cursor", "gemini"])
+        self.assertEqual(everyone["instructions"], ["AGENTS.md", "CLAUDE.md", "GEMINI.md"])
+        self.assertEqual(everyone["skills"], [".claude/skills", ".agents/skills"])
+        self.assertEqual(sorted(a["client"] for a in everyone["agents"]), ["claude-code", "codex", "gemini"])
+        self.assertEqual(everyone["rulesReadFromInstructions"], ["codex", "gemini"])
+        copilot_only = outputs(["copilot"])
+        self.assertIn(".github/skills", copilot_only["skills"])
+        self.assertEqual([a["folder"] for a in copilot_only["agents"]], [".github/agents"])
+
+    def test_rulebooks_keep_their_globs_in_each_format(self):
+        from stackfoundry.clients import render_rule
+        from stackfoundry.frontmatter import split
+        copilot, _, _ = split(render_rule(self.RULE, "copilot"))
+        self.assertEqual(copilot["applyTo"], "web/**/*.ts,web/**/*.vue")
+        cursor_text = render_rule(self.RULE, "cursor")
+        self.assertIn("globs: web/**/*.ts,web/**/*.vue\nalwaysApply: false", cursor_text)
+        claude, body, _ = split(render_rule(self.RULE, "claude-code"))
+        self.assertEqual(claude["paths"], ["web/**/*.ts", "web/**/*.vue"])
+        self.assertIn("- **Rule.** Why.", body)
+        with self.assertRaises(ValueError):
+            render_rule(self.RULE, "codex")
+
+    def test_agents_convert_with_their_grants(self):
+        import tomllib
+        from stackfoundry.clients import render_agent
+        from stackfoundry.frontmatter import split
+        codex = tomllib.loads(render_agent(self.AGENT, "codex"))
+        self.assertEqual((codex["name"], codex["sandbox_mode"]), ("web-bug-hunter", "read-only"))
+        self.assertIn("Body with ''' quotes.", codex["developer_instructions"])
+        copilot, _, _ = split(render_agent(self.AGENT, "copilot"))
+        self.assertEqual(copilot["tools"], ["read", "search", "execute", "web"])
+        gemini, _, _ = split(render_agent(self.AGENT, "gemini"))
+        self.assertEqual(gemini["tools"], ["read_file", "read_many_files", "grep_search", "run_shell_command",
+                                           "google_web_search"])
+        self.assertEqual(render_agent(self.AGENT, "cursor"), self.AGENT)
+
+    def test_render_rule_writes_to_the_assistants_standard_place(self):
+        with TempRepo({".stackfoundry/config.json": "{}", ".stackfoundry/rules/web.md": self.RULE}) as root:
+            proc = run_cli(["render-rule", str(root / ".stackfoundry/rules/web.md"), "--client", "copilot", "--write",
+                            "--root", str(root)])
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertTrue((root / ".github/instructions/web.instructions.md").is_file())
+
+    def test_the_client_ids_have_one_home(self):
+        from stackfoundry import clients, config
+        self.assertIs(config.CLIENTS, clients.CLIENTS)

@@ -16,7 +16,7 @@ argument-hint: "[<run id | run URL> | pr <number> | <branch>]"
 
 Turns a red CI run into a cause and, where the cause is ours, a local fix. It reads the run, classifies every
 failing job, and routes each class to the skill that owns it. It never re-runs CI in a loop and never pushes.
-Flaky categories: `.claude/rules/testing.md` §11.
+Flaky categories: `.stackfoundry/rules/testing.md` §11.
 
 ## Inputs
 

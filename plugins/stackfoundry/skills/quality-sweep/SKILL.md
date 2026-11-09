@@ -31,7 +31,7 @@ step is an existing skill; this one fixes their order, what runs in parallel and
 
 1. **Targets.** `/stackfoundry:change-targets` over the scope: the targets, tests-only ones, specialists. Everything
    below fans out over that list; nothing is added from memory.
-2. **Tests** (the loop in `.claude/rules/testing.md`):
+2. **Tests** (the loop in `.stackfoundry/rules/testing.md`):
    - A test design already in the plan is saved as a design under `<docsRoot>/test-designs/` and written with
      `/stackfoundry:write-tests <target> --design <doc>`; otherwise `/stackfoundry:design-tests <target> diff`,
      then `/stackfoundry:write-tests <target> --design <doc>`, per code target. Tests-only targets skip writing.

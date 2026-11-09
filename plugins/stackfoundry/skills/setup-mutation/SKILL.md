@@ -16,7 +16,7 @@ argument-hint: "<target> [<suite name>]"
 
 Gives a target's suite a **mutation lane**, the hard evidence behind a WEAK verdict in `review-tests` and the "kills a
 mutant" half of the assurance gate. The tool is the one the target's tooling pack researched for this language and
-test runner, never assumed. Rules: `.claude/rules/testing.md` §10.
+test runner, never assumed. Rules: `.stackfoundry/rules/testing.md` §10.
 
 ## Procedure
 

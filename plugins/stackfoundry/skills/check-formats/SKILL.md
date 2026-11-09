@@ -18,7 +18,7 @@ A version bump keeps a library current; it says nothing about whether the projec
 solution or project format, a superseded test runner, an old lint config format, a framework's older template or
 control-flow syntax. Those migrations arrive in release posts, not in an outdated-packages listing. This skill finds
 them in two passes, repo first and sources second, never the other way round. Shared rules (classification, the
-stop rule, routes) are `.claude/rules/dependency-bumps.md`.
+stop rule, routes) are `.stackfoundry/rules/dependency-bumps.md`.
 
 ## Inputs
 

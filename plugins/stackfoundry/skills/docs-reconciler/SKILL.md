@@ -18,7 +18,7 @@ Docs are meant to move with the code in the change that makes them untrue: a pla
 spec follow-up updated when it is resolved, an instruction edited when its path moves. That slips across long
 sessions and back-to-back changes. A second kind of drift needs no code change at all: a fact true for one commit
 (a count, a `file:line`, a date) written into living text. This skill re-derives the truth from the code and
-corrects the bookkeeping instead of trusting what the docs claim. The rules are `.claude/rules/documentation.md`.
+corrects the bookkeeping instead of trusting what the docs claim. The rules are `.stackfoundry/rules/documentation.md`.
 
 The docs root is `targets.json` → `docsRoot` (default `docs`).
 
@@ -33,9 +33,10 @@ The docs root is `targets.json` → `docsRoot` (default `docs`).
   3. **`bug-reports`**: bug reports and test designs. Each open finding's anchor checked for whether it still
      exists and still resembles the problem (flag only: whether it is fixed is `/stackfoundry:fix-verify`'s call);
      each banner and index row against the items' own markers (`stackfoundry tracker check <file>`).
-  4. **`skills`**: `.claude/skills/`, `.claude/agents/` and `.claude/rules/` descriptions and links, no skill or
-     agent listing in `CLAUDE.md`. The exhaustive pass is `/stackfoundry:skill-agent-verifier`.
-  5. **`instructions`**: the `CLAUDE.md` files, `.claude/rules/`, `.stackfoundry/profile.md` and the target
+  4. **`skills`**: the generated skills and agents (folders from `stackfoundry outputs`) and the rulebooks' descriptions
+     and links, no skill or agent listing in an instruction file. The exhaustive pass is `/stackfoundry:skill-agent-verifier`.
+  5. **`instructions`**: the instruction files (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`), `.stackfoundry/rules/` and
+     each assistant's copies, `.stackfoundry/profile.md` and the target
      profiles, for paths, globs and symbols that no longer hold and `paths:` globs that match nothing. A target
      fact that changed in substance (a new project, a different gate) is flagged for `/stackfoundry:sync`.
 - **A narrower target** (one spec, plan or instruction file): only that doc, still checked against the code.
@@ -43,7 +44,7 @@ The docs root is `targets.json` → `docsRoot` (default `docs`).
 
 Every living area also gets the **volatile-facts pass**: `stackfoundry volatile-facts <area path>
 [--include-counts]`, each hit judged against the rulebook's *Keep* list. The detector reports candidates, not
-verdicts. Generated pack rulebooks (`.claude/rules/<layer>-<tech>.md`) carry research and access dates as
+verdicts. Generated pack rulebooks (`.stackfoundry/rules/<layer>-<tech>.md` and their copies) carry research and access dates as
 citations: exclude them; their freshness is `/stackfoundry:tech-radar`'s job.
 
 ## Procedure

@@ -21,7 +21,7 @@ pass checks it against current sources.
 1. `.stackfoundry/profile.md`: users, traffic shape, performance budgets and constraints.
 2. Your target's entry in `.stackfoundry/targets.json` and its target profile: stack, exposure, Emphasis,
    Traps.
-3. Each pack rulebook of the target (`.claude/rules/<pack-id>.md`): its **Performance** notes first, then the Bug
+3. Each pack rulebook of the target (`.stackfoundry/rules/<pack-id>.md`): its **Performance** notes first, then the Bug
    categories whose failure is latency, memory or throughput, then the *Rules* (a rule may forbid the obvious
    optimisation for a reason).
 4. Any report the dispatch hands you (a profiler trace, a lab or field audit, a slow-endpoint complaint): triage it

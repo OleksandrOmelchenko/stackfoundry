@@ -3,7 +3,7 @@
 check   Read-only. Errors exit 1: missing required fields, a citation key with no source, a source without url or
         access date, HTML-escaped text (a sign the JSON went through a renderer), an id whose prefix contradicts its
         layer. Warnings: an empty section, a rule with no `where`, no rulebook paths.
-render  Writes the rulebook (`.claude/rules/<id>.md`) to stdout, or to --out. Deterministic: the same pack always
+render  Writes the canonical rulebook (`.stackfoundry/rules/<id>.md`) to stdout, or to --out. Deterministic: the same pack always
         gives the same file, so a re-render after an edit to the pack is a clean diff. The layout is the one
         reference/templates/pack-rulebook.md describes.
 """

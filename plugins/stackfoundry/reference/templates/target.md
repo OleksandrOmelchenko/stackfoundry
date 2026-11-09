@@ -13,7 +13,7 @@ output: .stackfoundry/targets/{{target}}.md
 
 | Layer | Pack | Rulebook |
 |---|---|---|
-{{one row per pack: layer | pack id | .claude/rules/<pack-id>.md}}
+{{one row per pack: layer | pack id | .stackfoundry/rules/<pack-id>.md}}
 
 ## Where things are
 

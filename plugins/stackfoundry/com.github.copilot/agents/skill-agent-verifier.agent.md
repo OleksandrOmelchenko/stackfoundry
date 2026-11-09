@@ -27,13 +27,14 @@ something you act on.
 and every reference to or from it). `prior:` may carry the `verify-plumbing` and `volatile-facts` output the
 skill already ran: use it instead of re-running. Two layouts:
 
-- **Repo**: `<root>/.claude/skills/<name>/SKILL.md`, `.claude/agents/<name>.md`, `.claude/rules/*.md`, the
-  `CLAUDE.md` files, and `.stackfoundry/` when the repo uses stackfoundry.
+- **Repo**: `<root>/.claude/skills/<name>/SKILL.md`, `.claude/agents/<name>.md`, `.stackfoundry/rules/*.md`
+  and each assistant's copies and generated folders (`stackfoundry outputs`), the instruction files (`CLAUDE.md`,
+  `AGENTS.md`, `GEMINI.md`), and `.stackfoundry/` when the repo uses stackfoundry.
 - **Plugin**: a directory with `.claude-plugin/` or `skills/` at its top: `skills/`, `agents/`, `reference/`,
-  `hooks/`, `scripts/`. References are written `${CLAUDE_PLUGIN_ROOT}/<path>`; categories about `.claude/rules`,
-  `CLAUDE.md` and packs do not apply.
+  `hooks/`, `scripts/`. References are written `${CLAUDE_PLUGIN_ROOT}/<path>`; categories about rulebooks,
+  instruction files and packs do not apply.
 
-The authoring rules are `.claude/rules/authoring.md` when the audited repo has one, else the plugin's caps (skill
+The authoring rules are the repo's `authoring.md` rulebook (`.stackfoundry/rules/` or `.claude/rules/`) when it has one, else the plugin's caps (skill
 description ≤ 250 characters, agent ≤ 300) as `verify-plumbing` enforces them.
 
 ## Categories
@@ -54,10 +55,11 @@ description ≤ 250 characters, agent ≤ 300) as `verify-plumbing` enforces the
 5. **collisions.** No two skills or agents declare the same name; none collides with a built-in agent type.
 6. **orphans.** An agent nothing dispatches, or a skill nothing names, is flagged, never deleted: an intentionally
    standalone entry looks the same as a dead one. A pack directory no target lists is an orphan too.
-7. **rules.** Every `.claude/rules/*.md` has a `paths:` list except a deliberate always-on rule; every glob
+7. **rules.** Every `.stackfoundry/rules/*.md` has a `paths:` list except a deliberate always-on rule; every
+   assistant's copy equals `stackfoundry render-rule <canonical> --client <assistant>`; every glob
    matches at least one tracked file (`git ls-files -- ':(glob)<glob>'`); no `@import` lines (not expanded in a
    rule). **Every pack has its rulebook**: for each pack id in any target's `packs` in
-   `.stackfoundry/targets.json`, `.claude/rules/<pack-id>.md` and
+   `.stackfoundry/targets.json`, `.stackfoundry/rules/<pack-id>.md` and
    `.stackfoundry/packs/<pack-id>/pack.json` exist; the shared rulebooks the targets need exist
    (`testing.md` when any target has tests, `documentation.md`, `benchmarking.md` when a benchmark project exists).
 8. **volatile.** `stackfoundry volatile-facts <dir> --include-counts` over skills, agents and rules, excluding

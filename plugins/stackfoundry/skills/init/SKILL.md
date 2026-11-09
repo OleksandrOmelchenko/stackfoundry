@@ -45,6 +45,8 @@ yourself (a unit with no app model, an app model the survey only guessed, a test
   never targets, and the profile says why (so no hunter "fixes" them). When tests consume them, map the fixture
   folder through a `rules` entry to the targets whose tests read it, so a fixture change selects those tests;
   otherwise put it in `ignored`.
+- `assistants.detected` (with its evidence) is the starting list of the repo's `clients`; confirm it in step 2.
+  `agentsMd` alone proves no assistant: ask which ones read it.
 - `looseSources` lists source folders no manifest covers (a CLI run by a launcher, a scripts folder): each is a
   candidate target or part of one; ask when unclear.
 - A `claude-plugin` unit is a Claude Code plugin; its packs come from the plugin's own layers (skills, agents,
@@ -86,8 +88,9 @@ message** (batches of about six when there are many). Each brief carries `pack:`
 
 ## 4. Write (one confirmation first)
 
-List every file to be written, marking each **new** or **merge** (an existing file of the same name), and ask once.
-Then write:
+`.stackfoundry/config.json` names the repo's assistants; `stackfoundry outputs` (after writing it) says where each
+kind of file goes for them, so no assistant gets a copy another one already reads. List every file to be written,
+marking each **new** or **merge** (an existing file of the same name), and ask once. Then write:
 
 | File | From | Recorded with `--template` |
 |---|---|---|
@@ -96,23 +99,26 @@ Then write:
 | `.stackfoundry/targets.json`, `ecosystems.json`, `guards.json` | the agreed map; schemas in `reference/schemas/` | `profile` |
 | `.stackfoundry/packs/<pack-id>/pack.json` | written by its researcher (step 3) | `research` |
 | `.stackfoundry/targets/<target>.md` | `reference/templates/target.md` | that template |
-| `.claude/rules/<pack-id>.md` | `stackfoundry pack render <pack.json> --out <rule>`, never by hand | `research` |
-| `.claude/rules/testing.md`, `dependency-bumps.md`, `documentation.md` (+ `benchmarking.md` when a benchmark harness exists) | `reference/rulebooks/`, placeholders filled from the profile | that rulebook |
-| `.claude/skills/<app-model>-code-writer/SKILL.md` per app model (bare id: `app-model-wpf` → `wpf`) | `reference/templates/code-writer-skill.md` | that template |
+| `.stackfoundry/rules/<pack-id>.md` | `stackfoundry pack render <pack.json> --out <rule>`, never by hand | `research` |
+| `.stackfoundry/rules/testing.md`, `dependency-bumps.md`, `documentation.md` (+ `benchmarking.md` when a benchmark harness exists) | `reference/rulebooks/`, placeholders filled from the profile | that rulebook |
+| each assistant's copy of every rulebook (`outputs` → rules: `.claude/rules/`, `.github/instructions/`, `.cursor/rules/`) | `stackfoundry render-rule .stackfoundry/rules/<id>.md --client <assistant> --write` | as its canonical rulebook |
+| `<app-model>-code-writer/SKILL.md` per app model (bare id: `app-model-wpf` → `wpf`), in each `outputs` → skills folder | `reference/templates/code-writer-skill.md` | that template |
 | under the docs root, only where missing: `bug-reports/README.md`, `test-designs/README.md`, `plans/README.md`, `plans/_template.md`, `plans/deferred-upgrades.md`, `specifications/README.md`, `security/README.md`, and the reports README in `dependency-reports/`, `radar/` (plus `radar/decisions.md`), `performance-reports/` and `reports/` | `reference/trackers/` (strip each template's own frontmatter) | that tracker |
-| the stackfoundry block in `CLAUDE.md` | `reference/templates/claude-md-block.md`, between its markers | that template (the block alone is hashed) |
-| `.claude/settings.json`: `extraKnownMarketplaces.stackfoundry` (GitHub `OleksandrOmelchenko/stackfoundry`) and `enabledPlugins["stackfoundry@stackfoundry"]` | merged into the existing JSON | `profile` |
+| the stackfoundry block in each `outputs` → instructions file (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`) | `reference/templates/instructions-block.md`, between its markers | that template (the block alone is hashed) |
+| Claude Code only: `.claude/settings.json`: `extraKnownMarketplaces.stackfoundry` (GitHub `OleksandrOmelchenko/stackfoundry`) and `enabledPlugins["stackfoundry@stackfoundry"]` | merged into the existing JSON | `profile` |
 
-- **Which `CLAUDE.md`**: the root `CLAUDE.md` when it exists, else `.claude/CLAUDE.md` when that exists, else create
-  the root one.
+- **Which instruction file**: for `CLAUDE.md`, the root one when it exists, else `.claude/CLAUDE.md` when that
+  exists, else create the root one; `AGENTS.md` and `GEMINI.md` at the root. For Codex and Gemini, which have no
+  path-scoped rules, the block's table is the instruction to read a rulebook before editing a matching file.
 - **A repo that is itself the stackfoundry marketplace** (its `.claude-plugin/marketplace.json` lists `stackfoundry`):
   skip the `settings.json` entries; contributors run the working tree with `claude --plugin-dir plugins/stackfoundry`.
 - A name collision with an existing rule, skill or doc: write `stackfoundry-<name>` beside it and list it for the
   user to merge, never replace.
 - Every generated file is grounded: a placeholder the repo cannot fill is left out, never invented.
-- Check as you write: `stackfoundry guard --check` right after `guards.json` (an invalid file is silently ignored
-  by the hook), `stackfoundry change-targets --files <one file per target>` right after `targets.json` (it loads and
-  validates it), and `stackfoundry verify-plumbing .` right after the code-writer skills (description caps).
+- Check as you write: `stackfoundry config` right after `config.json`, `stackfoundry guard --check` right after
+  `guards.json` (an invalid file is silently ignored by the hook), `stackfoundry change-targets --files <one file per
+  target>` right after `targets.json` (it loads and validates it), and `stackfoundry verify-plumbing .` right after
+  the code-writer skills (description caps).
 - Record every file: `stackfoundry manifest record <files> --template <id from the table>`.
 
 ## 5. Prove
@@ -120,20 +126,21 @@ Then write:
 - **Gates**: ask once, then run each target's gate commands, respecting its preconditions (never stop a service you
   did not start; ask). Long suites run in the background. Mark each command proven or failed in the target
   profile; a failing gate stays in the profile, marked, and goes in the report.
-- `stackfoundry verify-plumbing .` (the repo's `.claude/`), `stackfoundry globs-check` (every rulebook glob matches a
-  file), and `/stackfoundry:skill-agent-verifier` for the load probe: every generated rulebook loads when a matching
-  file is read.
+- `stackfoundry verify-plumbing .` (the repo's skills and agents), `stackfoundry globs-check` (every rulebook glob
+  matches a file), and, when the session is Claude Code, `/stackfoundry:skill-agent-verifier` for the load probe:
+  every generated rulebook loads when a matching file is read.
 - `stackfoundry change-targets --files <one source file per target>`: each maps to its own target.
 - `stackfoundry guard --check`, then a probe: pipe a sample event into `stackfoundry guard` with
   `CLAUDE_PROJECT_DIR` set. With `generated` globs, an `Edit` of a matching file must be denied; with none, a
-  `git commit` must get the `git.writes` decision.
+  `git commit` must get the `git.writes` decision. For each other assistant in `clients`, say what its guard can do
+  there (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`, *The guard in each assistant*).
 
 ## 6. Report
 
 The target map, the files written (new vs merged), gates proven and failed, research not reached, open questions,
 and next steps: `/stackfoundry:bug-hunt <target>`, `/stackfoundry:design-tests <target>`,
 `/stackfoundry:threat-model <target>` for public targets, `/stackfoundry:schedule`. Remind that each collaborator
-runs `/plugin install stackfoundry@stackfoundry` once (not for the marketplace repo itself). **Do not commit**: say
+installs the plugin once in their assistant (the README's install table; not for the marketplace repo itself). **Do not commit**: say
 what is ready to commit.
 
 ## Boundaries
@@ -146,7 +153,7 @@ what is ready to commit.
 - `Agent` with `subagent_type: "stackfoundry:surveyor"`, then `"stackfoundry:stack-researcher"` (one per pack, one
   message).
 - `AskUserQuestion` for the interview rounds and the one write confirmation.
-- `Bash` for `stackfoundry survey|pack|manifest|verify-plumbing|globs-check|change-targets|guard` and the gate
+- `Bash` for `stackfoundry survey|config|outputs|pack|render-rule|manifest|verify-plumbing|globs-check|change-targets|guard` and the gate
   commands (`run_in_background` for long suites). `Read`/`Write`/`Edit` for the files.
 - `Skill` → `stackfoundry:skill-agent-verifier` for the load probe.
 - Non-interactive runs: `.claude/` is a protected path, and neither `acceptEdits` nor an allow rule covers it.

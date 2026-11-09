@@ -17,7 +17,7 @@ argument-hint: "[plan slug]"
 Takes a plan from `<docsRoot>/plans/` (`targets.json` → `docsRoot`, default `docs`), builds it the repo's way, and
 once it is built and verified **retires** it in the same change: the plan is deleted, a living spec records what
 was built, and every instruction the change made untrue is synced. The lifecycle is in
-`.claude/rules/documentation.md` (*Plans, specifications and the backlog*).
+`.stackfoundry/rules/documentation.md` (*Plans, specifications and the backlog*).
 
 For a change that matters, `/stackfoundry:elaborate-plan` wraps this with a planned test design and a quality
 sweep; the retirement below still applies.
@@ -28,7 +28,7 @@ sweep; the retirement below still applies.
    confirm which one.
 2. **Prepare.**
    - Read the plan in full. Map its Affected areas to targets (`stackfoundry change-targets --files <paths>`).
-   - A planned change carries its test list before code exists (`.claude/rules/testing.md` §4). When the plan has
+   - A planned change carries its test list before code exists (`.stackfoundry/rules/testing.md` §4). When the plan has
      none, design it first with `/stackfoundry:design-tests <target> --spec <plan>`.
    - Read the conventions through `/stackfoundry:write-code`, which routes each target to its code writer and
      rulebooks.
@@ -44,7 +44,7 @@ sweep; the retirement below still applies.
      (what was exercised and that the gate was green, no suite totals), Follow-ups (not yet implemented).
    - **Add its index row** to `<docsRoot>/specifications/README.md`.
    - **Sync instructions** the change made untrue: `CLAUDE.md` files (outside the stackfoundry markers), the
-     team's `.claude/rules/` files, the target profile (`.stackfoundry/targets/<target>.md`) when paths,
+     team's `.stackfoundry/rules/` files, the target profile (`.stackfoundry/targets/<target>.md`) when paths,
      harness, gate or traps changed, and any skill or agent whose behaviour changed. A new project or app model
      means `targets.json` is behind: suggest `/stackfoundry:sync` rather than hand-editing the target map.
 5. **Confirm the retirement** with the `plan-sync-reviewer` agent: plan deleted, spec and index row present,

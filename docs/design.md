@@ -61,11 +61,33 @@ authoritative. A researched rule carries its source and date, so its age is visi
 | generic role agents | `.stackfoundry/targets.json`: targets, paths, packs, gates, harness, test dirs, exposure, path rules, specialists |
 | reference (method) | `.stackfoundry/targets/<target>.md`: stack facts, categories, oracle sources, traps |
 | helper CLI and hooks | `.stackfoundry/ecosystems.json`, `guards.json`, `packs/<layer>-<tech>/` |
-| | `.claude/rules/<layer>-<tech>.md`, `.claude/skills/<app-model>-code-writer/` |
+| | `.stackfoundry/rules/<layer>-<tech>.md` and each assistant's copy, `<app-model>-code-writer` skills |
 | | tracker scaffolds under the docs root; `manifest.lock.json` |
 
 Two reasons. Plugins cannot ship path-scoped rules or CLAUDE.md content, so the rules have to be in the repo anyway.
 And procedure has to be upgradable: a skill copied into every repo at install time freezes there.
+
+## One source, every assistant
+
+The plugin is written once, in Claude Code's terms, and runs in Codex, GitHub Copilot, Cursor and Gemini CLI too
+(`plugins/stackfoundry/reference/clients.md` maps them). Three things make that work without per-assistant copies
+kept by hand:
+
+- **The shared standards carry the core.** Skills are Agent Skills (`SKILL.md`), which every one of them reads.
+  Codex, Copilot and Cursor also read an Agent Plugins 1.0 `plugin.json`, which `scripts/build_clients.py`
+  generates beside Claude Code's manifest, together with the parts no standard covers: Copilot's agent files, each
+  assistant's hook file, the Cursor manifest, the three extra marketplaces and, on release, a Gemini CLI extension.
+  `--check` in CI and the pre-commit hook keeps them equal to the source.
+- **Every skill and agent says how to read it elsewhere.** A preamble under each title gives the CLI by path,
+  the plugin root where `${CLAUDE_PLUGIN_ROOT}` is not substituted, and the pointer to the tool equivalents.
+- **The repo's files are written once and copied by the CLI.** Rulebooks are canonical in `.stackfoundry/rules/`
+  and rendered into each assistant's path-scoped format (`stackfoundry render-rule`); assistants without one read
+  the canonical file through the table in their instruction file. Team agents are canonical in
+  `.stackfoundry/agents/` and rendered the same way (`render-agent`). `stackfoundry outputs` is the one place that
+  decides which assistant gets which copy, from `.stackfoundry/config.json`'s `clients`.
+
+The guard is one command for every assistant's pre-tool hook; it tells the assistant from the event's shape and
+answers in its format (see *Guards*).
 
 ### Role agents
 
@@ -98,7 +120,8 @@ read from the repo's JSON, never hard-coded and never restated in a skill.
 ## Guards
 
 `hooks/hooks.json` runs `stackfoundry guard` before `Edit`/`Write`/`MultiEdit`/`NotebookEdit` and before
-`Bash`/`PowerShell`. It reads `.stackfoundry/guards.json`: generated-code globs that may not be hand-edited,
+`Bash`/`PowerShell` (the other assistants' hook files run the same command with `--client`; where one cannot ask,
+an ask becomes a deny that says to get the user's go-ahead). It reads `.stackfoundry/guards.json`: generated-code globs that may not be hand-edited,
 command patterns that are forbidden (direct database writes, raw service launches), and the git-write policy. No
 profile means no opinion: the hook exits 0.
 

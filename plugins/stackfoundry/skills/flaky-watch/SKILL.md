@@ -17,7 +17,7 @@ argument-hint: "[target ...] [--runs N]"
 A flaky test passes and fails on the same code. One run never shows it; repeated shuffled runs do. This skill runs
 each target's suites `N` times in shuffled order, keeps only the tests that both passed and failed, and writes one
 dated report that routes each to `/stackfoundry:fix-tests`. It is unattended and never edits a test. Flaky
-categories and how they are fixed are `.claude/rules/testing.md` § 11 (Flaky tests).
+categories and how they are fixed are `.stackfoundry/rules/testing.md` § 11 (Flaky tests).
 
 ## Inputs
 

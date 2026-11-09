@@ -11,11 +11,11 @@ enforcement point and fails open), data integrity (writes `manifest.lock.json` a
 
 | Layer | Pack | Rulebook |
 |---|---|---|
-| language | `language-python` | `.claude/rules/language-python.md` |
-| language | `language-posix-sh` | `.claude/rules/language-posix-sh.md` |
-| app-model | `app-model-python-cli` | `.claude/rules/app-model-python-cli.md` |
-| tooling | `tooling-unittest` | `.claude/rules/tooling-unittest.md` |
-| tooling | `tooling-github-actions` | `.claude/rules/tooling-github-actions.md` |
+| language | `language-python` | `.stackfoundry/rules/language-python.md` |
+| language | `language-posix-sh` | `.stackfoundry/rules/language-posix-sh.md` |
+| app-model | `app-model-python-cli` | `.stackfoundry/rules/app-model-python-cli.md` |
+| tooling | `tooling-unittest` | `.stackfoundry/rules/tooling-unittest.md` |
+| tooling | `tooling-github-actions` | `.stackfoundry/rules/tooling-github-actions.md` |
 
 ## Where things are
 
@@ -38,16 +38,16 @@ sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfou
 Preconditions: Python >= 3.11 on PATH as `python3`, `python` or `py -3`; git on PATH (git-dependent tests skip
 without it via `tests/_support.py` `HAS_GIT`; tests that need `sh` skip without it).
 Shuffled run (assurance gate): none yet (stdlib `unittest` has no shuffle; open question in
-`.claude/rules/tooling-unittest.md`). Coverage: none yet. Mutation lane: none yet: /stackfoundry:setup-mutation.
+`.stackfoundry/rules/tooling-unittest.md`). Coverage: none yet. Mutation lane: none yet: /stackfoundry:setup-mutation.
 
 Local URL for live repros: not served locally.
 
 ## Oracle sources
 
-In precedence order: `docs/design.md` and `docs/specifications/` (when present), the rulebooks in `.claude/rules/`,
+In precedence order: `docs/design.md` and `docs/specifications/` (when present), the rulebooks in `.stackfoundry/rules/`,
 the JSON schemas in `plugins/stackfoundry/reference/schemas/`, the subcommand help strings in
 `plugins/stackfoundry/scripts/stackfoundry/cli.py` `build()` (each says whether it writes), the Claude Code hooks contract cited in
-`.claude/rules/app-model-python-cli.md`, bug reports under `docs/bug-reports/`.
+`.stackfoundry/rules/app-model-python-cli.md`, bug reports under `docs/bug-reports/`.
 
 ## Emphasis
 
@@ -60,6 +60,6 @@ defensive parsing of untrusted JSON and repo files, cross-platform behaviour on 
 
 - `guard.py` `decide()` returns a command entry's `decision` as written in `guards.json`; only `guard --check`
   (`check_file()`) rejects values other than `deny`/`ask`, and the hook never runs that check
-  (`.claude/rules/app-model-python-cli.md`).
+  (`.stackfoundry/rules/app-model-python-cli.md`).
 - The Python floor appears in code (`plugins/stackfoundry/scripts/stackfoundry.sh`, `.githooks/pre-commit`, CI matrix) and in prose; they move
   together (`.stackfoundry/ecosystems.json` `python-platform`).

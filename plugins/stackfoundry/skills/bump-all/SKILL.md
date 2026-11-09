@@ -16,7 +16,7 @@ argument-hint: "[ecosystem-id ...] [approve: <item> ...]"
 
 `/stackfoundry:bump <ecosystem-id>` knows one ecosystem's pins, gate and traps. This skill only sequences it over
 every ecosystem, keeps the user's decisions in one place and writes down what was deferred. It adds no rule of its
-own: they are in `.claude/rules/dependency-bumps.md`.
+own: they are in `.stackfoundry/rules/dependency-bumps.md`.
 
 ## Inputs
 

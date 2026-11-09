@@ -16,7 +16,7 @@ argument-hint: "<target> [<area> | diff [--base <ref>] | --report <bug report> [
 
 Produces a **test design**: the behaviours worth pinning, before any test exists, persisted as a living tracker that
 `write-tests`, `review-tests` and `fix-tests` keep current. It never writes a test or product code, and never
-assumes an expected value the sources don't state. Rules: `.claude/rules/testing.md` (§1 oracles, §2 layers,
+assumes an expected value the sources don't state. Rules: `.stackfoundry/rules/testing.md` (§1 oracles, §2 layers,
 §4 techniques). This is step one of the test quality loop: **design** → `write-tests` → `review-tests` → `fix-tests`.
 
 ## Inputs
@@ -33,7 +33,7 @@ assumes an expected value the sources don't state. Rules: `.claude/rules/testing
 
 1. **Load.** No `.stackfoundry/targets.json` → say "run `/stackfoundry:init`" and stop. Read the target's
    entry (if `roles` excludes `test-designer`, say so and stop), its profile (`targets/<target>.md`: harness, Oracle
-   sources, Emphasis, Traps) and `.claude/rules/testing.md`.
+   sources, Emphasis, Traps) and `.stackfoundry/rules/testing.md`.
 2. **Scope.** Area → the files under it. Diff → `stackfoundry change-targets [--base <ref>] --json`, this target's
    `files` and `testFiles`. Report → the named findings. Spec → the behaviours the document states.
 3. **Collect oracle sources** in the precedence the target profile lists: specs and plans under the `docsRoot`,

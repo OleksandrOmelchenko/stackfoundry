@@ -33,7 +33,7 @@ never fixes. Report format: `${CLAUDE_PLUGIN_ROOT}/reference/trackers/bug-report
 
 1. **Load and list the categories.** No `targets.json` → "run `/stackfoundry:init`", stop. Read the target's entry
    (`roles` excludes `bug-hunter` → say so, stop), its profile (`targets/<target>.md`) and the rulebook of each
-   pack in its stack (`.claude/rules/<pack-id>.md`). The categories are the **union of the *Bug categories* rows
+   pack in its stack (`.stackfoundry/rules/<pack-id>.md`). The categories are the **union of the *Bug categories* rows
    of those rulebooks plus each *Emphasis* item** of the target profile not already covered. Show the list
    (category, pack, one-line *Look for*) before fanning out. A pack without a rulebook is named as missing
    (`/stackfoundry:research-stack`), never filled from memory.

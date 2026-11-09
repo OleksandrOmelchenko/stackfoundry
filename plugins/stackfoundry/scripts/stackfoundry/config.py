@@ -9,9 +9,9 @@ import json
 import sys
 from pathlib import Path
 
+from .clients import CLIENTS
 from .profile import CONFIG, ProfileError, find_root, load_json
 
-CLIENTS = ("claude-code", "codex", "copilot", "cursor", "gemini")
 EFFORTS = ("quick", "standard", "thorough")
 DEFAULTS = {
     "schemaVersion": 1,

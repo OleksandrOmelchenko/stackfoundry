@@ -54,6 +54,15 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   Cursor) with the Codex overlay; Copilot agents with mapped tool grants and its hook; Cursor's manifest and hooks;
   the Codex, Copilot and Cursor marketplaces; and, built on each published release, a Gemini CLI extension.
   `reference/clients.md` maps each assistant's tools, folders, hooks and install commands.
+- What `init` writes, per assistant: the repo's `.stackfoundry/config.json` lists its assistants (the survey's new
+  `assistants` section proposes them) and `stackfoundry outputs` says where each kind of file goes for them.
+  Rulebooks are canonical in `.stackfoundry/rules/` and rendered into Claude Code's `.claude/rules/`, Copilot's
+  `.github/instructions/` and Cursor's `.cursor/rules/` (`stackfoundry render-rule`); Codex and Gemini read them
+  through the table in `AGENTS.md` and `GEMINI.md`. Team agents are canonical in `.stackfoundry/agents/` and rendered
+  for each assistant, Codex's as TOML (`stackfoundry render-agent`). The instruction block template
+  (`instructions-block.md`) serves `CLAUDE.md`, `AGENTS.md` and `GEMINI.md`; `globs-check` reads
+  `.stackfoundry/rules/` by default; `sync` adds or drops an assistant's files; `schedule` covers the other
+  assistants' headless runs.
 - The guard reads the nearest `guards.json` above the edited file (worktrees and nested repos), normalizes paths,
   and sees git commands inside quotes (`sh -c 'git push'`).
 - The CLI runs git by its absolute path from `PATH`, never a `git` in the repo; `pack render --out` writes atomically;

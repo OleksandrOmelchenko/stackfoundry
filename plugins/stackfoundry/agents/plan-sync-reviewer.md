@@ -20,7 +20,7 @@ here leaves the backlog and the docs lying about what exists. You review the ret
 ## Read first
 
 1. `.stackfoundry/targets.json` for `docsRoot` (default `docs`).
-2. `.claude/rules/documentation.md` (the plans → specifications lifecycle, what a spec may not carry) and the
+2. `.stackfoundry/rules/documentation.md` (the plans → specifications lifecycle, what a spec may not carry) and the
    formats in `${CLAUDE_PLUGIN_ROOT}/reference/trackers/specifications-README.md` and `plans-README.md`.
 3. `<docsRoot>/plans/README.md` for the Category vocabulary.
 
@@ -46,7 +46,7 @@ find the plan from the diff: the deleted file under `<docsRoot>/plans/`, or the 
    rulebook's Keep list. A `file:line` where path + symbol belongs, suite totals in Verification, counts of code
    things, or "as of" outside Why are 🟡 with the replacement. A number in Why that sized the decision is fine.
 5. **Instructions synced.** Map the changed paths to rulebooks by their `paths:` globs and to targets with
-   `stackfoundry change-targets`. In each matching `.claude/rules/*.md`, nested `CLAUDE.md`, the root `CLAUDE.md`,
+   `stackfoundry change-targets`. In each matching `.stackfoundry/rules/*.md`, nested and root instruction file (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`),
    `.stackfoundry/profile.md` and `targets/<target>.md`, look for statements the change made stale,
    contradicted or missing (a new generated folder absent from `generated`, a new test suite absent from `tests`,
    a renamed path).

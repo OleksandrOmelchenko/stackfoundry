@@ -31,7 +31,7 @@ only what is genuinely the user's call. The plan holds:
 - **Targets**: `stackfoundry change-targets --files <planned paths>`: the targets the change reaches and the
   specialists it will call in.
 - **Test design**, per target: the rows `/stackfoundry:design-tests` would write (behaviour, technique, layer,
-  expected value with its oracle source), done before the code as `.claude/rules/testing.md` §4 requires for a
+  expected value with its oracle source), done before the code as `.stackfoundry/rules/testing.md` §4 requires for a
   planned change.
 - **How each part is written**: `/stackfoundry:write-code`, which routes each target to its code writer and
   rulebooks.
