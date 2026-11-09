@@ -110,7 +110,7 @@ reason the code does not show · 🔵 suggestion · 🟢 done well.
 
 | Family | Skills |
 |---|---|
-| Core | `init`, `walkthrough`, `research-stack`, `sync`, `upgrade`, `materialize`, `configure-guards`, `write-code`, `skill-agent-author`, `skill-agent-verifier` |
+| Core | `init`, `walkthrough`, `customize`, `research-stack`, `sync`, `upgrade`, `materialize`, `configure-guards`, `write-code`, `skill-agent-author`, `skill-agent-verifier` |
 | Tests | `design-tests`, `write-tests`, `review-tests`, `fix-tests`, `run-tests`, `scaffold-test-harness`, `setup-mutation` |
 | Bugs and review | `bug-hunt`, `fix-verify`, `review-changes`, `quality-review`, `change-targets`, `quality-sweep`, `performance-review`, `security-review-target`, `threat-model` |
 | Reactive | `debug`, `fix-ci` |
@@ -166,8 +166,9 @@ argument-hint: "<args>"            # when it takes arguments
   (`targets.json` → `materialized`), that repo agent is dispatched instead.
 - Other skills are invoked with `Skill` → `stackfoundry:<skill>`, or named to the user as `/stackfoundry:<skill>`.
 - **Step headings are a public interface.** Teams anchor repo extensions to them (`## After: Verify`,
-  `plugins/stackfoundry/reference/extensions.md`), matched without the number, so renumbering is free but renaming
-  or removing a `##`/`###` heading orphans those anchors. Do it only when the step really changed, and list each
+  `plugins/stackfoundry/reference/extensions.md`): `##`/`###` headings and numbered steps opening with a bold label
+  (`3. **Dispatch.**`), matched without the number, so renumbering is free but renaming or removing one orphans
+  those anchors. Do it only when the step really changed, and list each
   rename under **Changed (extension anchors)** in the CHANGELOG (old → new) so `upgrade` can re-anchor.
 - The fixed contract extensions may not change (confirmations, guards, git policy, brief fields, report shape,
   severity and verdict words, tracker markers) lives in `reference/extensions.md`; a change to any of these is a

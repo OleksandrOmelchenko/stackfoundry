@@ -23,8 +23,13 @@ The user doesn't know the skill names, or doesn't want to. Lead them to the righ
 through, teach them the plain request that starts it next time, and run it only on their yes. Never describe a skill
 from memory: its description and `argument-hint` in `${CLAUDE_PLUGIN_ROOT}/skills/<name>/SKILL.md` are the truth.
 
+Part of the tour is that every skill can be changed for this repo, and the change survives plugin updates
+(`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`): say so wherever a skill is explained, and route "change how X
+works" to `customize`.
+
 An argument is a goal in the user's words ("I want fewer flaky tests"): match it against the descriptions and go
-straight to step 4 with the best one or two candidates.
+straight to step 4 with the best one or two candidates. A goal that is a change to a skill ("make bug-hunt check our
+logging") goes to `customize` with that skill.
 
 ## The groups
 
@@ -38,14 +43,19 @@ Every skill of the plugin is in exactly one row, most-asked first (`verify-plumb
 | Keep dependencies and tools current | `check-updates`, `act-on-updates`, `bump`, `bump-all`, `check-formats`, `tech-radar`, `act-on-radar`, `radar-digest`, `schedule` |
 | Plans, docs and backlog | `backlog`, `plan-feature`, `implement-plan`, `retire-plan`, `elaborate-plan`, `docs-reconciler` |
 | Ways of working and git | `with-plan`, `plan-execute`, `implement-only`, `ask-me`, `github-prs`, `cleanup-merged` |
-| stackfoundry itself | `init`, `sync`, `upgrade`, `research-stack`, `materialize`, `configure-guards`, `stackfoundry-radar`, `skill-agent-author`, `skill-agent-verifier` |
+| stackfoundry itself | `init`, `customize`, `sync`, `upgrade`, `research-stack`, `materialize`, `configure-guards`, `stackfoundry-radar`, `skill-agent-author`, `skill-agent-verifier` |
+
+When the repo has skills of its own, they form one more group, **Your repo's skills**, after these.
 
 ## 1. State
 
 - `.stackfoundry/targets.json` exists → the repo is set up. Read its target names, and `stackfoundry config --json`
   for the assistants (`clients`).
 - Read every skill's `description:` and `argument-hint:` once (`Grep` for `^(description|argument-hint):` in
-  `${CLAUDE_PLUGIN_ROOT}/skills/*/SKILL.md`).
+  `${CLAUDE_PLUGIN_ROOT}/skills/*/SKILL.md`), and the same for the repo's own skills (`.claude/skills/*/SKILL.md`,
+  `.agents/skills/*/SKILL.md`).
+- `stackfoundry extensions list --json`: which plugin skills and agents this repo already changes, and how (it lists
+  nothing on a repo without extensions).
 
 ## 2. Not set up yet
 
@@ -62,40 +72,51 @@ With no profile, ask first (header `Setup`):
 
 - **Goal**: one question, "What do you want to do?", with the groups as options. A list longer than four is paged:
   three options plus **More…**, in table order. "Other" takes any request in words: match it against the
-  descriptions.
+  descriptions; "change how X works" goes to `customize` with X.
 - **Skill**: a second question over the group's skills, paged the same way. Each option's label is the skill name and
-  its description is the skill's own trigger phrase (the `Use for …` clause), so the user learns how to ask.
+  its description is the skill's own trigger phrase (the `Use for …` clause), so the user learns how to ask. A skill
+  this repo extends or replaces adds "(changed in this repo)" to its option description.
 
 ## 4. Explain and fill in
 
-- Two lines: what the skill does (its description, shortened), and the plain request that starts it next time,
-  with the slash form in Claude Code (`/stackfoundry:<name> <args>`).
+- Three lines: what the skill does (its description, shortened); the plain request that starts it next time, with
+  the slash form in Claude Code (`/stackfoundry:<name> <args>`); and "To change it for this repo, say *customize
+  <name>*: the change lives in `.stackfoundry/extensions/` and survives plugin updates."
+- When this repo already changes it, say how, naming the file: "this repo extends it:
+  `.stackfoundry/extensions/skills/<name>.md` adds a rule and a step after *Verify*" (from the file's sections), or
+  "this repo replaces it with its own copy". A repo skill is the repo's own: say so, with no plugin slash form.
 - Arguments from its `argument-hint`, one question each, only the ones that change what runs:
   - `<target>`: the target names from `targets.json` (paged). Never guess one.
   - `diff` / an area / `--base`: **my uncommitted changes**, **a folder or file** (typed in "Other"), **the whole
     target**.
   - Any other required `<argument>`: ask for it in words.
 - Then one question (header `Run it?`): **Run it** (Recommended), **Tell me more** (five bullets from its step
-  headings, then ask again), **Pick something else** (back to step 3), **Done**.
+  headings, which are also the anchors a change can attach to, then ask again), **Change how it works** (run
+  `customize` with this skill), **Pick something else** (back to step 3). "Done" goes through "Other".
 
 ## 5. Run and loop
 
 - **Run it**: invoke the skill with the filled-in arguments (`Skill` with `stackfoundry:<name>`; elsewhere, run the
   skill by name). It asks its own questions and keeps its own confirmations.
-- When it finishes, ask once: **Something else** (back to step 3) or **Done**.
-- **Done**: list what ran and, for each, the plain request that starts it next time.
+- **Change how it works**: invoke `customize` with the skill's name; it asks what to change and writes nothing
+  without a yes.
+- When either finishes, ask once: **Something else** (back to step 3) or **Done**.
+- **Done**: list what ran and, for each, the plain request that starts it next time; list any extension written in
+  this session with its file and how to undo it (delete the file).
 
 ## Rules
 
 - Nothing runs without the user's yes, and nothing is written by this skill itself.
-- No answer to ask (a headless run, or an assistant without a question tool that can't wait): print the groups table
-  with each skill's trigger phrase and stop.
+- No answer to ask (a headless run, or an assistant without a question tool that can't wait): with a goal, give
+  step 4's explanation of the best match (including how this repo changes it, if it does) and the options you would
+  have offered; without one, print the groups table with each skill's trigger phrase. Then stop; run nothing.
 - `AskUserQuestion` conventions: at most four options per question, the recommendation first with "(Recommended)",
   a `header` of 12 characters or fewer, each option's `description` saying what happens, not restating the label.
 
 ## Tooling
 
-- `Read` and `Grep` for the profile and the skills' frontmatter; `Bash` only for `stackfoundry config --json`.
+- `Read` and `Grep` for the profile, the skills' frontmatter and extension files; `Bash` only for
+  `stackfoundry config --json` and `stackfoundry extensions list --json`.
 - `AskUserQuestion` for every step; in another assistant, ask in chat one question at a time with numbered options
   and wait.
 - `Skill` to run the chosen skill.

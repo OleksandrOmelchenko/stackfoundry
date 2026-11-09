@@ -28,6 +28,7 @@ MODES = ("extend", "replace")
 NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 SECTION = re.compile(r"^(Rules|Before|After|Replace|Target)\s*(?::\s*(.+?))?\s*$", re.I)
 HEADING = re.compile(r"^(#{2,3})\s+(.+?)\s*#*\s*$")
+STEP_LABEL = re.compile(r"^\d+\.\s+\*\*(.+?)\*\*")  # a numbered step written as "3. **Dispatch.** ..."
 NUMBER = re.compile(r"^(?:step\s+)?\d+(?:\.\d+)*[.):]?\s+", re.I)
 FENCE = re.compile(r"^\s*(```|~~~)")
 MERGE_SUFFIX = ".merge.md"
@@ -67,19 +68,26 @@ def norm(heading: str) -> str:
     """An anchor or heading as compared: number prefix, emphasis and case dropped."""
     h = NUMBER.sub("", heading.strip())
     h = re.sub(r"[*_`]", "", h)
-    return re.sub(r"\s+", " ", h).strip().rstrip(":").lower()
+    return re.sub(r"\s+", " ", h).strip().rstrip(":.").lower()
 
 
 def headings(text: str) -> list[str]:
-    """`##`/`###` headings of a skill or agent body, outside code fences, as written (number dropped)."""
+    """The anchors of a skill or agent body, outside code fences, as written (number dropped): `##`/`###` headings
+    and numbered steps that open with a bold label (`3. **Dispatch.**` → `Dispatch`)."""
     out, fenced = [], False
     for line in text.split("\n"):
         if FENCE.match(line):
             fenced = not fenced
             continue
-        m = None if fenced else HEADING.match(line)
+        if fenced:
+            continue
+        m = HEADING.match(line)
         if m:
             out.append(NUMBER.sub("", m.group(2)).strip())
+            continue
+        s = STEP_LABEL.match(line)
+        if s:
+            out.append(s.group(1).strip().rstrip(".:").strip())
     return out
 
 

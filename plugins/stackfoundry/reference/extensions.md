@@ -53,8 +53,10 @@ Applies only when the run's target is `api`.
 
 ## Anchors
 
-An anchor names a `##` or `###` heading of the plugin skill or agent, without its number: `## 3. Ask` is anchored as
-`Ask`. Matching ignores case and surrounding spaces. A plugin update that renames a heading leaves the anchor
+An anchor names a step of the plugin skill or agent, without its number: a `##` or `###` heading (`## 3. Ask` is
+anchored as `Ask`), or a numbered step that opens with a bold label (`5. **Verify every finding.** …` is anchored as
+`Verify every finding`). Matching ignores case, emphasis, a trailing period and surrounding spaces;
+`stackfoundry extensions new` lists a skill's anchors. A plugin update that renames a heading leaves the anchor
 orphaned: `stackfoundry extensions check` reports it with the nearest current heading, and `upgrade` asks where it
 goes now. The plugin announces renamed headings in its changelog under "Changed (extension anchors)".
 

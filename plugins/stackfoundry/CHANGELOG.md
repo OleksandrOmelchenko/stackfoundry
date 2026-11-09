@@ -24,6 +24,12 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 - Eval cases on three fixture repos with planted defects.
 - `walkthrough`: a guided tour by questions that finds the right skill for what the user wants, teaches the plain
   request that starts it, and runs it with their yes. `verify-plumbing` checks its group table names every skill.
+- Repo extensions (`reference/extensions.md`): a team changes a plugin skill or agent in
+  `.stackfoundry/extensions/`, which every skill and agent reads before it starts and which plugin updates never
+  overwrite. `extend` files add anchored sections; `replace` files and materialized agents keep a base copy so
+  `upgrade` three-way merges the plugin's changes into them. New `customize` skill, `stackfoundry extensions
+  list|check|new|base|merge|forget`, and an extensions step in `upgrade` and `stackfoundry-radar`. `walkthrough`
+  tells users every skill can be customized and marks the ones this repo changed.
 
 ### Changed
 

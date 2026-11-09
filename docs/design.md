@@ -164,7 +164,28 @@ repo-enabled plugins.
 Every file `init` generates records, in `.stackfoundry/manifest.lock.json`, the template it came from, the
 template version and the hash it had when written. `upgrade` regenerates from the new template and sorts each file
 into: untouched since generation (replace), edited by the team (three-way proposal, never applied silently),
-materialized (skip), or deleted by the team (leave deleted).
+materialized (a real three-way merge, below), or deleted by the team (leave deleted).
+
+## Extending without forking
+
+Teams change the plugin's skills and agents; editing the installed plugin is lost on the next marketplace update,
+and a same-named skill in the repo does not replace a namespaced plugin skill (and precedence differs between
+assistants). So the change lives in a file the repo owns, `.stackfoundry/extensions/skills/<skill>.md` or
+`agents/<role>.md`, and the plugin reads it: the shared preamble tells every skill and agent to Read its extension
+before step 1. That is only a file read, so it works in every assistant.
+
+- **`extend`** files add anchored sections (`## Rules`, `## Before:`/`After:`/`Replace:` a step, `## Target:`); the
+  plugin's own text keeps arriving with every update.
+- **`replace`** files and materialized agents are whole copies. Each is stored with the plugin text it came from
+  (`.stackfoundry/extensions/.base/`), so `upgrade` runs a real three-way merge (`git merge-file`) and asks only
+  about a conflict, instead of freezing the copy.
+- **Anchors are step headings and numbered bold step labels.** Renaming one is a changelog item ("Changed
+  (extension anchors)"); `extensions check`, `upgrade` and `stackfoundry-radar` find orphaned anchors.
+- **A fixed contract** (confirmations, guards, git policy, brief fields, report and tracker shape, severity and
+  verdict words) holds over every extension, because other skills parse those outputs.
+
+`customize` writes extensions; `walkthrough` mentions it for every skill it explains. The format is
+`plugins/stackfoundry/reference/extensions.md`.
 
 ## Testing the plugin
 

@@ -53,6 +53,16 @@ Walk me through stackfoundry
 
 It asks what you want to do, explains the matching skill in two lines, and runs it with your yes.
 
+### Make a skill your own
+
+```text
+Customize review-changes: also run our contract tests
+```
+
+The change is written to `.stackfoundry/extensions/` in your repo, which every run of the skill reads, in every
+assistant. Plugin updates never overwrite it: `upgrade` re-checks it, and merges a full replacement with the
+plugin's changes. Format: `plugins/stackfoundry/reference/extensions.md`.
+
 ### Everyday requests
 
 Every skill starts from a plain request. A few to begin with:

@@ -37,13 +37,15 @@ Each assistant installs from this repository: `.claude-plugin/marketplace.json` 
 (Cursor), and the release asset (Gemini CLI). In each one: add the marketplace from a local clone, install
 `stackfoundry`, check that its skills and agents are listed, and in a scratch repo whose `.stackfoundry/guards.json`
 marks a folder generated, ask it to edit a file there: the guard must refuse, naming how to regenerate. Then say
-"walk me through stackfoundry" with no slash command: the `walkthrough` skill must start. The table in
+"walk me through stackfoundry" with no slash command: the `walkthrough` skill must start. Last, give `backlog` an
+extension (`.stackfoundry/extensions/skills/backlog.md`, a `## Rules` section asking for a marker line at the end)
+and ask what's left in the backlog: the marker must appear. The table in
 `plugins/stackfoundry/reference/clients.md` lists what is still to *confirm* per assistant.
 
-| Assistant | Install | Lists skills and agents | Guard refuses a generated-file edit | Plain request starts a skill |
-|---|---|---|---|---|
-| Claude Code | proven | proven | proven: in the fourth self-run the installed guard refused a release tag and asked before a commit | proven: headless "walk me through stackfoundry" and "set up stackfoundry in this repo" started `walkthrough` and `init` |
-| Copilot CLI | proven: marketplace add and install from a local path; the skills install | skills proven; agents not checked | not run yet | partly: "Use the walkthrough skill: …" loads it through Copilot's `skill` tool; on the bare "walk me through stackfoundry" the default model (gpt-4.1) answered from Copilot's own docs instead |
-| Codex | not run yet | not run yet | not run yet | not run yet |
-| Cursor | not run yet | not run yet | not run yet | not run yet |
-| Gemini CLI | not run yet | not run yet | not run yet | not run yet |
+| Assistant | Install | Lists skills and agents | Guard refuses a generated-file edit | Plain request starts a skill | Repo extension applied |
+|---|---|---|---|---|---|
+| Claude Code | proven | proven | proven: in the fourth self-run the installed guard refused a release tag and asked before a commit | proven: headless "walk me through stackfoundry" and "set up stackfoundry in this repo" started `walkthrough` and `init` | proven: an `extend` marker on `backlog`, a `replace` copy of `ask-me`, and `walkthrough` naming the extension file |
+| Copilot CLI | proven: marketplace add and install from a local path; the skills install | skills proven; agents not checked | not run yet | partly: "Use the walkthrough skill: …" loads it through Copilot's `skill` tool; on the bare "walk me through stackfoundry" the default model (gpt-4.1) answered from Copilot's own docs instead | not run yet |
+| Codex | not run yet | not run yet | not run yet | not run yet | not run yet |
+| Cursor | not run yet | not run yet | not run yet | not run yet | not run yet |
+| Gemini CLI | not run yet | not run yet | not run yet | not run yet | not run yet |

@@ -47,6 +47,11 @@ def extension(body: str, name: str = "demo", mode: str = "extend") -> str:
 class FormatTests(unittest.TestCase):
     def test_headings_drop_numbers_and_ignore_fences(self):
         self.assertEqual(ext.headings(SKILL), ["Survey", "Ask", "Report"])
+
+    def test_bold_step_labels_are_anchors(self):
+        body = "## Procedure\n\n1. **Load.** Read it.\n2. **Verify every finding.** Check.\n   3. **nested** no\n"
+        self.assertEqual(ext.headings(body), ["Procedure", "Load", "Verify every finding"])
+        self.assertEqual(ext.norm("Verify every finding."), ext.norm("verify every finding"))
         self.assertEqual(ext.norm("3. **Ask**"), ext.norm("ask"))
         self.assertEqual(ext.norm("Step 2: Verify"), "verify")
 
