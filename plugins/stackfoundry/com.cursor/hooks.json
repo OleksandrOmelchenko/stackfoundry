@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "command": "sh ./scripts/stackfoundry.sh guard --client cursor",
+        "matcher": "Write|Edit|MultiEdit|Delete",
+        "timeout": 10
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "sh ./scripts/stackfoundry.sh guard --client cursor",
+        "timeout": 10
+      }
+    ]
+  }
+}

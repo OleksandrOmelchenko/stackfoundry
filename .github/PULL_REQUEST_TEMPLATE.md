@@ -6,6 +6,7 @@
 
 - [ ] `python -m unittest discover -s tests -t .` passes
 - [ ] `sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry` is clean
+- [ ] `python scripts/build_clients.py --check` passes (the other assistants' files are regenerated, not hand-edited)
 - [ ] `claude plugin validate --strict .` and `claude plugin validate --strict plugins/stackfoundry` are clean
 - [ ] Skill descriptions stay ≤ 250 characters, agent descriptions ≤ 300 (`.claude/rules/authoring.md`)
 - [ ] No technology content shipped in the plugin: facts come from the repo profile or from web research at run time

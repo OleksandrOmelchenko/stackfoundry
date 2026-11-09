@@ -49,6 +49,11 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   Cursor or Gemini CLI event (or takes `--client`), reads the files an edit or an `apply_patch` touches, and answers
   in that assistant's format. Where an assistant cannot ask, an ask becomes a deny that says to get the user's
   go-ahead; Cursor, which blocks on empty output, gets an explicit allow when the guard has no opinion.
+- Packaging for the other assistants, generated from the Claude Code source by `scripts/build_clients.py` and kept
+  current by its `--check` in CI and the pre-commit hook: an Agent Plugins 1.0 `plugin.json` (Codex, Copilot,
+  Cursor) with the Codex overlay; Copilot agents with mapped tool grants and its hook; Cursor's manifest and hooks;
+  the Codex, Copilot and Cursor marketplaces; and, built on each published release, a Gemini CLI extension.
+  `reference/clients.md` maps each assistant's tools, folders, hooks and install commands.
 - The guard reads the nearest `guards.json` above the edited file (worktrees and nested repos), normalizes paths,
   and sees git commands inside quotes (`sh -c 'git push'`).
 - The CLI runs git by its absolute path from `PATH`, never a `git` in the repo; `pack render --out` writes atomically;

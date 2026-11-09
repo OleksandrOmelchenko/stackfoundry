@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"$PLUGIN_ROOT/scripts/stackfoundry.sh\" guard --client codex",
+            "commandWindows": "pwsh -NoProfile -File \"$env:PLUGIN_ROOT/scripts/stackfoundry.ps1\" guard --client codex",
+            "timeout": 10,
+            "statusMessage": "stackfoundry guard"
+          }
+        ]
+      }
+    ]
+  }
+}

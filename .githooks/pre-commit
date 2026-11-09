@@ -28,6 +28,10 @@ if py=$(pick_python); then
     echo "pre-commit: plugin plumbing"
     sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry || fail=1
   fi
+  if [ -f scripts/build_clients.py ]; then
+    echo "pre-commit: other assistants' plugin files"
+    $py scripts/build_clients.py --check || fail=1
+  fi
 else
   echo "pre-commit: no Python >= 3.11 found; skipping unit tests and plumbing checks" >&2
 fi

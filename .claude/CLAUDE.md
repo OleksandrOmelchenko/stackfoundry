@@ -1,7 +1,7 @@
 # stackfoundry repository
 
-This repo is a Claude Code **marketplace** (`.claude-plugin/marketplace.json`) with one plugin,
-`plugins/stackfoundry/`. The plugin generates, for any repository, a grounded set of rulebooks and target profiles
+This repo is a plugin **marketplace** with one plugin, `plugins/stackfoundry/`, for Claude Code (its source
+layout) and, through generated files, Codex, GitHub Copilot, Cursor and Gemini CLI. The plugin generates, for any repository, a grounded set of rulebooks and target profiles
 that drive generic role agents and orchestrator skills. Read [`docs/design.md`](../docs/design.md) before changing
 the architecture.
 
@@ -12,6 +12,10 @@ the architecture.
   tracker templates). Skills read it through `${CLAUDE_PLUGIN_ROOT}/reference/…`.
 - `plugins/stackfoundry/scripts/stackfoundry.sh` + `scripts/stackfoundry/`: the helper CLI (Python 3.11+, standard library
   only, no network). `hooks/hooks.json`: the guard hooks.
+- **Generated, never hand-edited:** the other assistants' plugin files (`plugins/stackfoundry/plugin.json`,
+  `com.*/`, `.cursor-plugin/`) and marketplaces (`.agents/plugins/`, `.github/plugin/`, `.cursor-plugin/`). Change
+  the Claude source or `scripts/build_clients.py`, then run `python scripts/build_clients.py`. The mapping per
+  assistant is `plugins/stackfoundry/reference/clients.md`.
 - `plugins/stackfoundry/evals/`: `claude plugin eval` cases. `fixtures/`: scaffold scripts for eval repos.
 - `tests/`: unittest suite. `docs/`: design and release notes.
 
@@ -34,6 +38,7 @@ the architecture.
 ```sh
 python -m unittest discover -s tests -t .
 sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry
+python scripts/build_clients.py --check
 claude plugin validate --strict .
 claude plugin validate --strict plugins/stackfoundry
 ```

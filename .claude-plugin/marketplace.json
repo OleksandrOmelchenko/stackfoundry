@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "stackfoundry",
-  "description": "Casts a repo-grounded swarm of Claude Code specialists for each stack in your repo: code writers, verifiers, test designers and writers, bug hunters, fix verifiers, security and performance reviewers, dependency bumpers and a scheduled tech radar.",
+  "description": "Casts a repo-grounded swarm of specialists for each stack in your repo, for Claude Code, Codex, GitHub Copilot, Cursor and Gemini CLI: code writers, verifiers, test designers and writers, bug hunters, fix verifiers, security and performance reviewers, dependency bumpers and a scheduled tech radar.",
   "owner": {
     "name": "Oleksandr Omelchenko",
     "url": "https://github.com/OleksandrOmelchenko"

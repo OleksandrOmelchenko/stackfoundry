@@ -1,6 +1,15 @@
 {
   "schemaVersion": 1,
-  "generated": [],
+  "generated": [
+    {"glob": "plugins/stackfoundry/plugin.json", "regenerate": "regenerate with `python scripts/build_clients.py` after changing the source (.claude-plugin/, agents/, hooks/) or scripts/build_clients.py"},
+    {"glob": "plugins/stackfoundry/com.openai/**", "regenerate": "regenerate with `python scripts/build_clients.py` after changing the source (.claude-plugin/, agents/, hooks/) or scripts/build_clients.py"},
+    {"glob": "plugins/stackfoundry/com.github.copilot/**", "regenerate": "regenerate with `python scripts/build_clients.py` after changing the source (.claude-plugin/, agents/, hooks/) or scripts/build_clients.py"},
+    {"glob": "plugins/stackfoundry/com.cursor/**", "regenerate": "regenerate with `python scripts/build_clients.py` after changing the source (.claude-plugin/, agents/, hooks/) or scripts/build_clients.py"},
+    {"glob": "plugins/stackfoundry/.cursor-plugin/**", "regenerate": "regenerate with `python scripts/build_clients.py` after changing the source (.claude-plugin/, agents/, hooks/) or scripts/build_clients.py"},
+    {"glob": ".agents/plugins/**", "regenerate": "regenerate with `python scripts/build_clients.py` after changing the source (.claude-plugin/, agents/, hooks/) or scripts/build_clients.py"},
+    {"glob": ".github/plugin/**", "regenerate": "regenerate with `python scripts/build_clients.py` after changing the source (.claude-plugin/, agents/, hooks/) or scripts/build_clients.py"},
+    {"glob": ".cursor-plugin/**", "regenerate": "regenerate with `python scripts/build_clients.py` after changing the source (.claude-plugin/, agents/, hooks/) or scripts/build_clients.py"}
+  ],
   "commands": [
     {
       "pattern": "\\bclaude\\s+plugin\\s+tag\\b(?!.*--dry-run)",

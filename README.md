@@ -1,6 +1,6 @@
 # stackfoundry
 
-A Claude Code marketplace whose plugin casts a **repo-grounded swarm of specialists** for every stack in your
+A plugin marketplace for Claude Code, Codex, GitHub Copilot, Cursor and Gemini CLI whose plugin casts a **repo-grounded swarm of specialists** for every stack in your
 repository: code writers, plumbing verifiers, test designers, writers, reviewers and fixers, bug hunters, fix
 verifiers, security and performance reviewers, dependency bumpers, and a scheduled tech radar that keeps all of it
 current.
@@ -12,6 +12,8 @@ citing its source.
 
 ## Install
 
+**Claude Code**
+
 ```text
 /plugin marketplace add OleksandrOmelchenko/stackfoundry
 /plugin install stackfoundry@stackfoundry
@@ -21,11 +23,23 @@ citing its source.
 To pin it for everyone who clones your repo, `init` adds `extraKnownMarketplaces` and `enabledPlugins` to the
 committed `.claude/settings.json`. Each collaborator still runs the install command once.
 
-Requirements: Claude Code, git, Python 3.11+ (the helper CLI and hooks use only the standard library).
+**Other assistants.** The same plugin ships the manifests and hooks each one reads, generated from the Claude Code
+source, so the skills, agents and guard behave alike. Then ask the assistant to run the `init` skill.
 
-stackfoundry is written as a Claude Code plugin and is being made portable to Codex, GitHub Copilot, Cursor and
-Gemini CLI (`plugins/stackfoundry/reference/clients.md` maps each one). Its work (git, builds, test suites) needs a
-development environment.
+| Assistant | Install |
+|---|---|
+| GitHub Copilot CLI | `copilot plugin marketplace add OleksandrOmelchenko/stackfoundry`, then `copilot plugin install stackfoundry@stackfoundry` |
+| Codex | `codex plugin marketplace add OleksandrOmelchenko/stackfoundry`, then install `stackfoundry` from its plugin list |
+| Cursor | add `OleksandrOmelchenko/stackfoundry` as a team marketplace, or clone it and link `plugins/stackfoundry` into `~/.cursor/plugins/local/` |
+| Gemini CLI | `gemini extensions install` with the `stackfoundry-gemini.tar.gz` of a release, or with a folder built by `python scripts/build_clients.py --gemini-out <dir>` from a clone |
+| Any other Agent Skills client | copy `plugins/stackfoundry/skills/` into the folder it reads (often `.agents/skills/`): skills only, no agents or guard |
+
+How far each one has been tested is in `docs/release.md`; what each one reads, and the open points, in
+`plugins/stackfoundry/reference/clients.md`. The settings shared by every assistant are in the repo's
+`.stackfoundry/config.json`.
+
+Requirements: git, Python 3.11+ (the helper CLI and hooks use only the standard library), and `sh` (Git Bash on
+Windows) or PowerShell 7. Its work (git, builds, test suites) needs a development environment.
 
 ## How it works
 

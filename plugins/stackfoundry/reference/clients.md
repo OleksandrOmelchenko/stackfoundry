@@ -36,6 +36,28 @@ Claude Code names and places to the others'. Client ids are the ones `.stackfoun
 | Instruction file | `CLAUDE.md` (root or `.claude/`) | `AGENTS.md` (nested files apply below them) | `AGENTS.md`, `.github/copilot-instructions.md` | `AGENTS.md` | `GEMINI.md` (setting `context.fileName` can add `AGENTS.md`) |
 | Headless run | `claude -p "<prompt>"` | `codex exec "<prompt>"` | `copilot -p "<prompt>"` | `cursor-agent -p "<prompt>"` | `gemini -p "<prompt>"` |
 
+## The guard in each assistant
+
+One command, `stackfoundry guard`, serves every assistant's pre-tool hook. It recognizes the event (or takes
+`--client`), applies `.stackfoundry/guards.json`, and answers in that assistant's format:
+
+| Assistant | Hook event | Edits it sees | It cannot ask, so an ask becomes | No opinion is |
+|---|---|---|---|---|
+| Claude Code | `PreToolUse` | `Edit`, `Write`, `MultiEdit`, `NotebookEdit` | (asks) | no output |
+| Codex | `PreToolUse` | `apply_patch` (every file the patch names) | a deny saying to get the user's go-ahead | no output |
+| Copilot | `preToolUse` | `create`, `edit`, `str_replace_editor`, `apply_patch` | (asks; its autopilot and cloud agent deny) | no output |
+| Cursor | `preToolUse` for edits, `beforeShellExecution` for commands | `Write`, `Edit`, `Delete` | a deny for edits (commands can ask) | `{"permission": "allow"}`: Cursor blocks on empty output |
+| Gemini CLI | `BeforeTool` | `write_file`, `replace` | a deny saying to get the user's go-ahead | no output |
+
+Each assistant's hook file is generated (`plugin.json` → `com.openai/hooks.json`, `com.github.copilot/hooks/`,
+`com.cursor/hooks.json`, the Gemini extension's `hooks/hooks.json`). Copilot denies a tool call when a hook errors,
+so its hook command exits 0 with no opinion when it cannot find the launcher. *Confirm* in each assistant before
+relying on it: which variable carries the plugin root in Copilot's plugin hooks, whether Cursor's `allow` leaves its
+own approval prompts in place, and that Codex runs hooks from a marketplace install (its docs limit plugin hooks to
+manual installs, after `/hooks` trust).
+
+## Rules where there is no path scoping
+
 Where an assistant has no path-scoped rules (Codex, Gemini), stackfoundry writes each rulebook to
 `.stackfoundry/rules/<id>.md` and lists it in the instruction-file block with the globs it covers: read it before
 editing a matching file.

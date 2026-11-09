@@ -34,6 +34,8 @@ jobs:
       - name: Plugin plumbing
         shell: bash
         run: sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry
+      - name: Other assistants' plugin files are current
+        run: python scripts/build_clients.py --check
 
   validate:
     name: Validate manifests
