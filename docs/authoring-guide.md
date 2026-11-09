@@ -110,7 +110,7 @@ reason the code does not show · 🔵 suggestion · 🟢 done well.
 
 | Family | Skills |
 |---|---|
-| Core | `init`, `research-stack`, `sync`, `upgrade`, `materialize`, `configure-guards`, `write-code`, `skill-agent-author`, `skill-agent-verifier` |
+| Core | `init`, `walkthrough`, `research-stack`, `sync`, `upgrade`, `materialize`, `configure-guards`, `write-code`, `skill-agent-author`, `skill-agent-verifier` |
 | Tests | `design-tests`, `write-tests`, `review-tests`, `fix-tests`, `run-tests`, `scaffold-test-harness`, `setup-mutation` |
 | Bugs and review | `bug-hunt`, `fix-verify`, `review-changes`, `quality-review`, `change-targets`, `quality-sweep`, `performance-review`, `security-review-target`, `threat-model` |
 | Reactive | `debug`, `fix-ci` |
@@ -122,8 +122,9 @@ reason the code does not show · 🔵 suggestion · 🟢 done well.
 
 **Every skill starts from plain language** (`docs/design.md`, "Every skill starts from plain language"). Never set
 `disable-model-invocation: true`; end the description with a `Use for "…"` clause, and add "Only when asked." for
-an entry point a person starts on purpose. `verify-plumbing` rejects a plugin skill that breaks either rule. When
-naming a skill to the user, give the plain request first and the slash form second ("say *set up stackfoundry*, or
+an entry point a person starts on purpose. `verify-plumbing` rejects a plugin skill that breaks either rule. A new
+skill also gets a row in `walkthrough`'s group table, which `verify-plumbing` checks. When naming a skill to the
+user, give the plain request first and the slash form second ("say *set up stackfoundry*, or
 `/stackfoundry:init`").
 
 ## Skill body shape

@@ -15,8 +15,8 @@ paths:
   enforces the caps.
 - Every skill starts from plain language (`docs/design.md`, "Every skill starts from plain language"): the
   description ends in a `Use for "…"` clause, and no skill sets `disable-model-invocation: true`. An entry point a
-  person starts on purpose says "Only when asked." and confirms before it writes. `verify-plumbing` enforces
-  both.
+  person starts on purpose says "Only when asked." and confirms before it writes. A new skill gets a row in
+  `walkthrough`'s group table. `verify-plumbing` enforces all three.
 - Agents carry `tools:`, which must cover every tool the body tells it to call (`Agent` to dispatch, `WebSearch` /
   `WebFetch` to research, `Edit`/`Write` only for writers and fixers). Read-only roles never get `Edit`/`Write`.
   `model: haiku` only for leaf runners that run a command and summarize.

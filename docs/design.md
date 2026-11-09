@@ -67,6 +67,24 @@ authoritative. A researched rule carries its source and date, so its age is visi
 Two reasons. Plugins cannot ship path-scoped rules or CLAUDE.md content, so the rules have to be in the repo anyway.
 And procedure has to be upgradable: a skill copied into every repo at install time freezes there.
 
+## The loops
+
+The skills form loops, each a generator with its checker or a discover step with its apply step:
+
+- **Tests**: `design-tests` → `write-tests` → `review-tests` → `fix-tests`. Expected values cite a source, never the
+  code's output; a new test passes three shuffled runs and adds coverage or kills a mutant.
+- **Bugs**: `bug-hunt` (read-only, per-category fan-out, adversarial verification) ↔ `fix-verify` (one verdict per
+  landed fix). Findings live in trackers with stable ids.
+- **Reactive**: `debug` (reproduce → bisect → fix → regression test) and `fix-ci`.
+- **Security**: `threat-model` per target from its exposure, then `security-review-target`.
+- **Review**: `review-changes` dispatches independent reviewers that are never told the author's intent.
+- **Dependencies**: `check-updates` (unattended, report-only) → `act-on-updates` (asks once, routes) → `bump-all`.
+- **Radar**: `tech-radar` (unattended) researches new versions, tools, practices and advisories per technology →
+  `act-on-radar` routes each item (adopt, bump, migrate, trial, watch, reject).
+- **Docs and backlog**: `plan-feature`, `implement-plan`, `retire-plan`, `backlog`, `docs-reconciler`.
+
+`schedule` registers the unattended ones as scheduled tasks.
+
 ## One source, every assistant
 
 The plugin is written once, in Claude Code's terms, and runs in Codex, GitHub Copilot, Cursor and Gemini CLI too
@@ -108,7 +126,8 @@ in a `Use for "…"` (or `Use when`/`to`/`after`/`before`) clause in the words a
 enforces both. Entry points a person starts on purpose (`init`, `upgrade`, `materialize`, `elaborate-plan`, the
 `act-on-*` skills, `github-prs`, `schedule`) say "Only when asked." so they are not picked mid-task, and each
 confirms before it writes. The cost is that their descriptions now count against the skill listing's share of the
-context window.
+context window. `walkthrough` is the entry for a user who doesn't know what to ask; its group table names
+every skill, and `verify-plumbing` checks that none is left out.
 
 ## The helper CLI
 

@@ -50,6 +50,19 @@ class PlumbingTests(unittest.TestCase):
         self.assertIn("plain-language trigger", errors_for("silent"))
         self.assertNotIn("plain-language trigger", errors_for("good"))
 
+    def test_the_walkthrough_names_every_skill(self):
+        walkthrough = GOOD_SKILL.replace("name: good", "name: walkthrough") + \
+            "\n## The groups\n\n| Group | Skills |\n|---|---|\n| One | `good`, `ghost` |\n\n## 1. State\n\n`other`\n"
+        files = {".claude-plugin/plugin.json": "{}", "skills/good/SKILL.md": GOOD_SKILL,
+                 "skills/extra/SKILL.md": GOOD_SKILL.replace("name: good", "name: extra"),
+                 "skills/walkthrough/SKILL.md": walkthrough, "reference/x.md": "x", "reference/clients.md": "x",
+                 "scripts/stackfoundry.sh": "", "scripts/stackfoundry.ps1": ""}
+        with TempRepo(files) as root:
+            errors = " | ".join(check(root).errors)
+        self.assertIn("leaves out extra", errors)  # `other` below the table does not count
+        self.assertIn("'ghost', which is not a skill", errors)
+        self.assertNotIn("leaves out good", errors)
+
     def test_plain_language_rules_apply_only_to_the_plugin(self):
         """A repo's own .claude/skills may stay slash-only; the trigger rule is the plugin's."""
         files = {".claude/skills/own/SKILL.md": "---\nname: own\ndescription: Release it.\n"

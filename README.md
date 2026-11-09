@@ -1,99 +1,96 @@
 # stackfoundry
 
-A plugin marketplace for Claude Code, Codex, GitHub Copilot, Cursor and Gemini CLI whose plugin casts a **repo-grounded swarm of specialists** for every stack in your
-repository: code writers, plumbing verifiers, test designers, writers, reviewers and fixers, bug hunters, fix
-verifiers, security and performance reviewers, dependency bumpers, and a scheduled tech radar that keeps all of it
-current.
+A plugin for Claude Code, Codex, GitHub Copilot, Cursor and Gemini CLI. It reads your repository, researches each
+technology it finds from current official sources, and sets up specialists grounded in your real paths, harnesses and
+gates: code writers, test writers and reviewers, bug hunters, fix verifiers, security and performance reviewers,
+dependency bumpers and a tech radar.
 
-Generic advice reads as authoritative and is usually wrong for your codebase. stackfoundry generates nothing from
-memory. It reads your repo, researches each technology it finds from **current official sources** (release notes,
-migration guides, advisories), and writes rulebooks that name your real paths, harnesses and gate commands, each claim
-citing its source.
+## Quick Start
 
-## Install
+### Installation
 
 **Claude Code**
 
 ```text
 /plugin marketplace add OleksandrOmelchenko/stackfoundry
 /plugin install stackfoundry@stackfoundry
-/stackfoundry:init
 ```
 
-To pin it for everyone who clones your repo, `init` adds `extraKnownMarketplaces` and `enabledPlugins` to the
-committed `.claude/settings.json`. Each collaborator still runs the install command once.
-
-**Other assistants.** The same plugin ships the manifests and hooks each one reads, generated from the Claude Code
-source, so the skills, agents and guard behave alike. Then ask the assistant to run the `init` skill.
+**Other assistants**
 
 | Assistant | Install |
 |---|---|
 | GitHub Copilot CLI | `copilot plugin marketplace add OleksandrOmelchenko/stackfoundry`, then `copilot plugin install stackfoundry@stackfoundry` |
 | Codex | `codex plugin marketplace add OleksandrOmelchenko/stackfoundry`, then install `stackfoundry` from its plugin list |
 | Cursor | add `OleksandrOmelchenko/stackfoundry` as a team marketplace, or clone it and link `plugins/stackfoundry` into `~/.cursor/plugins/local/` |
-| Gemini CLI | `gemini extensions install` with the `stackfoundry-gemini.tar.gz` of a release, or with a folder built by `python scripts/build_clients.py --gemini-out <dir>` from a clone |
-| Any other Agent Skills client | copy `plugins/stackfoundry/skills/` into the folder it reads (often `.agents/skills/`): skills only, no agents or guard |
+| Gemini CLI | `gemini extensions install` with the `stackfoundry-gemini.tar.gz` of a release |
+| Any Agent Skills client | copy `plugins/stackfoundry/skills/` into the folder it reads (often `.agents/skills/`); skills only |
 
-How far each one has been tested is in `docs/release.md`; what each one reads, and the open points, in
-`plugins/stackfoundry/reference/clients.md`. The settings shared by every assistant are in the repo's
-`.stackfoundry/config.json`.
+Requirements: git, Python 3.11+, and `sh` (Git Bash on Windows) or PowerShell 7.
 
-Requirements: git, Python 3.11+ (the helper CLI and hooks use only the standard library), and `sh` (Git Bash on
-Windows) or PowerShell 7. Its work (git, builds, test suites) needs a development environment.
+### Set up your repository
+
+Ask your assistant:
+
+```text
+Set up stackfoundry in this repo
+```
+
+(In Claude Code, `/stackfoundry:init` does the same.) It surveys the repo, agrees the targets with you, researches
+each technology, and writes:
+
+- `.stackfoundry/`: the profile, targets, guards and researched packs;
+- path-scoped rulebooks in each assistant's format (`.claude/rules/`, `.github/instructions/`, `.cursor/rules/`);
+- code-writer skills per app model, and tracker folders for bug reports, test designs and plans.
+
+### Find your way
+
+Not sure what to ask? Say:
+
+```text
+Walk me through stackfoundry
+```
+
+It asks what you want to do, explains the matching skill in two lines, and runs it with your yes.
+
+### Everyday requests
+
+Every skill starts from a plain request. A few to begin with:
+
+| Say | Runs |
+|---|---|
+| Write the feature the repo's way | `write-code` |
+| Write tests for the API | `write-tests` |
+| Run the tests my change needs | `run-tests` |
+| Find bugs in the desktop app | `bug-hunt` |
+| Did my fix hold? | `fix-verify` |
+| Why is CI failing? | `fix-ci` |
+| Review my changes | `review-changes` |
+| Security review of the API | `security-review-target` |
+| What's outdated? | `check-updates` |
+| What's new in our stack? | `tech-radar` |
+| What's left in the backlog? | `backlog` |
 
 ## How it works
 
-### A stack is a language × an app model
+- **A stack is a language × an app model.** C# in an API and C# in a WPF app get different rulebooks, bug categories
+  and test advice.
+- **Procedure in the plugin, facts in your repo.** The plugin ships generic skills and role agents; `init` writes
+  your repo's facts, and you own them.
+- **Nothing from memory.** Every rule cites the source it was researched from, and the radar flags stale ones.
+- **Guards.** A pre-tool hook blocks edits to generated files and forbidden commands, and asks before git writes.
 
-C# in an ASP.NET API and C# in a WPF desktop app share syntax, analyzers and NuGet, and differ in nearly everything a
-code writer or bug hunter needs to know: lifecycle, threading, hosting, packages, test harness, how it ships. So each
-target's stack is built from layers:
-
-| Layer | Owns | Examples |
-|---|---|---|
-| Language | style, analyzers, typing, package-ecosystem mechanics, the SDK/runtime pin | C#, TypeScript, Python, Go |
-| App model | lifecycle, threading, hosting, request/UI model, bug classes, perf profile, how it ships | ASP.NET Core, WPF, Vue SPA, Nuxt SSR, Django |
-| Capability | a concern that crosses app models | EF Core, OIDC server, OpenAPI client generation, i18n |
-| Tooling | test frameworks, CI, infra | xUnit, Vitest, Playwright, GitHub Actions, Terraform |
-
-Each layer gets its own path-scoped rulebook, so Claude loads the C# rules plus the WPF rules for a desktop file, and
-the C# rules plus the ASP.NET Core rules for an API file.
-
-### Procedure in the plugin, facts in your repo
-
-| The plugin ships (and updates) | `init` writes into your repo (and you own) |
-|---|---|
-| orchestrator skills: `bug-hunt`, `write-tests`, `check-updates`, `tech-radar`… | `.stackfoundry/`: profile, targets, ecosystems, guards, researched packs, manifest |
-| generic role agents: `bug-hunter`, `test-writer`, `fix-verifier`… | `.stackfoundry/rules/<layer>-<tech>.md`: grounded, path-scoped rulebooks, copied into each assistant's format |
-| the method: layer taxonomy, schemas, research procedure, rulebook and tracker templates | `.claude/skills/<app-model>-code-writer/`: the decisions that go wrong most often, per app model |
-| the `stackfoundry` helper CLI and guard hooks | tracker scaffolds: bug reports, test designs, plans, specifications, dependency and radar reports |
-
-A role agent is told its **target** and reads that target's profile and rulebooks, so one `bug-hunter` hunts
-security bugs in your public API and binding leaks in your desktop app, each with that stack's checklist. When a team
-wants a hand-tuned agent for one target, `/stackfoundry:materialize` writes it into the repo.
-
-### The loops
-
-- **Tests**: `design-tests` → `write-tests` → `review-tests` → `fix-tests`. Expected values cite a source, never the code's output; new tests pass three shuffled runs and add coverage or kill a mutant.
-- **Bugs**: `bug-hunt` (read-only, per-category fan-out, adversarial verification) ↔ `fix-verify` (one verdict per landed fix). Findings live in trackers with stable ids.
-- **Reactive**: `debug` (reproduce → bisect → fix → regression test) and `fix-ci`.
-- **Security**: `threat-model` per target from its exposure, `security-review-target`.
-- **Review**: `review-changes` dispatches independent reviewers that are never told the author's intent.
-- **Dependencies**: `check-updates` (unattended, report-only) → `act-on-updates` (asks once, routes) → `bump-all`.
-- **Radar**: `tech-radar` (unattended) researches new versions, tools, practices and advisories per technology → `act-on-radar` routes each item (adopt, bump, migrate, trial, watch, reject).
-- **Docs and backlog**: `plan-feature`, `implement-plan`, `retire-plan`, `backlog`, `docs-reconciler`.
-
-Run `/stackfoundry:schedule` to register the unattended ones as Claude desktop scheduled tasks.
+Details: [docs/design.md](docs/design.md). What each assistant reads: `plugins/stackfoundry/reference/clients.md`;
+how far each one is tested: [docs/release.md](docs/release.md).
 
 ## Privacy
 
-Research sends technology names and versions to web search. Your code, file contents and profile never leave your
-machine through stackfoundry's own scripts, which make no network calls. Agents run in your Claude Code session under
-your permission settings.
+Research sends technology names and versions to web search. Your code and profile never leave your machine through
+stackfoundry's own scripts, which make no network calls.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). The design rationale is in [docs/design.md](docs/design.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

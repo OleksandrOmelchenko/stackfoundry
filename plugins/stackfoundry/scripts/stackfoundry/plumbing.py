@@ -187,9 +187,28 @@ def check(base: Path) -> Report:
         for m in AGENT_REF.finditer(body):
             if m.group(1) not in agent_names and m.group(1) not in ("Explore", "Plan", "general-purpose"):
                 rep.error(path, f"subagent_type {m.group(1)!r} names an agent that does not exist")
+    _check_walkthrough(skills_dir, skill_names, plugin_mode, rep)
     rep.skills = sorted(skill_names)  # type: ignore[attr-defined]
     rep.agents = sorted(agent_names)  # type: ignore[attr-defined]
     return rep
+
+
+def _check_walkthrough(skills_dir: Path, skill_names: set[str], plugin_mode: bool, rep: Report) -> None:
+    """The walkthrough's group table must name every other plugin skill, or a new skill is unreachable from it."""
+    f = skills_dir / "walkthrough" / "SKILL.md"
+    if not plugin_mode or not f.is_file():
+        return
+    _, body, _ = split(f.read_text(encoding="utf-8"))
+    section = body.split("## The groups", 1)[-1].split("\n## ", 1)[0] if "## The groups" in body else ""
+    table = "\n".join(line for line in section.splitlines() if line.startswith("|"))
+    named = set(re.findall(r"`([a-z0-9-]+)`", table))
+    missing = sorted(skill_names - named - {"walkthrough"})
+    if not table:
+        rep.error(f, "no '## The groups' table")
+    elif missing:
+        rep.error(f, "the groups table leaves out " + ", ".join(missing) + " (add each to one group)")
+    for name in sorted(named - skill_names):
+        rep.error(f, f"the groups table names {name!r}, which is not a skill")
 
 
 def main(args) -> int:

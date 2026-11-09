@@ -22,6 +22,8 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 - The `stackfoundry` helper CLI (Python standard library only, no network) and the guard hook (generated files,
   forbidden commands, git-write policy).
 - Eval cases on three fixture repos with planted defects.
+- `walkthrough`: a guided tour by questions that finds the right skill for what the user wants, teaches the plain
+  request that starts it, and runs it with their yes. `verify-plumbing` checks its group table names every skill.
 
 ### Changed
 
