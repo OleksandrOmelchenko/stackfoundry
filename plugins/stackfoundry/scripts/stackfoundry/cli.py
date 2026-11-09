@@ -1,7 +1,8 @@
 """stackfoundry helper CLI. Run through scripts/stackfoundry.sh, which picks Python >= 3.11 and isolates it (-I).
 
 Every subcommand is read-only except `manifest record|forget` (they write .stackfoundry/manifest.lock.json),
-`pack render --out` and `render-rule|render-agent --out|--write` (each writes the one file it names).
+`pack render --out` and `render-rule|render-agent --out|--write` (each writes the one file it names), and
+`extensions new|base|merge|forget` (the extension file named, its base copy and .stackfoundry/extensions/.base/).
 None makes a network call.
 """
 from __future__ import annotations
@@ -13,8 +14,8 @@ from pathlib import Path
 # -I leaves the script directory off sys.path; add this package's parent explicitly (our own code only).
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from stackfoundry import (backlog, change_targets, checks, clients, config, guard, manifest,  # noqa: E402
-                          pack, plumbing, select_tests, survey, tracker, volatile)
+from stackfoundry import (backlog, change_targets, checks, clients, config, extensions, guard,  # noqa: E402
+                          manifest, pack, plumbing, select_tests, survey, tracker, volatile)
 from stackfoundry.gitutil import GitError  # noqa: E402
 from stackfoundry.profile import ProfileError  # noqa: E402
 
@@ -124,6 +125,18 @@ def build() -> argparse.ArgumentParser:
     m.add_argument("--root", default=".")
     m.add_argument("--json", action="store_true")
     m.set_defaults(func=manifest.main)
+
+    ex = sub.add_parser("extensions", help="repo changes to plugin skills and agents: list|check are read-only; "
+                                           "new|base|merge|forget write under .stackfoundry/")
+    ex.add_argument("action", choices=["list", "check", "new", "base", "merge", "forget"])
+    ex.add_argument("names", nargs="*", help="new: skill|agent <name>; base|merge|forget: the file")
+    ex.add_argument("--replace", action="store_true", help="new: a full copy instead of anchored additions")
+    ex.add_argument("--from", dest="source", help="base: the plugin file it was copied from (agents/<role>.md)")
+    ex.add_argument("--resolved", action="store_true", help="merge: take the settled <file>.merge.md")
+    ex.add_argument("--plugin-root", help="the plugin to compare with (default: this one)")
+    ex.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/)")
+    ex.add_argument("--json", action="store_true")
+    ex.set_defaults(func=extensions.main)
 
     g = sub.add_parser("guard", help="(read-only) pre-tool hook entry for every assistant: reads the hook event on stdin")
     g.add_argument("--client", choices=["auto", "claude-code", "codex", "copilot", "cursor", "gemini"], default="auto",

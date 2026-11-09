@@ -91,7 +91,7 @@ class ManifestTests(unittest.TestCase):
             self.assertEqual(rows["a.md"]["state"], "untouched")
             self.assertEqual(rows["b.md"]["state"], "edited")
             self.assertEqual(rows["c.md"]["state"], "deleted")
-            self.assertEqual(rows["d.md"]["action"], "skip (materialized)")
+            self.assertEqual(rows["d.md"]["action"], "merge via extensions merge (materialized)")
 
             # Simulate a newer template version: untouched -> replace, edited -> ask.
             data = json.loads((root / ".stackfoundry/manifest.lock.json").read_text(encoding="utf-8"))

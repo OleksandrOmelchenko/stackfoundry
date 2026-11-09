@@ -40,7 +40,7 @@ template has a newer version, and the action:
 | `replace` | untouched since generation and the template moved: regenerate and write |
 | `three-way merge, ask` | edited by the team and the template moved: show both, the user chooses |
 | `leave deleted` | the team deleted it: never recreate |
-| `skip (materialized)` | the team owns it |
+| `merge via extensions merge (materialized)` | the team owns it; the extensions step merges it with the new generic role |
 | `re-research via research-stack` | a researched file; content moves with research, not templates |
 | `none` | current |
 

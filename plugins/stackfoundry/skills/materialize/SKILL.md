@@ -60,12 +60,16 @@ template, and renders it for each assistant the repo uses. From then on the team
    - In `targets.json`, set the target's `"materialized": {"<role>": "<target>-<role>"}`, keeping other entries.
    - Run `stackfoundry manifest record .stackfoundry/agents/<target>-<role>.md <its copies> --template
      reference/templates/materialized-agent.md --kind materialized`.
+   - Run `stackfoundry extensions base .stackfoundry/agents/<target>-<role>.md --from agents/<role>.md`: it stores
+     the generic role's current text as the base, so a later upgrade can merge the role's improvements in.
 7. **Explain** to the user:
    - Orchestrators now dispatch `<target>-<role>` for this target and role (`subagent_type` is the bare repo agent
      name; in another assistant, its agent of that name). Most assistants pick up a new agent file in a new session.
-   - `/stackfoundry:upgrade` skips it: `stackfoundry manifest diff` lists it as `skip (materialized)`. To take a
-     later improvement of the generic role, diff the file against the plugin's `agents/<role>.md` by hand.
-   - To go back to the generic role: delete the file, its copies and its `materialized` entry.
+   - The team owns the file. `/stackfoundry:upgrade` never overwrites it: it three-way merges later improvements of
+     the generic role into it (`stackfoundry extensions merge`) and asks only about a conflict.
+   - To go back to the generic role: delete the file and its copies, remove its `materialized` entry, then run
+     `stackfoundry manifest forget <the files>` and `stackfoundry extensions forget
+     .stackfoundry/agents/<target>-<role>.md`.
 
 ## Boundaries
 

@@ -112,7 +112,7 @@ def diff(root: Path) -> list[dict]:
         outdated = entry.get("kind") != "materialized" and current not in (*NO_TEMPLATE, "missing") \
             and current != entry.get("templateVersion")
         action = (
-            "skip (materialized)" if entry.get("kind") == "materialized"
+            "merge via extensions merge (materialized)" if entry.get("kind") == "materialized"
             else "leave deleted" if state == "deleted"
             else "re-research via research-stack" if entry.get("template") == "research"
             else "none (profile fact; sync keeps it current)" if entry.get("template") == "profile"
