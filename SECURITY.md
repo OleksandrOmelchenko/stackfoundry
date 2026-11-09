@@ -10,7 +10,8 @@ Please don't open a public issue for a security problem.
 
 In scope:
 
-- the `stackfoundry` helper CLI and the guard hooks (`plugins/stackfoundry/bin`, `scripts`, `hooks`);
+- the `stackfoundry` helper CLI and the guard hooks (`plugins/stackfoundry/scripts`, `plugins/stackfoundry/hooks`,
+  and the generated per-assistant hook files);
 - skill or agent instructions that could make Claude act outside the user's request: writing outside the repo,
   running a destructive command, sending repo content to a third party, or following instructions found in web
   pages or repo files;

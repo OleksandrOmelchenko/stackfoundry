@@ -1,7 +1,7 @@
 """stackfoundry helper CLI. Run through scripts/stackfoundry.sh, which picks Python >= 3.11 and isolates it (-I).
 
 Every subcommand is read-only except `manifest record|forget` (they write .stackfoundry/manifest.lock.json),
-`pack render --out` and `render-rule|render-agent --out|--write` (each writes the one file it names), and
+`pack render --out` and `render-rule|render-agent|render-rulebook --out|--write` (each writes the one file it names), and
 `extensions new|base|merge|forget` (the extension file named, its base copy and .stackfoundry/extensions/.base/).
 None makes a network call.
 """
@@ -15,7 +15,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from stackfoundry import (backlog, change_targets, checks, clients, config, extensions, guard,  # noqa: E402
-                          manifest, pack, plumbing, select_tests, survey, tracker, volatile)
+                          manifest, pack, plumbing, rulebooks, select_tests, survey, tracker, volatile)
 from stackfoundry.gitutil import GitError  # noqa: E402
 from stackfoundry.profile import ProfileError  # noqa: E402
 
@@ -109,6 +109,15 @@ def build() -> argparse.ArgumentParser:
         rr.add_argument("--root", help="repo root for --write (default: the nearest folder with .stackfoundry/)")
         rr.set_defaults(func=lambda a, k=kind: clients.main_render(a, k))
 
+    rb = sub.add_parser("render-rulebook", help="fill a shared rulebook (testing, dependency-bumps, documentation, "
+                                                "benchmarking) from the profile: stdout, or writes --out | --write")
+    rb.add_argument("name", choices=list(rulebooks.NAMES))
+    rbd = rb.add_mutually_exclusive_group()
+    rbd.add_argument("--out", help="write here")
+    rbd.add_argument("--write", action="store_true", help="write the canonical .stackfoundry/rules/<name>.md")
+    rb.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/)")
+    rb.set_defaults(func=rulebooks.main)
+
     pk = sub.add_parser("pack", help="check a researched pack (read-only), or render its rulebook (writes only --out)")
     pk.add_argument("action", choices=["check", "render"])
     pk.add_argument("pack", help="path to .stackfoundry/packs/<id>/pack.json")
@@ -164,9 +173,9 @@ def main(argv: list[str] | None = None) -> int:
         raise
     try:
         return args.func(args)
-    except (ProfileError, GitError, OSError, ValueError) as exc:
+    except (ProfileError, GitError, OSError, ValueError, RecursionError) as exc:
         # 2 = could not run (missing or malformed input). 1 means "ran and found something"; a crash must never
-        # read as a verdict. ValueError covers JSON and Unicode decode errors.
+        # read as a verdict. ValueError covers JSON and Unicode decode errors; RecursionError, absurdly nested JSON.
         print(f"stackfoundry {args.command}: {exc}", file=sys.stderr)
         return 2
 

@@ -1,6 +1,6 @@
 ---
 name: claude-code-plugin-code-writer
-description: Write or change stackfoundry skills, agents, reference files and manifests the repo's way — tool grants that cover the body, description caps, full briefs, no technology content. Use when editing the plugin's skills, agents or reference.
+description: Write or change stackfoundry skills, agents, reference files and manifests the repo's way, in the plugin target — tool grants that cover the body, description caps, full briefs, no technology content. Use when editing the plugin's skills or agents.
 ---
 
 # Claude Code plugin code writer
@@ -11,7 +11,7 @@ authoritative; this skill is the decision procedure. Read them before editing.
 | Read first | Before touching |
 |---|---|
 | [`authoring`](../../rules/authoring.md) | anything under `plugins/` (the repo's own authoring rules) |
-| [`app-model-claude-code-plugin`](../../rules/app-model-claude-code-plugin.md) | `skills/**`, `agents/**`, `reference/**`, `hooks/**`, `.claude-plugin/**` |
+| [`app-model-claude-code-plugin`](../../rules/app-model-claude-code-plugin.md) | `plugins/stackfoundry/skills/**`, `plugins/stackfoundry/agents/**`, `plugins/stackfoundry/reference/**`, `plugins/stackfoundry/hooks/**`, `plugins/stackfoundry/.claude-plugin/**` |
 | [`capability-claude-code-marketplace`](../../rules/capability-claude-code-marketplace.md) | `.claude-plugin/marketplace.json`, `docs/release.md` |
 | [`tooling-claude-plugin-eval`](../../rules/tooling-claude-plugin-eval.md) | `plugins/stackfoundry/evals/**`, `fixtures/**` |
 | [`tooling-unittest`](../../rules/tooling-unittest.md) | `tests/test_reference.py`, `tests/test_manifests.py` |

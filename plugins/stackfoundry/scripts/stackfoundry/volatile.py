@@ -49,7 +49,9 @@ def scan(path: Path, include_counts: bool, exclude: list[str]) -> list[dict]:
     base = path if path.is_dir() else path.parent
     for f in files:
         rel = f.relative_to(base).as_posix()
-        if match_any(rel, exclude):
+        # An exclude names files as the caller sees them (`rules/<layer>-*.md`), whatever folder was scanned: it
+        # matches the path relative to the scanned folder, or any trailing part of it.
+        if match_any(rel, exclude) or match_any(rel, [g if g.startswith("**/") else f"**/{g}" for g in exclude]):
             continue
         try:
             text = f.read_text(encoding="utf-8", errors="replace")

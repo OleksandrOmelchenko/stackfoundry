@@ -105,7 +105,7 @@ marking each **new** or **merge** (an existing file of the same name), and ask o
 | `.stackfoundry/packs/<pack-id>/pack.json` | written by its researcher (step 3) | `research` |
 | `.stackfoundry/targets/<target>.md` | `reference/templates/target.md` | that template |
 | `.stackfoundry/rules/<pack-id>.md` | `stackfoundry pack render <pack.json> --out <rule>`, never by hand | `research` |
-| `.stackfoundry/rules/testing.md`, `dependency-bumps.md`, `documentation.md` (+ `benchmarking.md` when a benchmark harness exists) | `reference/rulebooks/`, placeholders filled from the profile | that rulebook |
+| `.stackfoundry/rules/testing.md`, `dependency-bumps.md`, `documentation.md` (+ `benchmarking.md` when a benchmark harness exists) | `stackfoundry render-rulebook <name> --write`, after `targets.json` and `ecosystems.json`; never by hand | `reference/rulebooks/<name>.md` |
 | each assistant's copy of every rulebook (`outputs` → rules: `.claude/rules/`, `.github/instructions/`, `.cursor/rules/`) | `stackfoundry render-rule .stackfoundry/rules/<id>.md --client <assistant> --write` | as its canonical rulebook |
 | `<app-model>-code-writer/SKILL.md` per app model (bare id: `app-model-wpf` → `wpf`), in each `outputs` → skills folder | `reference/templates/code-writer-skill.md` | that template |
 | under the docs root, only where missing: `bug-reports/README.md`, `test-designs/README.md`, `plans/README.md`, `plans/_template.md`, `plans/deferred-upgrades.md`, `specifications/README.md`, `security/README.md`, and the reports README in `dependency-reports/`, `radar/` (plus `radar/decisions.md`), `performance-reports/` and `reports/` | `reference/trackers/` (strip each template's own frontmatter) | that tracker |
@@ -120,6 +120,17 @@ marking each **new** or **merge** (an existing file of the same name), and ask o
 - A name collision with an existing rule, skill or doc: write `stackfoundry-<name>` beside it and list it for the
   user to merge, never replace.
 - Every generated file is grounded: a placeholder the repo cannot fill is left out, never invented.
+- **Links in an instruction block** are relative to the file that holds it: in `.claude/CLAUDE.md` a rulebook is
+  `../.stackfoundry/rules/<id>.md`; in a root `CLAUDE.md`, `AGENTS.md` or `GEMINI.md`, `.stackfoundry/rules/<id>.md`.
+- **Write JSON with the `Write` tool**, never through a shell heredoc or `echo`: the shell can eat backslashes in
+  regex patterns (`guards.json`), and `guard --check` then reports a pattern that no longer means what was agreed.
+- **A check that costs money or needs a person** (a paid eval suite, a manual smoke test) is never a `tests` entry
+  or part of a `gate`: `select-tests` and the gates run those unattended. Name it in the target profile instead, and
+  ask-guard its command in `guards.json`.
+- **Repo extensions** already in `.stackfoundry/extensions/` (the survey lists them) are the team's: never touch them;
+  after writing, run `stackfoundry extensions check` and list each one in the report with what it changes.
+- `--template` values are paths relative to the plugin root (`reference/templates/target.md`), or `research` /
+  `profile`, exactly as the table gives them.
 - Check as you write: `stackfoundry config` right after `config.json`, `stackfoundry guard --check` right after
   `guards.json` (an invalid file is silently ignored by the hook), `stackfoundry change-targets --files <one file per
   target>` right after `targets.json` (it loads and validates it), and `stackfoundry verify-plumbing .` right after
@@ -159,7 +170,7 @@ what is ready to commit.
 - `Agent` with `subagent_type: "stackfoundry:surveyor"`, then `"stackfoundry:stack-researcher"` (one per pack, one
   message).
 - `AskUserQuestion` for the interview rounds and the one write confirmation.
-- `Bash` for `stackfoundry survey|config|outputs|pack|render-rule|manifest|verify-plumbing|globs-check|change-targets|guard` and the gate
+- `Bash` for `stackfoundry survey|config|outputs|pack|render-rule|render-rulebook|manifest|extensions|verify-plumbing|globs-check|change-targets|guard` and the gate
   commands (`run_in_background` for long suites). `Read`/`Write`/`Edit` for the files.
 - `Skill` → `stackfoundry:skill-agent-verifier` for the load probe.
 - Non-interactive runs: `.claude/` is a protected path, and neither `acceptEdits` nor an allow rule covers it.

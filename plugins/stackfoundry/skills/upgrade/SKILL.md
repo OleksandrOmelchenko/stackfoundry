@@ -60,7 +60,9 @@ new · keep mine · merge by hand (you produce the merged text and show it befor
 
 ## 3. Apply
 
-- Regenerate from the new template with the same inputs (the profile, the target, the pack) and write.
+- Regenerate from the new template with the same inputs (the profile, the target, the pack) and write. The shared
+  rulebooks (`reference/rulebooks/`) regenerate with `stackfoundry render-rulebook <name> --write`, then each
+  assistant's copy with `render-rule`; never fill their placeholders by hand.
 - Schema migration: rewrite the JSON to the new shape, keeping every value; validate with the CLI's checks
   (`stackfoundry change-targets --files <any>` loads and checks `targets.json`).
 - `stackfoundry manifest record <files> --template <template>` for every file written or kept by choice, so the

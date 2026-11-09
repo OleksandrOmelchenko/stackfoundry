@@ -98,11 +98,19 @@ def parse_dotnet(text: str) -> tuple[list[str], dict]:
     return deps, facts
 
 
+def _json_object(text: str) -> dict:
+    """A JSON file whose top level must be an object; anything else (a list, a string) is invalid input, never a crash."""
+    data = json.loads(text)
+    if not isinstance(data, dict):
+        raise ValueError("the top level is not an object")
+    return data
+
+
 def parse_package_json(text: str) -> tuple[list[str], dict]:
     try:
-        data = json.loads(text)
+        data = _json_object(text)
     except ValueError:
-        return [], {"error": "invalid JSON"}
+        return [], {"error": "invalid JSON, or not an object at the top level"}
     deps: list[str] = []
     for key in ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies"):
         deps += list((data.get(key) or {}).keys())
@@ -183,9 +191,9 @@ def parse_cargo(text: str) -> tuple[list[str], dict]:
 def parse_claude_plugin(text: str) -> tuple[list[str], dict]:
     """A Claude Code plugin manifest (.claude-plugin/plugin.json): the plugin itself is the unit."""
     try:
-        data = json.loads(text)
+        data = _json_object(text)
     except ValueError:
-        return [], {"error": "invalid JSON"}
+        return [], {"error": "invalid JSON, or not an object at the top level"}
     deps = [d if isinstance(d, str) else d.get("name", "") for d in data.get("dependencies", []) or []]
     return [d for d in deps if d], {"name": data.get("name"), "version": data.get("version")}
 
@@ -209,9 +217,9 @@ def parse_gemfile(text: str) -> tuple[list[str], dict]:
 
 def parse_composer(text: str) -> tuple[list[str], dict]:
     try:
-        data = json.loads(text)
+        data = _json_object(text)
     except ValueError:
-        return [], {"error": "invalid JSON"}
+        return [], {"error": "invalid JSON, or not an object at the top level"}
     return list((data.get("require") or {}).keys()) + list((data.get("require-dev") or {}).keys()), {}
 
 
@@ -505,6 +513,9 @@ def _claude_inventory(root: Path, files: list[str]) -> dict:
         "hasSettings": (root / ".claude" / "settings.json").exists(),
         "hasStackfoundryProfile": (root / ".stackfoundry" / "targets.json").exists(),
         "hasLegacyStackfoundryProfile": (root / ".claude" / "stackfoundry" / "targets.json").exists(),
+        # The team's changes to plugin skills and agents, and its materialized agents: init and sync never touch them.
+        "extensions": sorted(f for f in files if re.match(r"^\.stackfoundry/extensions/(skills|agents)/[^/]+\.md$", f)),
+        "materializedAgents": sorted(f for f in files if re.match(r"^\.stackfoundry/agents/[^/]+\.md$", f)),
     }
     settings = root / ".claude" / "settings.json"
     if settings.exists():

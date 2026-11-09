@@ -89,6 +89,18 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   `tools: []` (no tools at all) and now fails the build; MCP tools keep their server in Copilot's form.
 - `render-rule` and `render-agent` write atomically; the PowerShell hook commands use `-LiteralPath` and
   `-NonInteractive`.
+- The shared rulebooks were filled by hand at init: `stackfoundry render-rulebook <name>` now fills them from the
+  profile (test paths, pin and lock files, benchmark folders, the docs root), dropping globs another one covers.
+- `render-rule` wrote a description YAML would cut (`: `, ` #`) unquoted for Claude Code and Cursor.
+- `survey` crashed on a `package.json` or `composer.json` whose top level is not an object; absurdly nested JSON is
+  now "could not run" (exit 2), not a traceback. The survey lists repo extensions and materialized agents, and init
+  leaves them alone.
+- `volatile-facts --exclude` matched only paths relative to the scanned folder, so the verifier's
+  `rules/<layer>-*.md` excludes did nothing when it scanned the repo root.
+- Init: links in the instruction block are relative to its file, JSON is written with the `Write` tool, paid or
+  manual checks never become `tests` or gates, and `--template` paths are plugin-relative. The researcher greps its
+  pack for HTML entities before reporting. Templates `instructions-block` and `code-writer-skill` move to version 3
+  (the block says how to customize a skill; code-writer paths are written from the repo root).
 - A `guards.json` rule could set `"decision": "allow"` and make the guard pre-approve a command; the guard now only
   denies or asks. A usage error on the guard's command line no longer exits 2 (which blocked every tool call).
   `--base` and `--range` values starting with `-` are refused instead of reaching git as options.

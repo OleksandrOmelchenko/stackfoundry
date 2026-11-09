@@ -87,6 +87,14 @@ def _yaml_str(value: str) -> str:
     return json.dumps(value, ensure_ascii=False)
 
 
+def _yaml_plain_or_quoted(value: str) -> str:
+    """A value left plain when YAML reads it back unchanged, else double-quoted. Plain keeps a canonical rulebook
+    byte for byte; quoting is only for what YAML would cut or misread (`: `, ` #`, a leading indicator)."""
+    if re.search(r": | #|:$|^\s|\s$", value) or value[:1] in tuple("[]{}&*!|>'\"%@`#,?-") or value == "":
+        return _yaml_str(value)
+    return value
+
+
 def render_rule(text: str, client: str) -> str:
     """A canonical rulebook (frontmatter `description` and `paths`) in the assistant's path-scoped format."""
     fields, body, errors = split(text)
@@ -98,11 +106,11 @@ def render_rule(text: str, client: str) -> str:
         paths = [paths]
     desc = str(fields.get("description", ""))
     if client == "claude-code":
-        head = ["---", f"description: {desc}", "paths:"] + [f'  - "{p}"' for p in paths]
+        head = ["---", f"description: {_yaml_plain_or_quoted(desc)}", "paths:"] + [f'  - "{p}"' for p in paths]
     elif client == "copilot":
         head = ["---", f"description: {_yaml_str(desc)}", f"applyTo: {_yaml_str(','.join(paths))}"]
     elif client == "cursor":
-        head = ["---", f"description: {desc}", f"globs: {','.join(paths)}", "alwaysApply: false"]
+        head = ["---", f"description: {_yaml_plain_or_quoted(desc)}", f"globs: {','.join(paths)}", "alwaysApply: false"]
     else:
         raise ValueError(f"{client} has no path-scoped rules; it reads {CANONICAL_RULES}/ through its instruction file")
     # The body is kept byte for byte, so a canonical rulebook already in Claude Code's form renders unchanged.

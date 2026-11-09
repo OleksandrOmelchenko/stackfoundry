@@ -1,5 +1,5 @@
 ---
-templateVersion: 2
+templateVersion: 3
 output: each instruction file `stackfoundry outputs` lists (CLAUDE.md, AGENTS.md, GEMINI.md), between the stackfoundry markers
 ---
 <!-- stackfoundry:begin (managed by the stackfoundry init and upgrade skills; edit outside the markers) -->
@@ -16,7 +16,10 @@ globs, read that rulebook."}}
 
 | Rulebook | Applies to | Covers |
 |---|---|---|
-{{one row per rulebook: [id](.stackfoundry/rules/<id>.md) | its globs in words (and the globs themselves in AGENTS.md and GEMINI.md) | one-line scope}}
+{{one row per rulebook: [id](<link to .stackfoundry/rules/<id>.md, relative to the instruction file: ../.stackfoundry/rules/<id>.md from .claude/CLAUDE.md>) | its globs in words (and the globs themselves in AGENTS.md and GEMINI.md) | one-line scope}}
 
 Targets: {{target names}}.
+
+To change what a stackfoundry skill or agent does here, say "customize <skill>": the change lives in
+`.stackfoundry/extensions/`, every run reads it, and plugin updates keep it.
 <!-- stackfoundry:end -->

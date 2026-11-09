@@ -1,10 +1,10 @@
 ---
-templateVersion: 2
-output: <each skills folder `stackfoundry outputs` lists>/{{app-model}}-code-writer/SKILL.md; the filled description is at most 250 characters (verify-plumbing checks it)
+templateVersion: 3
+output: <each skills folder `stackfoundry outputs` lists>/{{app-model}}-code-writer/SKILL.md; the filled description is at most 250 characters (verify-plumbing counts characters, not bytes), and every path in the body is written from the repo root (`plugins/x/hooks/hooks.json`, never `hooks/hooks.json`), links relative to the skill's own folder
 ---
 ---
 name: {{app-model}}-code-writer
-description: Write or change {{app-model title}} code in {{targets}} the repo's way — {{the three or four decisions that go wrong most often, in a few words}}. Use when editing {{typical files}}.
+description: Write or change {{app-model title}} code the repo's way, in {{the target names, as "the cli target" or "the api and web targets"}} — {{the three or four decisions that go wrong most often, in a few words}}. Use when editing {{typical files}}.
 ---
 
 # {{app-model title}} code writer

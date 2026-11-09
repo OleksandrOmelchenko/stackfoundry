@@ -98,8 +98,10 @@ kept by hand:
   `--check` in CI and the pre-commit hook keeps them equal to the source.
 - **Every skill and agent says how to read it elsewhere.** A preamble under each title gives the CLI by path,
   the plugin root where `${CLAUDE_PLUGIN_ROOT}` is not substituted, and the pointer to the tool equivalents.
-- **The repo's files are written once and copied by the CLI.** Rulebooks are canonical in `.stackfoundry/rules/`
-  and rendered into each assistant's path-scoped format (`stackfoundry render-rule`); assistants without one read
+- **The repo's files are written once and copied by the CLI.** Rulebooks are canonical in `.stackfoundry/rules/`:
+  a pack's is rendered from its `pack.json` (`stackfoundry pack render`), a shared one (testing, dependency bumps,
+  documentation, benchmarking) is filled from the profile (`stackfoundry render-rulebook`), and either is then
+  rendered into each assistant's path-scoped format (`stackfoundry render-rule`); assistants without one read
   the canonical file through the table in their instruction file. Team agents are canonical in
   `.stackfoundry/agents/` and rendered the same way (`render-agent`). `stackfoundry outputs` is the one place that
   decides which assistant gets which copy, from `.stackfoundry/config.json`'s `clients`.

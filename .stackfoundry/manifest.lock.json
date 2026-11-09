@@ -4,8 +4,8 @@
   "files": {
     ".claude/CLAUDE.md": {
       "template": "reference/templates/instructions-block.md",
-      "templateVersion": "2",
-      "sha256": "3a06aa87011d742927e23284c707210a99091c620fdb2f9a519e7b7e04299aaa",
+      "templateVersion": "3",
+      "sha256": "3a949f5a975eb5447d42023caa76aa6571b87d6acbe39c1e9792d5b57382100f",
       "kind": "generated"
     },
     ".claude/rules/app-model-claude-code-plugin.md": {
@@ -76,14 +76,14 @@
     },
     ".claude/skills/claude-code-plugin-code-writer/SKILL.md": {
       "template": "reference/templates/code-writer-skill.md",
-      "templateVersion": "1",
-      "sha256": "7ac7ea0a53f9e2c3295c13a86a7743d6e1639ac2b46442eb791eb2a756069b1b",
+      "templateVersion": "3",
+      "sha256": "22cf5cb2aa3f20491c74b589e146e5449f288edac870accb2d4d03c88a7cd8fb",
       "kind": "generated"
     },
     ".claude/skills/python-cli-code-writer/SKILL.md": {
       "template": "reference/templates/code-writer-skill.md",
-      "templateVersion": "1",
-      "sha256": "cf244bb02ac61d40829b91ca31f174ca9e72e2fa109b5d5615a75cf199f50da6",
+      "templateVersion": "3",
+      "sha256": "acdada1389a4429f208f590db0a99cfde3fe58d49923f77b9dededccc1cb5b6c",
       "kind": "generated"
     },
     ".stackfoundry/config.json": {

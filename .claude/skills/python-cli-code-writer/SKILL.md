@@ -1,6 +1,6 @@
 ---
 name: python-cli-code-writer
-description: Write or change the stackfoundry helper CLI the repo's way — stdlib only, explicit encodings, atomic writes, exit codes 0/1/2, a guard that fails open. Use when editing the plugin's scripts, bin or hooks.
+description: Write or change the stackfoundry helper CLI the repo's way, in the cli target — stdlib only, explicit encodings, atomic writes, exit codes 0/1/2, a guard that fails open. Use when editing the plugin's scripts or hooks.
 ---
 
 # Python CLI code writer
@@ -12,7 +12,7 @@ this skill is the decision procedure. Read them before editing.
 |---|---|
 | [`language-python`](../../rules/language-python.md) | any `.py` file: encodings, 3.11 floor, subprocess, paths |
 | [`language-posix-sh`](../../rules/language-posix-sh.md) | `plugins/stackfoundry/scripts/stackfoundry.sh`, `.githooks/pre-commit`, `*.sh` |
-| [`app-model-python-cli`](../../rules/app-model-python-cli.md) | `scripts/stackfoundry/*.py`, `plugins/stackfoundry/hooks/hooks.json`: subcommands, the guard's hook contract |
+| [`app-model-python-cli`](../../rules/app-model-python-cli.md) | `plugins/stackfoundry/scripts/stackfoundry/*.py`, `plugins/stackfoundry/hooks/hooks.json`: subcommands, the guard's hook contract |
 | [`tooling-unittest`](../../rules/tooling-unittest.md) | `tests/**` |
 | [`tooling-github-actions`](../../rules/tooling-github-actions.md) | `.github/**` |
 

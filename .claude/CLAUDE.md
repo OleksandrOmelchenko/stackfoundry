@@ -10,8 +10,10 @@ the architecture.
 - `plugins/stackfoundry/skills/<name>/SKILL.md`: skills. `agents/<name>.md`: generic role agents.
 - `plugins/stackfoundry/reference/`: the method (layers, schemas, research procedure, examples, rulebook and
   tracker templates). Skills read it through `${CLAUDE_PLUGIN_ROOT}/reference/…`.
-- `plugins/stackfoundry/scripts/stackfoundry.sh` + `scripts/stackfoundry/`: the helper CLI (Python 3.11+, standard library
-  only, no network). `hooks/hooks.json`: the guard hooks.
+- `plugins/stackfoundry/scripts/stackfoundry.sh` + `plugins/stackfoundry/scripts/stackfoundry/`: the helper CLI
+  (Python 3.11+, standard library only, no network). `plugins/stackfoundry/hooks/hooks.json`: the guard hooks.
+- `.stackfoundry/`: this repo's own profile, dogfooding the plugin, including a repo extension
+  (`.stackfoundry/extensions/`).
 - **Generated, never hand-edited:** the other assistants' plugin files (`plugins/stackfoundry/plugin.json`,
   `com.*/`, `.cursor-plugin/`) and marketplaces (`.agents/plugins/`, `.github/plugin/`, `.cursor-plugin/`). Change
   the Claude source or `scripts/build_clients.py`, then run `python scripts/build_clients.py`. The mapping per
@@ -72,4 +74,7 @@ Claude Code loads each rulebook's copy in `.claude/rules/` when it reads a match
 | [documentation](../.stackfoundry/rules/documentation.md) | docs, `.claude/`, READMEs, CLAUDE.md | living vs snapshot docs, plans and specs |
 
 Targets: `cli`, `plugin`.
+
+To change what a stackfoundry skill or agent does here, say "customize <skill>": the change lives in
+`.stackfoundry/extensions/`, every run reads it, and plugin updates keep it.
 <!-- stackfoundry:end -->

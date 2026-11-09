@@ -80,7 +80,9 @@ line and you stop; you never guess a version.
 
 Every rule, category and note cites at least one key of `sources`; every `where` path exists (`Glob`); every
 deprecation listed is actually called in the repo; the JSON matches the schema's required fields; the pack is
-tight enough to read in a few minutes.
+tight enough to read in a few minutes. Fetched pages arrive HTML-escaped, so text copied from one carries `&lt;`,
+`&gt;`, `&amp;` or `&quot;`: after writing, `Grep` the pack for `&(lt|gt|amp|quot|#\d+);` and replace every hit with
+the plain character (`pack check` rejects them, and an extra round trip costs the whole dispatch).
 
 ## Report
 
