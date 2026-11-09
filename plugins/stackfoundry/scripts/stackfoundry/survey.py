@@ -510,10 +510,12 @@ def _claude_inventory(root: Path, files: list[str]) -> dict:
     if settings.exists():
         try:
             data = json.loads(settings.read_text(encoding="utf-8-sig"))
+            if not isinstance(data, dict):
+                raise ValueError("not an object")
             inv["settingsHooks"] = sorted((data.get("hooks") or {}).keys())
             inv["enabledPlugins"] = data.get("enabledPlugins")
         except ValueError:
-            inv["settingsError"] = "invalid JSON"
+            inv["settingsError"] = "invalid JSON or not an object"
     return inv
 
 

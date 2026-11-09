@@ -7,7 +7,7 @@
           {
             "type": "command",
             "command": "sh \"$PLUGIN_ROOT/scripts/stackfoundry.sh\" guard --client codex",
-            "commandWindows": "pwsh -NoProfile -File \"$env:PLUGIN_ROOT/scripts/stackfoundry.ps1\" guard --client codex",
+            "commandWindows": "pwsh -NoProfile -NonInteractive -File \"$env:PLUGIN_ROOT/scripts/stackfoundry.ps1\" guard --client codex",
             "timeout": 10,
             "statusMessage": "stackfoundry guard"
           }

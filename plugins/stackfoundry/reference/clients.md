@@ -45,7 +45,7 @@ One command, `stackfoundry guard`, serves every assistant's pre-tool hook. It re
 |---|---|---|---|---|
 | Claude Code | `PreToolUse` | `Edit`, `Write`, `MultiEdit`, `NotebookEdit` | (asks) | no output |
 | Codex | `PreToolUse` | `apply_patch` (every file the patch names) | a deny saying to get the user's go-ahead | no output |
-| Copilot | `preToolUse` | `create`, `edit`, `str_replace_editor`, `apply_patch` | (asks; its autopilot and cloud agent deny) | no output |
+| Copilot | `preToolUse` | `create`, `edit`, `str_replace_editor`, `apply_patch` | (asks; its autopilot denies an ask, and its cloud agent loads no plugin hooks) | no output |
 | Cursor | `preToolUse` for edits, `beforeShellExecution` for commands | `Write`, `Edit`, `Delete` | a deny for edits (commands can ask) | `{"permission": "allow"}`: Cursor blocks on empty output |
 | Gemini CLI | `BeforeTool` | `write_file`, `replace` | a deny saying to get the user's go-ahead | no output |
 

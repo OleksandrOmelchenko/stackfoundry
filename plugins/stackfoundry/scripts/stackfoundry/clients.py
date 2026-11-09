@@ -155,9 +155,14 @@ def render_agent(text: str, client: str) -> str:
     if client == "copilot":
         tools: list[str] = []
         for t in grant:
-            alias = COPILOT_TOOLS.get(t)
+            # An MCP tool keeps its server: mcp__server__tool -> server/tool, Copilot's form.
+            alias = COPILOT_TOOLS.get(t) or (t[5:].replace("__", "/", 1) if t.startswith("mcp__") else None)
             if alias and alias not in tools:
                 tools.append(alias)
+        if not tools:
+            # Copilot reads `tools: []` as "no tools at all" and a missing list as "every tool": neither keeps the
+            # source agent's intent, so refuse instead of guessing.
+            raise ValueError(f"{fields['name']}: no tool in its grant has a Copilot alias ({', '.join(grant) or 'none'})")
         return _frontmatter({"name": fields["name"], "description": fields["description"], "tools": tools}) + body
     if client == "gemini":
         gtools: list[str] = []
@@ -187,9 +192,19 @@ def agent_path(src: Path, client: str) -> str:
 # --- CLI -----------------------------------------------------------------------------------------------------------
 
 def _write(root: Path, rel: str, text: str) -> None:
+    """Atomic, like `pack render --out`: an interrupted write never leaves a truncated rulebook or agent."""
+    import os
+    import tempfile
     out = root / rel
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(text, encoding="utf-8", newline="\n")
+    fd, tmp = tempfile.mkstemp(prefix=f".{out.name}.", dir=str(out.parent))
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
+        os.replace(tmp, out)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
     print(f"wrote {rel}")
 
 

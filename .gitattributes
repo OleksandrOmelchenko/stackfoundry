@@ -4,7 +4,7 @@
 
 *.sh text eol=lf
 .githooks/* text eol=lf
-plugins/stackfoundry/bin/* text eol=lf
+*.ps1 text eol=lf
 
 *.png binary
 *.jpg binary

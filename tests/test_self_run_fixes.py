@@ -22,7 +22,7 @@ CYRILLIC = "Александр"
 def guard_bytes(payload: bytes, project: Path):
     """Feed the guard raw bytes, as Claude Code does, with no text-mode decoding on the way in."""
     return subprocess.run([sys.executable, "-I", str(CLI), "guard"], input=payload, capture_output=True,
-                          env={**os.environ, "CLAUDE_PROJECT_DIR": str(project)})
+                          env={**os.environ, "CLAUDE_PROJECT_DIR": str(project)}, timeout=120)
 
 
 class GuardEncodingTests(unittest.TestCase):
@@ -89,7 +89,7 @@ class Loop3HardeningTests(unittest.TestCase):
         self.assertEqual(json.loads(proc.stdout)["hookSpecificOutput"]["permissionDecision"], "ask")
 
     def test_a_guard_usage_error_has_no_opinion_instead_of_blocking(self):
-        proc = subprocess.run([sys.executable, "-I", str(CLI), "guard", "--bogus"], input=b"{}", capture_output=True)
+        proc = subprocess.run([sys.executable, "-I", str(CLI), "guard", "--bogus"], input=b"{}", capture_output=True, timeout=120)
         self.assertEqual(proc.returncode, 0)
         self.assertEqual(proc.stdout, b"")
 
@@ -291,6 +291,49 @@ class PackTests(unittest.TestCase):
             proc = run_cli(["pack", "render", str(root / "p.json"), "--out", str(root / "out/r.md")])
             self.assertEqual(proc.returncode, 0, proc.stderr)
             self.assertTrue((root / "out/r.md").read_text(encoding="utf-8").startswith("---\ndescription: Sample"))
+
+
+class LoopFourTests(unittest.TestCase):
+    """Defects the fourth self-run (a fresh init for Claude Code and Copilot) found."""
+
+    def test_a_leading_slash_anchors_a_glob_at_the_root(self):
+        from stackfoundry.globs import match
+        self.assertTrue(match("README.md", "/*.md"))
+        self.assertFalse(match("plugins/x/skills/a/SKILL.md", "/*.md"))
+        self.assertTrue(match("plugins/x/skills/a/SKILL.md", "*.md"))
+
+    def test_guard_check_reports_a_non_object_file_instead_of_crashing(self):
+        with TempRepo({".stackfoundry/guards.json": "[]"}) as root:
+            proc = run_cli(["guard", "--check", "--root", str(root)])
+        self.assertEqual(proc.returncode, 1)
+        self.assertIn("must be an object", proc.stdout)
+        self.assertNotIn("Traceback", proc.stderr)
+
+    @unittest.skipUnless(HAS_GIT, "git not installed")
+    def test_survey_survives_a_settings_file_that_is_not_an_object(self):
+        with TempRepo({".claude/settings.json": "[]", "a.py": "x\n"}, git=True) as root:
+            self.assertIn("settingsError", survey(root)["claude"])
+
+    def test_the_agent_plugins_name_check_refuses_a_trailing_newline(self):
+        sys.path.insert(0, str(ROOT / "scripts"))
+        import build_clients
+        manifest_ = {"$schema": build_clients.AGENT_PLUGINS_SCHEMA, "name": "stackfoundry\n"}
+        self.assertNotEqual(build_clients.check_agent_plugins_manifest(manifest_), [])
+
+    def test_a_copilot_agent_never_gets_an_empty_tool_list(self):
+        from stackfoundry.clients import render_agent
+        agent = "---\nname: a\ndescription: d\ntools: LSP\n---\n# A\n"
+        with self.assertRaises(ValueError):
+            render_agent(agent, "copilot")
+        browser = "---\nname: a\ndescription: d\ntools: Read, mcp__Browser__navigate\n---\n# A\n"
+        self.assertIn('"Browser/navigate"', render_agent(browser, "copilot"))
+
+    def test_config_json_holds_the_docs_root_and_wins_over_targets_json(self):
+        from stackfoundry import config
+        with TempRepo({".stackfoundry/targets.json": json.dumps({"docsRoot": "documentation"})}) as root:
+            self.assertEqual(config.load(root)["docsRoot"], "documentation")
+            write(root, {".stackfoundry/config.json": json.dumps({"docsRoot": "notes"})})
+            self.assertEqual(config.load(root)["docsRoot"], "notes")
 
 
 if __name__ == "__main__":

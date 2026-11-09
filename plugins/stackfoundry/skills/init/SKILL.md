@@ -30,7 +30,8 @@ and agent reads. It **never overwrites** existing `.claude/` content or docs: it
   Claude Code protects that folder: every write there is prompted (interactive), routed to a classifier (`auto`
   mode) or allowed only in `bypassPermissions` mode; allow rules such as `Edit(.claude/**)` do not change that. The
   facts in `.stackfoundry/` are not affected. Check now, before any research is spent: write
-  `.claude/.stackfoundry-write-probe` and delete it. If it is refused, stop here and say how to rerun (Tooling).
+  `.claude/.stackfoundry-write-probe` with the `Write` tool (a shell write is not checked the same way, so it proves
+  nothing) and delete it. If it is refused, stop here and say how to rerun (Tooling).
 - **Non-interactive run** (`claude -p`, a scheduled task, CI): nobody answers questions. Take answers from the
   arguments; where none is given, choose the option this skill recommends (or the most conservative one) and list
   every such choice under "Decisions made without the user" in the report. Never route around a refused write.
@@ -130,8 +131,9 @@ marking each **new** or **merge** (an existing file of the same name), and ask o
   matches a file), and, when the session is Claude Code, `/stackfoundry:skill-agent-verifier` for the load probe:
   every generated rulebook loads when a matching file is read.
 - `stackfoundry change-targets --files <one source file per target>`: each maps to its own target.
-- `stackfoundry guard --check`, then a probe: pipe a sample event into `stackfoundry guard` with
-  `CLAUDE_PROJECT_DIR` set. With `generated` globs, an `Edit` of a matching file must be denied; with none, a
+- `stackfoundry guard --check`, then a probe: write a sample event to a file with the `Write` tool, then run
+  `stackfoundry guard < <file>` with `CLAUDE_PROJECT_DIR` set. Never put the event in the command line (a heredoc or
+  an `echo`): the live guard reads the whole command and refuses the probe itself. With `generated` globs, an `Edit` of a matching file must be denied; with none, a
   `git commit` must get the `git.writes` decision. For each other assistant in `clients`, say what its guard can do
   there (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`, *The guard in each assistant*).
 

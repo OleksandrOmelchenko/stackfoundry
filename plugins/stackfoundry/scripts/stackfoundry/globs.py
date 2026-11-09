@@ -1,7 +1,8 @@
 """Path globs as the profile writes them: forward slashes, `**` spans directories, `*` and `?` stay within one.
 
 `src/api/**` matches everything under `src/api/`; `**/*.cs` matches a `.cs` file at any depth, the top level
-included; a pattern without a slash (`*.md`) matches the file name at any depth, as in .gitignore.
+included; a pattern without a slash (`*.md`) matches the file name at any depth, and a leading slash (`/*.md`)
+anchors the pattern at the repo root, both as in .gitignore.
 """
 from __future__ import annotations
 
@@ -18,8 +19,12 @@ def normalize(path: str) -> str:
 
 @lru_cache(maxsize=1024)
 def compile_glob(pattern: str) -> re.Pattern[str]:
-    pat = normalize(pattern)
-    if "/" not in pat.rstrip("/"):
+    raw = pattern.replace("\\", "/")
+    while raw.startswith("./"):
+        raw = raw[2:]
+    anchored = raw.startswith("/")
+    pat = raw.lstrip("/")
+    if not anchored and "/" not in pat.rstrip("/"):
         pat = "**/" + pat
     if pat.endswith("/"):
         pat += "**"

@@ -262,6 +262,8 @@ def check_file(path: Path) -> list[str]:
         return [f"{path}: not found"]
     except ValueError as exc:
         return [f"{path}: invalid JSON ({exc}); the hook ignores the whole file"]
+    if not isinstance(data, dict):
+        return [f"{path}: the top level must be an object; the hook ignores the whole file"]
     problems = []
     if data.get("schemaVersion") != 1:
         problems.append("schemaVersion must be 1")

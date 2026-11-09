@@ -6,7 +6,7 @@
         "type": "command",
         "matcher": "bash|powershell|create|edit|str_replace_editor|apply_patch",
         "bash": "r=\"${PLUGIN_ROOT:-${COPILOT_PLUGIN_ROOT:-$CLAUDE_PLUGIN_ROOT}}\"; if [ -n \"$r\" ] && [ -f \"$r/scripts/stackfoundry.sh\" ]; then sh \"$r/scripts/stackfoundry.sh\" guard --client copilot; fi; exit 0",
-        "powershell": "$r = @($env:PLUGIN_ROOT, $env:COPILOT_PLUGIN_ROOT, $env:CLAUDE_PLUGIN_ROOT) | Where-Object { $_ } | Select-Object -First 1; if ($r -and (Test-Path \"$r/scripts/stackfoundry.ps1\")) { & pwsh -NoProfile -File \"$r/scripts/stackfoundry.ps1\" guard --client copilot }; exit 0",
+        "powershell": "$r = @($env:PLUGIN_ROOT, $env:COPILOT_PLUGIN_ROOT, $env:CLAUDE_PLUGIN_ROOT) | Where-Object { $_ } | Select-Object -First 1; if ($r -and (Test-Path -LiteralPath \"$r/scripts/stackfoundry.ps1\")) { & pwsh -NoProfile -NonInteractive -File \"$r/scripts/stackfoundry.ps1\" guard --client copilot }; exit 0",
         "timeoutSec": 10
       }
     ]

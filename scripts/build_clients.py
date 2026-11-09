@@ -72,7 +72,7 @@ def check_agent_plugins_manifest(data: dict) -> list[str]:
     if data.get("$schema") != AGENT_PLUGINS_SCHEMA:
         errors.append("$schema must be the 1.0.0 plugin schema id")
     name = data.get("name", "")
-    if not (isinstance(name, str) and 1 <= len(name) <= 64 and AGENT_PLUGINS_NAME.match(name)):
+    if not (isinstance(name, str) and 1 <= len(name) <= 64 and AGENT_PLUGINS_NAME.fullmatch(name)):
         errors.append(f"name {name!r} breaks the Agent Plugins name rule")
     for key in ("version", "description", "homepage", "repository", "license"):
         if key in data and not isinstance(data[key], str):
@@ -117,7 +117,7 @@ def build_plugin_files(src: dict) -> dict[str, str]:
         "matcher": "Bash|apply_patch|Edit|Write",
         "hooks": [{"type": "command",
                    "command": guard_command_sh("codex", "$PLUGIN_ROOT"),
-                   "commandWindows": f'pwsh -NoProfile -File "$env:PLUGIN_ROOT/{GUARD_PS1}" guard --client codex',
+                   "commandWindows": f'pwsh -NoProfile -NonInteractive -File "$env:PLUGIN_ROOT/{GUARD_PS1}" guard --client codex',
                    "timeout": 10,
                    "statusMessage": "stackfoundry guard"}],
     }]}})
@@ -131,7 +131,7 @@ def build_plugin_files(src: dict) -> dict[str, str]:
         "type": "command",
         "matcher": "bash|powershell|create|edit|str_replace_editor|apply_patch",
         "bash": f'r="{root_sh}"; if [ -n "$r" ] && [ -f "$r/{GUARD_SH}" ]; then sh "$r/{GUARD_SH}" guard --client copilot; fi; exit 0',
-        "powershell": f'{root_ps}; if ($r -and (Test-Path "$r/{GUARD_PS1}")) {{ & pwsh -NoProfile -File "$r/{GUARD_PS1}" guard --client copilot }}; exit 0',
+        "powershell": f'{root_ps}; if ($r -and (Test-Path -LiteralPath "$r/{GUARD_PS1}")) {{ & pwsh -NoProfile -NonInteractive -File "$r/{GUARD_PS1}" guard --client copilot }}; exit 0',
         "timeoutSec": 10,
     }]}})
     for agent in sorted((PLUGIN / "agents").glob("*.md")):

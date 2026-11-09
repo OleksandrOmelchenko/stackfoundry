@@ -41,7 +41,7 @@ in `plugins/stackfoundry/reference/clients.md` lists what is still to *confirm* 
 
 | Assistant | Install | Lists skills and agents | Guard refuses a generated-file edit |
 |---|---|---|---|
-| Claude Code | proven | proven | proven |
+| Claude Code | proven | proven | proven: in the fourth self-run the installed guard refused a release tag and asked before a commit |
 | Copilot CLI | proven: marketplace add and install from a local path; the skills install | skills proven; agents not checked | not run yet |
 | Codex | not run yet | not run yet | not run yet |
 | Cursor | not run yet | not run yet | not run yet |

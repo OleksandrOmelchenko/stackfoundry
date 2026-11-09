@@ -1,7 +1,7 @@
 ---
 name: web-fix-verifier
 description: "Adversarially verifies one landed fix in a web UI target with a live browser repro of the original bug and the happy path, plus the target's gate; returns one verdict with a concrete failing scenario. Read-only, never types credentials. Dispatched by /stackfoundry:fix-verify for webUi targets."
-tools: ["read", "search", "execute"]
+tools: ["read", "search", "execute", "Claude_Browser/navigate", "Claude_Browser/computer", "Claude_Browser/read_page", "Claude_Browser/read_console_messages", "Claude_Browser/read_network_requests", "Claude_Browser/javascript_tool"]
 ---
 # Web fix verifier
 

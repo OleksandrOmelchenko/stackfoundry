@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 from .clients import CLIENTS
-from .profile import CONFIG, ProfileError, find_root, load_json
+from .profile import CONFIG, TARGETS, ProfileError, find_root, load_json
 
 EFFORTS = ("quick", "standard", "thorough")
 DEFAULTS = {
@@ -49,11 +49,20 @@ def load(root: Path) -> dict:
     try:
         data = load_json(path)
     except FileNotFoundError:
-        return dict(DEFAULTS)
+        data = {}
     errors = check(data)
     if errors:
         raise ProfileError(f"{CONFIG.as_posix()}:\n  " + "\n  ".join(errors))
-    return {**DEFAULTS, **data}
+    settings = {**DEFAULTS, **data}
+    if "docsRoot" not in data:
+        # Profiles written before config.json kept the docs root in targets.json; config.json wins when both do.
+        try:
+            legacy = load_json(root / TARGETS).get("docsRoot")
+        except (FileNotFoundError, ProfileError):
+            legacy = None
+        if isinstance(legacy, str) and legacy:
+            settings["docsRoot"] = legacy
+    return settings
 
 
 def main(args) -> int:

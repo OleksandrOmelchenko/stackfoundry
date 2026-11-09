@@ -92,7 +92,7 @@ class GuardTests(unittest.TestCase):
             write(root, {".stackfoundry/guards.json": json.dumps(GUARDS)})
             proc = subprocess.run(["sh", str(LAUNCHER), "guard"], input=event("Bash", command="git push"),
                                   capture_output=True, text=True, encoding="utf-8", env={**__import__("os").environ,
-                                                                       "CLAUDE_PROJECT_DIR": str(root)})
+                                                                       "CLAUDE_PROJECT_DIR": str(root)}, timeout=120)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual(json.loads(proc.stdout)["hookSpecificOutput"]["permissionDecision"], "ask")
 
@@ -102,7 +102,7 @@ class GuardTests(unittest.TestCase):
             write(root, {".stackfoundry/guards.json": json.dumps(GUARDS)})
             proc = subprocess.run(["pwsh", "-NoProfile", "-File", str(LAUNCHER_PS1), "guard"],
                                   input=event("Bash", command="git push"), capture_output=True, text=True,
-                                  encoding="utf-8", env={**__import__("os").environ, "CLAUDE_PROJECT_DIR": str(root)})
+                                  encoding="utf-8", env={**__import__("os").environ, "CLAUDE_PROJECT_DIR": str(root)}, timeout=120)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual(json.loads(proc.stdout)["hookSpecificOutput"]["permissionDecision"], "ask")
 

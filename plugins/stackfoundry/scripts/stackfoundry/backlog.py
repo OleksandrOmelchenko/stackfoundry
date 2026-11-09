@@ -11,7 +11,6 @@ import re
 from pathlib import Path
 
 from . import gitutil
-from .profile import TARGETS, load_json
 from .tracker import FINDING, parse_bug_report, parse_test_design
 
 CATEGORY = re.compile(r"^\*\*Category:\*\*\s*([a-z0-9-]+)\s*$")
@@ -20,13 +19,12 @@ TODO = r"(^|[^A-Za-z0-9_])(TODO|FIXME)[:(]"
 
 
 def docs_root(root: Path) -> Path:
-    path = root / TARGETS
-    if path.exists():
-        try:
-            return root / load_json(path).get("docsRoot", "docs")
-        except Exception:  # noqa: BLE001 - a broken profile still lets the backlog run with the default
-            pass
-    return root / "docs"
+    """`docsRoot` from `stackfoundry config` (config.json, then the older targets.json field, then `docs`)."""
+    from . import config
+    try:
+        return root / config.load(root)["docsRoot"]
+    except Exception:  # noqa: BLE001 - a broken profile still lets the backlog run with the default
+        return root / "docs"
 
 
 def _docs(folder: Path) -> list[Path]:

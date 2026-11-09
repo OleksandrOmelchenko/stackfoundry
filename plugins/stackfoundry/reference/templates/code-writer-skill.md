@@ -1,6 +1,6 @@
 ---
-templateVersion: 1
-output: .claude/skills/{{app-model}}-code-writer/SKILL.md
+templateVersion: 2
+output: <each skills folder `stackfoundry outputs` lists>/{{app-model}}-code-writer/SKILL.md; the filled description is at most 250 characters (verify-plumbing checks it)
 ---
 ---
 name: {{app-model}}-code-writer

@@ -23,3 +23,6 @@ desktop.ini
 .idea/
 .vscode/
 *.swp
+
+# Gemini CLI extension builds (scripts/build_clients.py --gemini-out)
+dist/

@@ -63,6 +63,9 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   (`instructions-block.md`) serves `CLAUDE.md`, `AGENTS.md` and `GEMINI.md`; `globs-check` reads
   `.stackfoundry/rules/` by default; `sync` adds or drops an assistant's files; `schedule` covers the other
   assistants' headless runs.
+- A glob with a leading `/` matches at the repo root only, as in `.gitignore`; `docsRoot` lives in
+  `.stackfoundry/config.json`, which wins over the older `targets.json` field; init writes its `.claude/` probe and
+  its guard probe event with the `Write` tool, since the live guard reads the whole command line.
 - The guard reads the nearest `guards.json` above the edited file (worktrees and nested repos), normalizes paths,
   and sees git commands inside quotes (`sh -c 'git push'`).
 - The CLI runs git by its absolute path from `PATH`, never a `git` in the repo; `pack render --out` writes atomically;
@@ -70,6 +73,11 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 
 ### Fixed
 
+- `guard --check` and `survey` crashed on a `guards.json` or `.claude/settings.json` that is not a JSON object.
+- The Agent Plugins name check accepted a trailing newline; a Copilot agent whose grant has no Copilot alias got
+  `tools: []` (no tools at all) and now fails the build; MCP tools keep their server in Copilot's form.
+- `render-rule` and `render-agent` write atomically; the PowerShell hook commands use `-LiteralPath` and
+  `-NonInteractive`.
 - A `guards.json` rule could set `"decision": "allow"` and make the guard pre-approve a command; the guard now only
   denies or asks. A usage error on the guard's command line no longer exits 2 (which blocked every tool call).
   `--base` and `--range` values starting with `-` are refused instead of reaching git as options.
