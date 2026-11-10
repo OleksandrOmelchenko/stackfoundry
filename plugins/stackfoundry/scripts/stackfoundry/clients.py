@@ -106,7 +106,8 @@ def render_rule(text: str, client: str) -> str:
         paths = [paths]
     desc = str(fields.get("description", ""))
     if client == "claude-code":
-        head = ["---", f"description: {_yaml_plain_or_quoted(desc)}", "paths:"] + [f'  - "{p}"' for p in paths]
+        head = ["---", f"description: {_yaml_plain_or_quoted(desc)}", "paths:"] + [f"  - {_yaml_str(str(p))}"
+                                                                                     for p in paths]
     elif client == "copilot":
         head = ["---", f"description: {_yaml_str(desc)}", f"applyTo: {_yaml_str(','.join(paths))}"]
     elif client == "cursor":

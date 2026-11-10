@@ -62,3 +62,19 @@ def check_plain_text(doc, errors: list[str]) -> None:
         m = ENTITY.search(text)
         if m:
             errors.append(f"{where}: HTML-escaped text ({m.group(0)}); write plain characters")
+
+
+# Researched text is rendered inline (a bullet, a table cell, a frontmatter value) into files every later session
+# loads. A line break would let fetched text open its own heading or close the frontmatter, and an HTML comment would
+# hide text from the person reviewing the rendered file (threat model T9).
+CONTROL = re.compile(r"[\x00-\x08\x0a-\x1f\x7f\x85  ]")
+COMMENT = re.compile(r"<!--|-->")
+
+
+def check_inline(doc, errors: list[str]) -> None:
+    for where, text in strings(doc):
+        m = CONTROL.search(text)
+        if m:
+            errors.append(f"{where}: a line break or control character ({m.group(0)!r}); researched text is one line")
+        if COMMENT.search(text):
+            errors.append(f"{where}: an HTML comment marker; it would hide text in the rendered file")

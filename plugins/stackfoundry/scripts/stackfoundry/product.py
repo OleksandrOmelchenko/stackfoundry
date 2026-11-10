@@ -14,7 +14,7 @@ from datetime import date
 from pathlib import Path
 
 from . import config
-from .cited import DATE, check_cited, check_plain_text, check_sources
+from .cited import DATE, check_cited, check_inline, check_plain_text, check_sources
 from .profile import PROFILE_DIR, find_root
 
 PRODUCT = PROFILE_DIR / "product.json"
@@ -58,6 +58,7 @@ def check_product(data: dict) -> tuple[list[str], list[str]]:
     if not data.get("evidence"):
         warnings.append("no 'evidence': nothing in the repo backs the category")
     check_plain_text(data, errors)
+    check_inline(data, errors)
     return errors, warnings
 
 
@@ -102,6 +103,7 @@ def check_domain(data: dict) -> tuple[list[str], list[str]]:
         if not data.get(section):
             warnings.append(f"no {section} section")
     check_plain_text(data, errors)
+    check_inline(data, errors)
     return errors, warnings
 
 
