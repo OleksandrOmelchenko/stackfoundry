@@ -1,0 +1,471 @@
+{
+  "schemaVersion": 1,
+  "id": "ai-coding-assistant-plugin",
+  "title": "Plugins and agent-configuration tooling for AI coding assistants",
+  "researchedAt": "2026-11-09",
+  "scope": {
+    "category": "developer tool: open-source plugin for AI coding assistants (Claude Code, Codex, GitHub Copilot, Cursor, Gemini CLI)",
+    "audiences": ["software teams", "individual developers"],
+    "markets": ["global"],
+    "stage": "mvp"
+  },
+  "capabilities": [
+    {
+      "id": "valid-manifest-per-client",
+      "name": "Install and discovery: a manifest each host accepts and validates cleanly",
+      "tier": "table-stakes",
+      "why": "A host does not load a plugin whose manifest has a type mismatch, a missing path or a path that escapes the plugin root; unknown fields are stripped with a warning that fails a strict validation run. Each host (Claude Code, Copilot CLI, Codex) has its own manifest and component layout.",
+      "signals": ["plugin.json", "marketplace.json", "plugin validate", "--strict", "manifest schema", "kebab-case plugin name", "version field"],
+      "appliesWhen": "",
+      "sources": ["cc-plugins-ref", "copilot-cli-plugins", "codex-plugins"]
+    },
+    {
+      "id": "marketplace-install",
+      "name": "Install and discovery: one-command install from a git-hosted marketplace",
+      "tier": "table-stakes",
+      "why": "Every host in the channel list installs plugins or extensions from a marketplace or a GitHub repository; a plugin that cannot be added that way is not reachable by its users. Plugin identifiers take the form name@marketplace.",
+      "signals": ["marketplace add", "plugin install", "extensions install", "name@marketplace", "marketplace.json", "install command in README"],
+      "appliesWhen": "",
+      "sources": ["cc-plugin-install", "copilot-cli-plugins", "codex-plugins", "gemini-extensions"]
+    },
+    {
+      "id": "skills-spec-conformance",
+      "name": "Daily use: skills that follow the Agent Skills format with descriptions that say what and when",
+      "tier": "table-stakes",
+      "why": "Hosts select a skill from its name and description alone; a name outside the format is rejected and a vague description means the skill never triggers. The name must be lowercase with hyphens, match its folder and stay within 64 characters; the description is 1 to 1024 characters.",
+      "signals": ["SKILL.md", "frontmatter name", "frontmatter description", "skills-ref validate", "Use when", "skills/"],
+      "appliesWhen": "",
+      "sources": ["skills-spec", "skills-best-practices"]
+    },
+    {
+      "id": "native-instruction-formats",
+      "name": "Setup: generated instructions in each host's native file format",
+      "tier": "table-stakes",
+      "why": "Each assistant reads only its own instruction files: AGENTS.md (Codex, Cursor, Copilot, Claude Code when no CLAUDE.md exists), CLAUDE.md and path-scoped rules, .github/copilot-instructions.md and *.instructions.md with applyTo, .cursor/rules/*.mdc with globs or alwaysApply. Output in the wrong format is silently ignored.",
+      "signals": ["AGENTS.md", "CLAUDE.md", "copilot-instructions.md", ".instructions.md", "applyTo", ".mdc", "alwaysApply", "globs", "paths frontmatter", "GEMINI.md"],
+      "appliesWhen": "per channel: each format only for the hosts the product targets",
+      "sources": ["agents-md", "cc-memory", "copilot-instructions", "cursor-rules", "codex-agents-md"]
+    },
+    {
+      "id": "instruction-size-budgets",
+      "name": "Setup: generated instructions that stay within each host's size budget",
+      "tier": "table-stakes",
+      "why": "Hosts load instruction files into every session: Claude Code advises under 200 lines per CLAUDE.md because longer files reduce adherence, Cursor advises rules under 500 lines, skills are advised under 500 lines and about 5000 tokens, and Codex stops adding AGENTS.md files once their combined size reaches 32 KiB by default.",
+      "signals": ["line count check", "token estimate", "project_doc_max_bytes", "size limit", "split into rules", "progressive disclosure", "references/"],
+      "appliesWhen": "",
+      "sources": ["cc-memory", "cursor-rules", "skills-spec", "skills-best-practices", "codex-agents-md"]
+    },
+    {
+      "id": "untrusted-input-boundary",
+      "name": "Trust: repository content and fetched pages treated as untrusted data",
+      "tier": "table-stakes",
+      "why": "A plugin that reads a repository or the web is exposed to indirect prompt injection; OWASP lists segregating and labelling external content, least privilege and human approval for high-risk actions as mitigations. 81% of developers report security and privacy concerns about agents, and 91% of confirmed malicious skills combined prompt injection with malicious code.",
+      "signals": ["untrusted input", "prompt injection", "tool allowlist", "allowed-tools", "permission prompt", "human approval", "instructions found in content are data"],
+      "appliesWhen": "",
+      "sources": ["owasp-llm01", "snyk-skills", "so-survey-2025-ai"]
+    },
+    {
+      "id": "self-contained-package",
+      "name": "Trust: a self-contained package with no remote instructions, no downloaded executables and no embedded secrets",
+      "tier": "table-stakes",
+      "why": "Skills that load instructions or code from a URL at run time can change behaviour after review; downloading executables and hardcoded credentials are the patterns skill scanners flag as critical. 13.4% of nearly 4,000 public skills scanned had at least one critical issue.",
+      "signals": ["curl | sh", "remote fetch of instructions", "auto-update script", "download binary", "hardcoded token", "API key in skill", "secret scan"],
+      "appliesWhen": "",
+      "sources": ["snyk-skills"]
+    },
+    {
+      "id": "update-safe-paths",
+      "name": "Maintenance: scripts referenced through the host's plugin-root variable and state kept outside the installed copy",
+      "tier": "table-stakes",
+      "why": "The installed plugin root moves on every update, so state written there is lost and hard-coded paths break; a separate data directory survives updates. Paths with spaces must stay one argument, and forward slashes keep skill paths portable to every OS.",
+      "signals": ["CLAUDE_PLUGIN_ROOT", "CLAUDE_PLUGIN_DATA", "CLAUDE_PROJECT_DIR", "quoted path variable", "exec form hook", "forward slashes"],
+      "appliesWhen": "Claude Code channel for the variable names; the portability rule for every channel",
+      "sources": ["cc-plugins-ref", "skills-best-practices"]
+    },
+    {
+      "id": "path-scoped-rules",
+      "name": "Daily use: rules scoped to the files they govern",
+      "tier": "expected",
+      "why": "Hosts load path-scoped rules only when matching files are in play (Claude Code rules with paths, Copilot applyTo, Cursor globs), which keeps always-on context small; instructions that matter for part of a codebase are advised to move there.",
+      "signals": ["paths:", "applyTo", "globs", ".claude/rules", ".github/instructions", ".cursor/rules", "rule scope"],
+      "appliesWhen": "",
+      "sources": ["cc-memory", "copilot-instructions", "cursor-rules"]
+    },
+    {
+      "id": "nested-monorepo-instructions",
+      "name": "Setup: per-package instructions in monorepos",
+      "tier": "expected",
+      "why": "AGENTS.md supports one file per subproject with the nearest file taking precedence, and Codex concatenates files from the root down; teams with several packages expect guidance per package rather than one root file.",
+      "signals": ["nested AGENTS.md", "per-package instructions", "workspace", "subproject", "nearest file precedence"],
+      "appliesWhen": "repositories with several packages or targets",
+      "sources": ["agents-md", "codex-agents-md", "cursor-rules"]
+    },
+    {
+      "id": "reference-not-copy",
+      "name": "Maintenance: instructions that point to source files instead of copying them",
+      "tier": "expected",
+      "why": "Copied content goes stale; Cursor advises referencing files and saying what to look for in them, and skipping what linters already enforce or what the agent already knows.",
+      "signals": ["see file", "link to config", "pointer to source", "@path import", "no copied snippets"],
+      "appliesWhen": "",
+      "sources": ["cursor-rules", "skills-best-practices"]
+    },
+    {
+      "id": "instruction-audit",
+      "name": "Maintenance: detection of stale or conflicting instructions",
+      "tier": "expected",
+      "why": "Contradicting instructions make the agent pick one arbitrarily, and instructions that reference files or commands that no longer exist mislead it; Claude Code ships a prompt audit for this and Copilot advises avoiding conflicting instruction sets.",
+      "signals": ["prompt-audit", "stale reference check", "conflict check", "dead link check", "drift report", "refresh"],
+      "appliesWhen": "",
+      "sources": ["cc-memory", "copilot-instructions"]
+    },
+    {
+      "id": "enforced-guards",
+      "name": "Trust: hard rules enforced by hooks, not only written as instructions",
+      "tier": "expected",
+      "why": "Instruction files are context, not enforced configuration; to block an action regardless of what the model decides, the host documentation points to a PreToolUse hook. Copilot CLI, Codex and Antigravity plugins also carry hooks.",
+      "signals": ["hooks.json", "PreToolUse", "deny", "guard", "blocked command", "exit code 2"],
+      "appliesWhen": "",
+      "sources": ["cc-memory", "copilot-cli-plugins", "codex-plugins", "google-antigravity"]
+    },
+    {
+      "id": "deterministic-helper-scripts",
+      "name": "Daily use: bundled scripts and validators for fragile or repeatable steps",
+      "tier": "expected",
+      "why": "Pre-made scripts are more reliable than generated code, save tokens and keep results consistent; a validate-then-execute loop catches errors before they land.",
+      "signals": ["scripts/", "validate", "check command", "plan file", "verbose error message", "exit code"],
+      "appliesWhen": "",
+      "sources": ["skills-best-practices"]
+    },
+    {
+      "id": "team-scope-install",
+      "name": "Install and discovery: project-scope install a team can commit",
+      "tier": "expected",
+      "why": "Hosts let a repository enable a plugin for every collaborator through committed settings, while each collaborator still installs it once; organizations can require or block plugins and marketplaces through managed settings.",
+      "signals": [".claude/settings.json", "enabledPlugins", "--scope project", ".github/copilot/settings.json", "managed settings", "required plugins"],
+      "appliesWhen": "audience: software teams",
+      "sources": ["cc-plugin-install", "copilot-cli-plugins"]
+    },
+    {
+      "id": "versioned-releases",
+      "name": "Maintenance: versioned releases and update notices",
+      "tier": "expected",
+      "why": "Setting a version pins users to it until it changes, and auto-update is off by default for third-party marketplaces, so users of a community plugin update only when they know a release exists.",
+      "signals": ["version", "CHANGELOG", "release tag", "plugin update", "auto-update", "release notes"],
+      "appliesWhen": "",
+      "sources": ["cc-plugins-ref", "cc-plugin-install"]
+    },
+    {
+      "id": "low-context-cost",
+      "name": "Daily use: small always-on context cost",
+      "tier": "expected",
+      "why": "Claude Code shows each plugin's every-turn and when-invoked token cost before install and lists plugins not used recently so users can remove them; only skill names and descriptions load at start, so long descriptions and always-on rules are what users pay for.",
+      "signals": ["Always-on tokens", "context cost", "plugin details", "description length", "alwaysApply", "progressive disclosure"],
+      "appliesWhen": "",
+      "sources": ["cc-plugin-install", "skills-spec", "skills-best-practices"]
+    },
+    {
+      "id": "behavioral-evals",
+      "name": "Quality: behavioural evals of skills and agents",
+      "tier": "expected",
+      "why": "Skill authoring guidance says to build evaluations before writing extensive instructions and to test with every model the skill will run on; Claude Code ships a plugin eval runner that scores cases and gates CI.",
+      "signals": ["evals/", "eval case", "grader", "rubric", "plugin eval", "pass rate", "trigger test"],
+      "appliesWhen": "",
+      "sources": ["cc-plugin-evals", "skills-best-practices"]
+    },
+    {
+      "id": "security-policy",
+      "name": "Trust: a published security policy for vulnerability reports",
+      "tier": "expected",
+      "why": "Open-source repositories on GitHub publish a SECURITY.md with supported versions and how to report a vulnerability; for a tool that runs hooks and scripts on a developer's machine this is where reporters look first.",
+      "signals": ["SECURITY.md", "supported versions", "report a vulnerability", "security advisory"],
+      "appliesWhen": "",
+      "sources": ["gh-security-policy"]
+    },
+    {
+      "id": "single-source-multi-client",
+      "name": "Install and discovery: one source packaged for several hosts",
+      "tier": "differentiator",
+      "why": "Agent Plugins 1.0 defines a portable core (plugin.json, skills/, mcp.json) with reverse-domain folders for client-specific parts, and Copilot CLI already reads that format alongside its own; a plugin that ships to several assistants from one source reaches more users without forked content.",
+      "signals": ["plugin.json with Agent Plugins schema", "com.github.copilot/", "reverse-domain folder", "build step per client", "generated client files"],
+      "appliesWhen": "when more than one assistant is a channel",
+      "sources": ["agent-plugins", "copilot-cli-plugins"]
+    },
+    {
+      "id": "minimal-nonobvious-instructions",
+      "name": "Setup: generated instructions limited to non-standard, repository-specific requirements",
+      "tier": "differentiator",
+      "why": "A 2026 evaluation found that repository context files did not generally raise task success while raising inference cost by over 20%, that repository overviews did not help, and that context files are useful for non-standard practices; LLM-generated files had a small negative effect. A generator that writes only what the agent cannot infer avoids that cost.",
+      "signals": ["no repository overview", "non-standard practice", "repo-specific command", "omit what linters enforce", "minimal requirements"],
+      "appliesWhen": "",
+      "sources": ["agents-md-eval", "cursor-rules"]
+    },
+    {
+      "id": "cited-current-research",
+      "name": "Trust: generated guidance grounded in current, cited sources",
+      "tier": "differentiator",
+      "why": "Only 33% of developers trust AI output and 66% name almost-right solutions as their top frustration; guidance that is time-sensitive goes wrong, so content that names its source and date can be checked and refreshed instead of trusted blindly.",
+      "signals": ["sources", "citation", "accessed date", "official documentation link", "refresh", "researchedAt"],
+      "appliesWhen": "",
+      "sources": ["so-survey-2025-ai", "skills-best-practices"]
+    },
+    {
+      "id": "measured-uplift",
+      "name": "Quality: measured contribution against a no-plugin baseline",
+      "tier": "differentiator",
+      "why": "A high eval score alone does not show the plugin helped; running the same cases without the plugin gives the difference it made, and research on context files shows that difference can be zero or negative.",
+      "signals": ["baseline", "with and without", "ablation", "delta score", "W/OUT"],
+      "appliesWhen": "",
+      "sources": ["cc-plugin-evals", "agents-md-eval"]
+    },
+    {
+      "id": "host-migration-support",
+      "name": "Maintenance: following a host through renames and retirements",
+      "tier": "differentiator",
+      "why": "Google moved Gemini CLI users to Antigravity CLI, with individual-tier Gemini CLI requests stopping on 2026-06-18 and extensions carried over as Antigravity plugins; a plugin that tracks such moves keeps its users on the successor host.",
+      "signals": ["Antigravity plugin", "plugin import", "gemini-extension.json", "migration note", "deprecated client"],
+      "appliesWhen": "channel: Gemini CLI",
+      "sources": ["google-antigravity", "gemini-extensions"]
+    }
+  ],
+  "regulations": [
+    {
+      "name": "EU Cyber Resilience Act (Regulation (EU) 2024/2847), open-source provisions",
+      "appliesWhen": "Only when the software is made available in the EU in the course of a commercial activity (for example supplied for payment or otherwise monetised by its maker), or when a legal entity gives sustained, systematic support to it as free software intended for commercial use (the open-source steward role). Non-monetised free and open-source software is not in scope, and contributors to projects they do not control are excluded.",
+      "obligations": [
+        "Record whether the product is monetised; if it becomes monetised, the CRA manufacturer obligations apply.",
+        "If a legal entity acts as open-source steward: keep a documented cybersecurity policy covering secure development and vulnerability handling.",
+        "If a steward: cooperate with market surveillance authorities on request.",
+        "If a steward: report actively exploited vulnerabilities and severe incidents affecting the product's security."
+      ],
+      "signals": ["monetization", "sponsorship terms", "SECURITY.md", "vulnerability handling policy", "incident report"],
+      "sources": ["eu-cra-oss"]
+    },
+    {
+      "name": "EU AI Act (Regulation (EU) 2024/1689), Article 2(12) open-source exclusion",
+      "appliesWhen": "The Act does not apply to AI systems released under free and open-source licences unless they are placed on the market or put into service as high-risk AI systems, or fall under Article 5 (prohibited practices) or Article 50 (transparency). It applies only if the product counts as an AI system and falls into one of those categories.",
+      "obligations": [
+        "Record the assessment that the product is released under a free and open-source licence and is not placed on the market as a high-risk AI system nor within Article 5 or Article 50.",
+        "Re-assess if the product starts interacting with people other than its developer users in a way covered by Article 50, or is offered for a high-risk use."
+      ],
+      "signals": ["LICENSE", "intended purpose statement"],
+      "sources": ["eu-ai-act-art2"]
+    }
+  ],
+  "metrics": [
+    {
+      "name": "Eval score with the plugin, without it, and the difference",
+      "why": "Shows whether the plugin makes the assistant reach the right outcome, and whether it contributes anything over the bare model; catches regressions when the plugin or the model changes.",
+      "howMeasured": "An eval suite of realistic prompts with graders (regex, tool used, tool order, file exists, model-judged rubric), run several times per case with and without the plugin; score per arm and the delta, gated in CI with pinned models and a cost ceiling.",
+      "sources": ["cc-plugin-evals", "skills-best-practices"]
+    },
+    {
+      "name": "Skill trigger accuracy",
+      "why": "A skill that does not activate when it should, or activates when it should not, fails users regardless of its content; discovery depends on the description.",
+      "howMeasured": "Eval cases with prompts that should and should not trigger each skill, graded on whether the skill or its tools were used.",
+      "sources": ["cc-plugin-evals", "skills-best-practices"]
+    },
+    {
+      "name": "Always-on and per-invocation context cost",
+      "why": "Every token a plugin adds to each turn competes with the user's work and adds cost; hosts now show this figure before install.",
+      "howMeasured": "Token estimates per plugin (every turn, when invoked) and per component, as reported by the host's plugin details; line and byte counts of generated instruction files against host budgets.",
+      "sources": ["cc-plugin-install", "cc-memory", "codex-agents-md"]
+    },
+    {
+      "name": "Inference cost overhead of generated context files",
+      "why": "Context files were measured to raise agent inference cost by more than 20% without raising success, so the cost of generated content must be weighed against its effect.",
+      "howMeasured": "Paired agent runs on the same tasks with and without the generated files, comparing success rate and tokens or cost per task.",
+      "sources": ["agents-md-eval"]
+    },
+    {
+      "name": "Manifest and skill validation status per client",
+      "why": "A warning in a host's validator becomes a load failure or a stripped component for users on that host.",
+      "howMeasured": "Host validators in strict mode (claude plugin validate --strict, skills-ref validate) run in CI on every change.",
+      "sources": ["cc-plugins-ref", "skills-spec"]
+    },
+    {
+      "name": "Critical findings from skill security scanners",
+      "why": "Prompt injection, malicious code patterns, remote instruction loading and embedded secrets are the issues marketplaces and users scan for before trusting a skill.",
+      "howMeasured": "A skill security scanner run over the package, counting critical-level findings, plus manual review of scripts and hooks.",
+      "sources": ["snyk-skills"]
+    },
+    {
+      "name": "Developer trust in AI output",
+      "why": "Adoption is high (84% use or plan to use AI tools; 90% in DORA's sample) but trust is low (33% trust, 46% distrust), so tools are judged on whether their output can be verified.",
+      "howMeasured": "Industry surveys; for a single product, user feedback and the share of generated changes accepted without rework.",
+      "sources": ["so-survey-2025-ai", "dora-2025"]
+    }
+  ],
+  "weaknesses": [
+    {
+      "name": "Context bloat from generic overviews",
+      "failure": "Generated instruction files describe the repository at length; agents explore more and cost more, adherence drops, and success does not improve.",
+      "lookFor": "Templates that emit project overviews, directory tours or generic style rules into always-loaded files; no size check on generated output; rules with alwaysApply where a path scope would do.",
+      "sources": ["agents-md-eval", "cc-memory", "cursor-rules"]
+    },
+    {
+      "name": "Silent truncation past a host's size limit",
+      "failure": "Instruction files beyond a host's byte budget are cut off, so later rules never reach the model.",
+      "lookFor": "Combined size of root and nested AGENTS.md files near 32 KiB; no per-host size budget in the generator.",
+      "sources": ["codex-agents-md"]
+    },
+    {
+      "name": "Conflicting instructions across files and scopes",
+      "failure": "Two files (root and nested, user and project, repository-wide and path-specific) say different things and the agent follows either one.",
+      "lookFor": "The same topic written in several generated files; generated rules that contradict existing user or project rules; no conflict check after generation.",
+      "sources": ["cc-memory", "copilot-instructions"]
+    },
+    {
+      "name": "Stale generated guidance",
+      "failure": "Instructions name files, commands or versions that no longer exist, or date-bound advice that has expired, and the agent acts on them.",
+      "lookFor": "Copied code or config in rules instead of pointers; version numbers and dates without a refresh path; no staleness or dead-reference check.",
+      "sources": ["cc-memory", "cursor-rules", "skills-best-practices"]
+    },
+    {
+      "name": "Skills that never trigger",
+      "failure": "Vague or first-person descriptions keep the host from picking the skill, so users see no effect.",
+      "lookFor": "Descriptions without a 'use when' clause or key terms; descriptions written in first or second person; no trigger eval cases.",
+      "sources": ["skills-best-practices", "skills-spec"]
+    },
+    {
+      "name": "Indirect prompt injection through the repository or fetched pages",
+      "failure": "Text in a README, issue, dependency or web page steers the agent into running commands or leaking data.",
+      "lookFor": "Agents that read repository or web content with write or shell tools granted; no instruction that external content is data; no human approval step for destructive or networked actions.",
+      "sources": ["owasp-llm01", "snyk-skills"]
+    },
+    {
+      "name": "Behaviour that changes after review",
+      "failure": "Skills or hooks fetch instructions or code at run time, so what was reviewed is not what runs.",
+      "lookFor": "Network fetches of instructions or scripts inside skills and hooks; self-update logic; downloaded executables; credentials in skill files.",
+      "sources": ["snyk-skills"]
+    },
+    {
+      "name": "Breakage on update or on another OS",
+      "failure": "State written into the installed plugin folder disappears on update; unquoted paths with spaces or backslash paths break on some machines.",
+      "lookFor": "Writes under the plugin root variable; unquoted path variables in shell-form hooks; backslashes in skill paths.",
+      "sources": ["cc-plugins-ref", "skills-best-practices"]
+    },
+    {
+      "name": "Rules that must hold written only as advice",
+      "failure": "The model treats instruction files as context and sometimes ignores them, so a must-never rule is broken.",
+      "lookFor": "Prohibitions that exist only in markdown instructions with no hook or permission rule behind them.",
+      "sources": ["cc-memory"]
+    },
+    {
+      "name": "Host churn strands users",
+      "failure": "A host is renamed, retired or changes its extension format, and the plugin keeps shipping for the old one.",
+      "lookFor": "Install instructions and packaging for a retired client; no successor-format output; no check of host deprecation notices.",
+      "sources": ["google-antigravity", "gemini-extensions"]
+    },
+    {
+      "name": "Team install half-done",
+      "failure": "A plugin enabled in committed project settings is not installed on a collaborator's machine, so the team assumes coverage it does not have.",
+      "lookFor": "Setup docs that commit enabledPlugins without telling each collaborator to install; no check that the plugin is present.",
+      "sources": ["cc-plugin-install"]
+    },
+    {
+      "name": "Almost-right output erodes trust",
+      "failure": "Generated code or guidance is close but wrong, debugging it takes longer than expected, and users stop relying on the tool.",
+      "lookFor": "No verification step (tests, gates, validators) between generation and acceptance; outputs without sources or evidence.",
+      "sources": ["so-survey-2025-ai", "dora-2025"]
+    }
+  ],
+  "trends": [
+    {
+      "name": "AGENTS.md as the cross-tool instruction file",
+      "what": "AGENTS.md, now stewarded by the Agentic AI Foundation under the Linux Foundation, is read by Codex, Cursor, Copilot, Gemini CLI and others, and Claude Code reads it when no CLAUDE.md is present.",
+      "maturity": "mainstream",
+      "sources": ["agents-md", "cc-memory", "copilot-instructions", "cursor-rules"]
+    },
+    {
+      "name": "Agent Skills as a shared format",
+      "what": "The SKILL.md format with progressive disclosure is supported by Claude Code, Copilot CLI, Codex plugins and Antigravity CLI, so one skill can serve several assistants.",
+      "maturity": "mainstream",
+      "sources": ["skills-spec", "copilot-cli-plugins", "codex-plugins", "google-antigravity"]
+    },
+    {
+      "name": "Portable plugin packaging",
+      "what": "Agent Plugins 1.0 defines a vendor-neutral package of skills and MCP servers, governed by a steering committee from Amazon, Cursor, Microsoft, OpenAI and Vercel; hooks, agents and commands stay client-specific.",
+      "maturity": "emerging",
+      "sources": ["agent-plugins", "copilot-cli-plugins"]
+    },
+    {
+      "name": "Skill supply-chain security",
+      "what": "Public skill registries have hosted malicious skills combining prompt injection and malware; scanning at submission and manual review of critical findings are becoming expected of marketplaces and authors.",
+      "maturity": "growing",
+      "sources": ["snyk-skills"]
+    },
+    {
+      "name": "Evaluation of plugins and context files",
+      "what": "Host tooling now runs plugin evals with a no-plugin baseline and CI gating, and research questions whether context files help at all, pushing authors to measure uplift.",
+      "maturity": "growing",
+      "sources": ["cc-plugin-evals", "agents-md-eval", "skills-best-practices"]
+    },
+    {
+      "name": "Context-cost transparency",
+      "what": "Hosts show per-plugin token cost before install and flag plugins not used recently, making always-on size a visible selection criterion.",
+      "maturity": "emerging",
+      "sources": ["cc-plugin-install"]
+    },
+    {
+      "name": "Minimal, requirement-only context files",
+      "what": "Guidance and research converge on short files that state non-standard requirements and reference sources rather than overviews.",
+      "maturity": "emerging",
+      "sources": ["agents-md-eval", "cursor-rules", "cc-memory"]
+    },
+    {
+      "name": "Agent use rises while trust falls",
+      "what": "AI tool use is near-universal and agent use is spreading (about 31% use agents at work at least monthly), while trust in accuracy declined and security concerns about agents are high.",
+      "maturity": "growing",
+      "sources": ["so-survey-2025-ai", "dora-2025"]
+    },
+    {
+      "name": "Host consolidation and renames",
+      "what": "Assistants are merging into platform products (Gemini CLI into Antigravity CLI, with extensions becoming Antigravity plugins), so the list of hosts a plugin targets shifts within a year.",
+      "maturity": "emerging",
+      "sources": ["google-antigravity", "gemini-extensions"]
+    }
+  ],
+  "sources": {
+    "cc-plugins-ref": {"url": "https://code.claude.com/docs/en/plugins-reference", "title": "Claude Code: Plugin manifest reference", "accessed": "2026-11-09"},
+    "cc-plugin-install": {"url": "https://code.claude.com/docs/en/plugins/install", "title": "Claude Code: Install and manage plugins", "accessed": "2026-11-09"},
+    "cc-memory": {"url": "https://code.claude.com/docs/en/memory", "title": "Claude Code: How Claude remembers your project", "accessed": "2026-11-09"},
+    "cc-plugin-evals": {"url": "https://code.claude.com/docs/en/plugin-evals", "title": "Claude Code: Test plugins with evals", "accessed": "2026-11-09"},
+    "skills-spec": {"url": "https://agentskills.io/specification", "title": "Agent Skills: Specification", "accessed": "2026-11-09"},
+    "skills-best-practices": {"url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices", "title": "Claude Platform: Skill authoring best practices", "accessed": "2026-11-09"},
+    "agents-md": {"url": "https://agents.md/", "title": "AGENTS.md", "accessed": "2026-11-09"},
+    "codex-agents-md": {"url": "https://learn.chatgpt.com/docs/agent-configuration/agents-md", "title": "Codex: Custom instructions with AGENTS.md", "accessed": "2026-11-09"},
+    "codex-plugins": {"url": "https://learn.chatgpt.com/docs/plugins", "title": "Codex and ChatGPT: Plugins", "accessed": "2026-11-09"},
+    "copilot-instructions": {"url": "https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions", "title": "GitHub Docs: Adding repository custom instructions for GitHub Copilot", "accessed": "2026-11-09"},
+    "copilot-cli-plugins": {"url": "https://docs.github.com/en/copilot/concepts/agents/copilot-cli/about-cli-plugins", "title": "GitHub Docs: About plugins for Copilot CLI", "accessed": "2026-11-09"},
+    "cursor-rules": {"url": "https://cursor.com/docs/context/rules", "title": "Cursor Docs: Rules", "accessed": "2026-11-09"},
+    "gemini-extensions": {"url": "https://geminicli.com/docs/extensions/", "title": "Gemini CLI: Extensions", "accessed": "2026-11-09"},
+    "google-antigravity": {"url": "https://developers.googleblog.com/an-important-update-transitioning-gemini-cli-to-antigravity-cli/", "title": "Google Developers Blog: Transitioning Gemini CLI to Antigravity CLI", "accessed": "2026-11-09"},
+    "agent-plugins": {"url": "https://agent-plugins.org/", "title": "Agent Plugins: open standard for portable agent plugins", "accessed": "2026-11-09"},
+    "agents-md-eval": {"url": "https://arxiv.org/abs/2602.11988", "title": "Evaluating AGENTS.md: Are Repository-Level Context Files Helpful for Coding Agents? (arXiv 2602.11988)", "accessed": "2026-11-09"},
+    "snyk-skills": {"url": "https://research.snyk.io/blog/agent-skills-threat-landscape/", "title": "Snyk Security Research: Exploring the Threat Landscape of Agent Skills", "accessed": "2026-11-09"},
+    "owasp-llm01": {"url": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/", "title": "OWASP GenAI Security Project: LLM01 Prompt Injection", "accessed": "2026-11-09"},
+    "eu-cra-oss": {"url": "https://digital-strategy.ec.europa.eu/en/policies/cra-open-source", "title": "European Commission: Cyber Resilience Act and open source", "accessed": "2026-11-09"},
+    "eu-ai-act-art2": {"url": "https://artificialintelligenceact.eu/article/2/", "title": "EU AI Act, Article 2: Scope (unofficial consolidated text)", "accessed": "2026-11-09"},
+    "so-survey-2025-ai": {"url": "https://survey.stackoverflow.co/2025/ai", "title": "Stack Overflow Developer Survey 2025: AI", "accessed": "2026-11-09"},
+    "dora-2025": {"url": "https://blog.google/technology/developers/dora-report-2025/", "title": "Google: How are developers using AI? Inside our 2025 DORA report", "accessed": "2026-11-09"},
+    "gh-security-policy": {"url": "https://docs.github.com/en/code-security/getting-started/adding-a-security-policy-to-your-repository", "title": "GitHub Docs: Adding a security policy to your repository", "accessed": "2026-11-09"}
+  },
+  "notReached": [
+    "EUR-Lex text of the Cyber Resilience Act (application dates of reporting and full obligations, Article 24 wording): not read; the Commission page does not state the dates.",
+    "Official AI Act text on EUR-Lex: not read; Article 2(12) was read on an unofficial consolidated rendering.",
+    "Full DORA 2025 report PDF (the seven AI capabilities by name): not read; only Google's summary.",
+    "Antigravity CLI plugin reference and Gemini CLI migration guide (antigravity.google): not read.",
+    "Gemini CLI extension reference (gemini-extension.json fields, update mechanism): not read; the overview page did not cover them.",
+    "Agent Plugins 1.0 specification text and JSON Schema (field list, published or draft status): not read; only the landing page.",
+    "Cursor plugin and team marketplace documentation: not read.",
+    "Claude Code plugin security and trust page: not read."
+  ],
+  "questions": [
+    "Assumption: the product stays non-monetised (MIT, no paid tier), so the Cyber Resilience Act does not apply; a paid tier, paid support tied to the product, or a company acting as its steward would change that.",
+    "Assumption: the plugin is not an AI system placed on the market for a high-risk use and does not fall under AI Act Articles 5 or 50, so the open-source exclusion holds.",
+    "product.json lists Gemini CLI as a channel; Google stopped Gemini CLI for individual tiers on 2026-06-18 and moved extensions to Antigravity CLI plugins. Should the channel list name Antigravity CLI, keep Gemini CLI for enterprise users, or both?",
+    "Should the product target the Agent Plugins 1.0 portable format, given that it covers skills and MCP servers only and leaves agents and hooks client-specific?",
+    "How will the product show that its generated rulebooks help, given published evidence that context files can raise cost without raising success? A baseline comparison is the measure the domain offers.",
+    "Survey figures for developer trust differ between Stack Overflow's blog and its survey page; the brief uses the survey page (33% trust, 46% distrust, 66% almost-right)."
+  ]
+}

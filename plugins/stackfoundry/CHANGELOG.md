@@ -6,6 +6,55 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 
 ## [Unreleased]
 
+### Security
+
+- `stackfoundry extensions` no longer trusts the paths in a committed `.stackfoundry/extensions/.base/index.json`.
+  Before this fix, a hostile repo could make `merge` copy a local file (an SSH key, say) into a tracked extension.
+  It could also make `merge` overwrite, or `forget` delete, files outside `.stackfoundry/`.
+- The CLI now handles the index this way:
+  - Base copies are derived from their file's path.
+  - A source must name a plugin skill or agent.
+  - Every path is checked after resolving links.
+  - `extensions check` reports a bad entry as an error.
+- The rule is in `reference/extensions.md` ("What the index is trusted with"). Threat model T4.
+- **Git and gh writes** (T5): the guard parses each command before judging it, so it catches forms it missed before:
+  - quoted or repeated `-C`, `-c`, `--no-pager`;
+  - `git.exe` and path-prefixed git;
+  - `git pull`, branch creation, worktree, notes and ref writes, and `git config core.hooksPath`;
+  - `gh api` with fields or a non-GET method, and more gh verbs.
+
+  It no longer flags `echo 'git push'`.
+- **Nested `guards.json`** (T6): every file from the call's folder up, plus the project root's, applies, and the
+  strictest answer wins. An empty, partial or broken nested file can no longer switch off the root's rules.
+- **Role rules** (T3, T11): in Claude Code the guard knows which subagent made a call. It asks before:
+  - a read-only role changes project files;
+  - any subagent changes a control-plane file (`.stackfoundry/**`, instruction files) its role does not own;
+  - a web-reading researcher writes beyond its output.
+- **Shell and web apart** (T2, T15): `security-reviewer` and `performance-reviewer` no longer hold web tools, and
+  `tech-radar` no longer sends all-tool agents onto web pages. `verify-plumbing` rejects any grant that holds a shell
+  beside web tools.
+- **Unattended runs** (T11, T16): `schedule` now proposes `--permission-mode dontAsk` with an allow list, replacing
+  `acceptEdits`. The side-effect check now covers untracked files and the control plane's content.
+- **Researched text** (T9): pack and brief text must be single-line and free of HTML comments, rulebook paths must be
+  plain globs, and rendering cannot break out of a line. init and research-stack show a new pack's rules before
+  writing.
+
+### Added
+
+- The `web-researcher` agent: it answers a skill's web questions with cited notes, and holds no shell and writes
+  nothing.
+- `stackfoundry side-effects start|end`, and `reference/unattended.md`, the one copy of the unattended-run contract.
+- `configure-guards` and `init` offer Claude Code `ask` rules for `guards.json` and `extensions/**`.
+
+### Changed
+
+- `security-reviewer` and `performance-reviewer` grants dropped `WebSearch` and `WebFetch`. Their skills pass
+  `web-researcher` notes as `web:`, and `performance-review` writes Pass 2 itself. A materialized copy picks up the
+  grant change through `upgrade`'s three-way merge.
+- `performance-review` gained a step, *Web pass*, before *Persist*.
+- **Breaking for scheduled runs:** existing cron or Actions lines that use `acceptEdits` keep working. Re-run
+  `/stackfoundry:schedule` to move them to the bounded line.
+
 ## [0.2.0] - 2026-11-09
 
 ### Added
