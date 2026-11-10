@@ -172,7 +172,7 @@ def _fork_ok(rel: object) -> bool:
     if not isinstance(rel, str) or rel.endswith(MERGE_SUFFIX):
         return False
     allowed = [f"{(EXT_DIR / k).as_posix()}/" for k in KINDS] + [f"{MATERIALIZED_DIR.as_posix()}/"]
-    return any(rel.startswith(a) and FORK_NAME.match(rel[len(a):]) for a in allowed)
+    return any(rel.startswith(a) and FORK_NAME.fullmatch(rel[len(a):]) for a in allowed)
 
 
 def _rel(root: Path, file: str) -> str:
@@ -199,7 +199,7 @@ def _inside(path: Path, parent: Path) -> bool:
 
 def _source(plugin_root: Path, from_rel: object) -> Path:
     """The plugin file a full copy follows; refused unless it names a plugin skill or agent inside the plugin."""
-    if not isinstance(from_rel, str) or not PLUGIN_FILE.match(from_rel):
+    if not isinstance(from_rel, str) or not PLUGIN_FILE.fullmatch(from_rel):
         raise ValueError(f"source {from_rel!r} is not a plugin skill or agent (skills/<name>/SKILL.md or "
                          "agents/<name>.md)")
     src = plugin_root / from_rel
@@ -324,7 +324,7 @@ def _check_one(root, plugin_root, kind, f, rel, index, targets, rep: Report) -> 
     if extends != name:
         rep.errors.append(f"{rel}: extends {extends!r} must equal the file name {name!r}")
     target = plugin_file(plugin_root, kind, name)
-    if not NAME.match(name) or not target.is_file():
+    if not NAME.fullmatch(name) or not target.is_file():
         rep.errors.append(f"{rel}: the plugin has no {kind[:-1]} named {name!r}")
         return
     if mode not in MODES:
@@ -377,7 +377,7 @@ def _check_one(root, plugin_root, kind, f, rel, index, targets, rep: Report) -> 
 
 def new(root: Path, kind: str, name: str, replace: bool, plugin_root: Path = PLUGIN_ROOT) -> str:
     kind = kind if kind.endswith("s") else kind + "s"
-    if kind not in KINDS or not NAME.match(name):
+    if kind not in KINDS or not NAME.fullmatch(name):
         raise ValueError(f"not a skill or agent name: {kind} {name!r}")
     src = plugin_file(plugin_root, kind, name)
     if not src.is_file():

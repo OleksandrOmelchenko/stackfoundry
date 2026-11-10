@@ -33,7 +33,7 @@ def check_sources(doc: dict, errors: list[str]) -> dict:
     for key, src in sources.items():
         if not isinstance(src, dict) or not str(src.get("url", "")).startswith(("http://", "https://")):
             errors.append(f"source [{key}] needs an http(s) url")
-        elif not DATE.match(str(src.get("accessed", ""))):
+        elif not DATE.fullmatch(str(src.get("accessed", ""))):
             errors.append(f"source [{key}] needs an accessed date (YYYY-MM-DD)")
     return sources
 

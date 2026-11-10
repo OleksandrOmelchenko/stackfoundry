@@ -1,6 +1,6 @@
 # plugin: threat model
 
-**Open:** 🔵 T8, T10, T12, T13, T14, T17, T18
+**Open:** 🔵 T8, T12, T13, T14, T17
 
 A living document (`/stackfoundry:threat-model plugin` refreshes it). Exposure: offline. Stakes: safety,
 data-integrity.
@@ -8,7 +8,7 @@ data-integrity.
 The plugin is published on a public marketplace and runs inside users' local assistant sessions, where it reads
 their untrusted repos and web pages. Scope: the `plugin` paths in `.stackfoundry/targets.json`. Threats that cross
 into the CLI and hooks were followed into `plugins/stackfoundry/scripts/**` and `hooks/**` (the `cli` target).
-T10 and T18 have their fix there; T4, T5, T6 and parts of T3, T9 and T11 were fixed there.
+T4, T5, T6, T10, T18 and parts of T3, T9 and T11 were fixed there.
 
 Method: assets × actors × entry points, then STRIDE threats at each boundary crossing. Every 🔴/🟡 gap was challenged
 by an independent reviewer told to find the control that closes it; T1 and T7 were refuted that way and are
@@ -103,13 +103,14 @@ recorded as mitigated threats below.
 | Common git and gh write forms escape `GIT_WRITE`/`GH_WRITE` | tampering | hook event | `shellwords.py` `segments`, `git_write`, `gh_write` read each simple command | T5 ✅ |
 | Shell writes to generated files skip the generated-file guard | tampering | hook event | documented scope: the guard covers tool edits only (`.stackfoundry/rules/app-model-python-cli.md`, configure-guards) | — |
 | A nested, empty or broken `guards.json` replaces the repo's rules under it | tampering | hook event | `guard.py` `_chain`, `verdict`: every file applies, the strictest answer wins | T6 ✅ |
-| Guard fails open (no Python, invalid file, Copilot variable unset, timeout) | denial of service | hook launch | documented and tested fail-open contract (`skills/configure-guards/SKILL.md`, `hooks/hooks.json` description, `tests/test_guard.py` `test_fails_open`); `guard --check` at init and configure-guards | T18 |
+| Guard fails open (no Python, invalid file, Copilot variable unset, timeout) | denial of service | hook launch | documented and tested fail-open contract (`skills/configure-guards/SKILL.md`, `hooks/hooks.json` description, `tests/test_guard.py` `test_fails_open`); `guard --check` at init, configure-guards and `sync`; Claude Code shows a once-a-session `systemMessage` for an unreadable file (`guard.py` `_unreadable_warning`) | T18 ✅ |
 | Cursor hook runs a repo-planted `scripts/stackfoundry.sh` | elevation | hook launch | Cursor runs plugin `preToolUse` and `beforeShellExecution` hooks from the plugin's install folder (https://cursor.com/docs/agent/hooks); only `stop`/`subagentStop` run from the workspace | T17 |
 | A repo extension silently changes a role | tampering, repudiation | repo extensions | fixed contract in `reference/extensions.md` (advice); `extensions.py` `check` (structure only) | T8 |
 | Fetched text becomes always-loaded rulebook instructions | tampering, elevation | fetched pages | `cited.py` `check_inline`; `pack.py` `check`, `check_context`, `render` (`_flat`, quoted frontmatter); init and research-stack show a new pack's rules | T9 ✅ |
 | Agents or scheduled runs rewrite the control plane | tampering, elevation | CLI writes, unattended runs | `roles.py` R2–R4 (`CONTROL_PLANE`, `ROLE_OUTPUTS`); `schedule` dontAsk lines; `sideeffects.py`; offered ask rules | T11 ✅ |
 | Unattended tech-radar fans out all-tool agents onto untrusted pages | elevation, tampering | unattended runs | `tech-radar` researches only through `stackfoundry:web-researcher` and reads no page itself; dontAsk on a schedule | T15 ✅ |
-| A planted `python3` in a relative PATH entry runs as the guard | elevation | hook launch | `-I`; `stackfoundry.ps1` requires a rooted path; `stackfoundry.sh` does not | T10 |
+| A planted `python3` in a relative PATH entry runs as the guard | elevation | hook launch | `-I`; `stackfoundry.ps1` requires a rooted path; `stackfoundry.sh` `abspath` walks PATH and skips relative entries | T10 ✅ |
+| An edit names a protected file in another letter case (`APP/Generated/x.py`) on a case-insensitive file system | tampering | hook event | `globs.py` `CASE_INSENSITIVE_FS`, `match(..., ignore_case)`, used by `guard.py` `_guards_verdict` and `roles.py` `_control`, `_owned`; globs take the whole path (`fullmatch`) | T19 ✅ |
 | A planted module or `git.exe` in the repo | elevation | hook launch | `stackfoundry.sh` `-I`; `cli.py` explicit `sys.path`; `gitutil.py` `git_exe` | — |
 | A ref argument turns a read-only git call into a write (`--output=`) | tampering | CLI | `gitutil.py` `check_ref` | — |
 | A guards rule pre-approves a command | elevation | hook event | `guard.py` `verdict` coerces anything but deny/ask to ask | — |
@@ -329,7 +330,11 @@ recorded as mitigated threats below.
     - flag rules that tell someone to run a command that is not a gate or test command, text addressed to agents,
       and URLs that are not in `sources`.
 
-### T10 🔵 ⬜ OPEN — The launcher trusts relative PATH entries for Python
+### T10 🔵 ✅ FIXED — The launcher trusts relative PATH entries for Python
+- **Mitigation:** `scripts/stackfoundry.sh` `abspath` walks PATH itself and takes a Python only from an absolute
+  entry, then `exec`s that path. `command -v` was not enough: bash turns a relative entry into an absolute path under
+  the current folder. Tests: `tests/test_blue_gaps.py` `LauncherPathTests` (`.` and an empty entry, with a planted
+  `python3` and `python`).
 - **Where:** `scripts/stackfoundry.sh` `ok` and its `exec python3 -I` chain (the `cli` target).
 - **Threat:** elevation of privilege.
 - **Failure:** the hook's cwd is the user's repo. With `.` or an empty entry in PATH, a repo-planted `python3` runs
@@ -445,7 +450,16 @@ recorded as mitigated threats below.
   - Have the builder refuse a relative command for `stop`/`subagentStop`.
   - Replace *confirm* in `clients.md` with the documented behaviour and cite https://cursor.com/docs/agent/hooks.
 
-### T18 🔵 ⬜ OPEN — Guard fail-open is silent, and the file is never re-checked after init
+### T18 🔵 ✅ FIXED — Guard fail-open is silent, and the file is never re-checked after init
+- **Mitigation:**
+  - `skills/sync/SKILL.md` runs `stackfoundry guard --check` in its drift table.
+  - In Claude Code, `guard.py` `decide` adds a `systemMessage` when a governing `guards.json` cannot be read. It is
+    shown once per session and file version, through a marker in the temp folder, and decides nothing.
+  - `guard --check` warns on Windows when `sh` is missing, since Claude Code's hook then lets every call through.
+  - Other assistants stay silent, because their warning field is unconfirmed.
+  - Tests: `tests/test_blue_gaps.py` `UnreadableGuardsWarningTests`, `GitBashWarningTests`.
+  - **Remains:** a machine without Python is still silent in the hook. The launcher cannot tell which assistant
+    called it, and init's and sync's `guard --check` fail loudly there.
 - **Where:** `scripts/stackfoundry/guard.py` `main` and `_load`; `scripts/stackfoundry.sh` and
   `scripts/stackfoundry.ps1` (the guard branch); `skills/sync/SKILL.md`.
 - **Threat:** silent loss of a safety control. Failing open is the documented, tested design, so the gap is the
@@ -457,6 +471,21 @@ recorded as mitigated threats below.
   - For Claude Code, when a `guards.json` exists but cannot be evaluated, print a `systemMessage` warning (shown to
     the user, blocks nothing).
   - Keep the silent no-opinion for hosts whose support for that field is unconfirmed.
+
+### T19 🟡 ✅ FIXED — A protected path in another letter case slips past the guard on Windows and macOS
+- **Where:** `scripts/stackfoundry/globs.py` `match` (case-sensitive), as used by `guard.py` `_guards_verdict` and
+  `roles.py` `_control` and `_owned`.
+- **Threat:** tampering: an edit of a generated file or of the control plane goes through without the deny or ask.
+- **Failure:** on a case-insensitive file system, `APP/Generated/client.py` is `app/generated/client.py`. Found by
+  the seventh self-run. An edit whose path stays relative (a relative or missing `cwd`) skips `Path.resolve`, so the
+  original case reaches the case-sensitive glob, and the guard gives no opinion. Claude Code sends absolute paths,
+  which resolve to the real case, so it is exposed only through an assistant that sends relative ones. That keeps
+  this at 🟡.
+- **Mitigation:**
+  - `globs.py` matches with `ignore_case=CASE_INSENSITIVE_FS` (Windows and macOS) in the guard and the role rules,
+    and every glob takes the whole path, so a trailing newline no longer passes.
+  - Tests: `tests/test_loop7_fixes.py` `CaseFoldTests`. Live: the self-run's probe (`APP/Generated/Client.py`,
+    `cwd: "."`) went from no opinion to deny.
 
 ## Not covered
 

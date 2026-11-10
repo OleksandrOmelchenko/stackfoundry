@@ -26,7 +26,9 @@ dependency bumpers and a tech radar.
 | Gemini CLI | `gemini extensions install` with the `stackfoundry-gemini.tar.gz` of a release |
 | Any Agent Skills client | copy `plugins/stackfoundry/skills/` into the folder it reads (often `.agents/skills/`); skills only |
 
-Requirements: git, Python 3.11+, and `sh` (Git Bash on Windows) or PowerShell 7.
+Requirements: git, Python 3.11+, and `sh` (Git Bash on Windows) or PowerShell 7. In Claude Code the guard hook
+runs through `sh`, so on Windows it needs Git Bash: without it the guard is off (the hook lets every call through),
+and `stackfoundry guard --check` says so.
 
 ### Set up your repository
 

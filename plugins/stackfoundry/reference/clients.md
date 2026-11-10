@@ -51,7 +51,10 @@ One command, `stackfoundry guard`, serves every assistant's pre-tool hook. It re
 
 Each assistant's hook file is generated (`plugin.json` → `com.openai/hooks.json`, `com.github.copilot/hooks/`,
 `com.cursor/hooks.json`, the Gemini extension's `hooks/hooks.json`). Copilot denies a tool call when a hook errors,
-so its hook command exits 0 with no opinion when it cannot find the launcher. *Confirm* in each assistant before
+so its hook command exits 0 with no opinion when it cannot find the launcher. Claude Code runs a shell-form hook in
+PowerShell when Git Bash is missing ([hooks](https://code.claude.com/docs/en/hooks)), where `sh` does not exist; the
+hook sets `"onFailure": "continue"`, so the call goes through with no guard rather than being blocked.
+`stackfoundry guard --check` warns when `sh` is missing on Windows. *Confirm* in each assistant before
 relying on it: which variable carries the plugin root in Copilot's plugin hooks, whether Cursor's `allow` leaves its
 own approval prompts in place, and that Codex runs hooks from a marketplace install (its docs limit plugin hooks to
 manual installs, after `/hooks` trust).

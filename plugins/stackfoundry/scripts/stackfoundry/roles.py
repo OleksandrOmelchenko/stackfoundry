@@ -21,7 +21,7 @@ from pathlib import Path
 
 from . import PLUGIN_ROOT, shellwords
 from .frontmatter import split
-from .globs import match
+from .globs import CASE_INSENSITIVE_FS, match
 
 PREFIX = "stackfoundry:"
 READ_ONLY = re.compile(r"\bread-only\b", re.I)
@@ -104,11 +104,11 @@ def _rel(raw: str, base: Path, project: Path) -> str | None:
 
 
 def _control(rel: str | None) -> bool:
-    return rel is not None and any(match(rel, g) for g in CONTROL_PLANE)
+    return rel is not None and any(match(rel, g, CASE_INSENSITIVE_FS) for g in CONTROL_PLANE)
 
 
 def _owned(role: str, rel: str) -> bool:
-    return any(match(rel, g) for g in ROLE_OUTPUTS.get(role, ()))
+    return any(match(rel, g, CASE_INSENSITIVE_FS) for g in ROLE_OUTPUTS.get(role, ()))
 
 
 def _changes(argv: list[str]) -> tuple[str, list[str]] | None:

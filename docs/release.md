@@ -26,6 +26,10 @@ tags named `<plugin>--v<version>`. So a release is: bump the version, record the
 5. **Publish a GitHub release** for the tag. The `Release assets` workflow (`.github/workflows/release.yml`) builds
    the Gemini CLI extension and attaches it as `stackfoundry-gemini.tar.gz`. The other assistants read the
    committed files that `python scripts/build_clients.py` generates, which the checks in step 3 keep current.
+   - **Immutable releases stay off** for this repository. The workflow attaches the asset after the release is
+     published, and an immutable release refuses any change after publishing
+     ([GitHub docs](https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/immutable-releases)).
+     Turning them on first needs the asset built and attached to a draft release, which is then published.
 6. Users get it with `claude plugin update stackfoundry@stackfoundry` (or automatically when they turned on
    auto-update for the marketplace), then `/reload-plugins` or a new session. Repos then run
    `/stackfoundry:upgrade` to take template changes into their generated files.

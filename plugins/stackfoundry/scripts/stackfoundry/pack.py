@@ -48,13 +48,13 @@ def check(pack: dict) -> tuple[list[str], list[str]]:
     if pack.get("schemaVersion") != 1:
         errors.append("schemaVersion must be 1")
     pid, layer = pack.get("id", ""), pack.get("layer")
-    if not ID.match(pid or ""):
+    if not ID.fullmatch(pid or ""):
         errors.append(f"id {pid!r} must look like <layer>-<name>")
     if layer not in LAYERS:
         errors.append(f"layer {layer!r} must be one of {', '.join(LAYERS)}")
     elif pid and not pid.startswith(layer + "-"):
         errors.append(f"id {pid!r} does not start with its layer {layer!r}")
-    if not DATE.match(str(pack.get("researchedAt", ""))):
+    if not DATE.fullmatch(str(pack.get("researchedAt", ""))):
         errors.append("researchedAt must be a YYYY-MM-DD date")
     if not isinstance(pack.get("versions"), list):
         errors.append("versions must be a list (empty when the version is not pinned anywhere)")

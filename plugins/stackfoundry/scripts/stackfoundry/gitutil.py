@@ -15,9 +15,8 @@ class GitError(RuntimeError):
 def git_exe() -> str:
     """git's absolute path, from absolute PATH entries only. A bare "git" on Windows can resolve to a git.exe in the
     current directory, which here is the user's repo: a file planted there must never run."""
-    exts = [""]
-    if os.name == "nt":
-        exts = [e.lower() for e in os.environ.get("PATHEXT", ".COM;.EXE;.BAT;.CMD").split(";") if e]
+    # On Windows only git.exe: a git.bat or git.cmd would run through cmd.exe, which re-parses the arguments.
+    exts = [".exe"] if os.name == "nt" else [""]
     for d in os.environ.get("PATH", "").split(os.pathsep):
         if not d or not os.path.isabs(d):
             continue

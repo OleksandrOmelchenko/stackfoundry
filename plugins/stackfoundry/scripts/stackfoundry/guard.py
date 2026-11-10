@@ -26,12 +26,13 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from . import roles, shellwords
-from .globs import match
+from .globs import CASE_INSENSITIVE_FS, match
 from .profile import GUARDS
 
 # The fallback for a command shellwords cannot split (unbalanced quotes): whole-string patterns.
@@ -161,15 +162,48 @@ def _absolute(raw: str, base: Path) -> Path:
 def _chain(start: Path, project: Path) -> list[tuple[Path, dict]]:
     """Every guards.json that governs `start`, nearest first: each folder at or above it that holds one, plus the
     project root's. A file that does not load, or is empty, is skipped, so it can never switch the others off."""
-    roots = [d for d in (start, *start.parents) if (d / GUARDS).is_file()]
-    if (project / GUARDS).is_file() and not any(_same(project, r) for r in roots):
-        roots.append(project)
     chain = []
-    for r in roots:
+    for r in _roots(start, project):
         guards = _load(r)
         if guards:
             chain.append((r, guards))
     return chain
+
+
+def _roots(start: Path, project: Path) -> list[Path]:
+    roots = [d for d in (start, *start.parents) if (d / GUARDS).is_file()]
+    if (project / GUARDS).is_file() and not any(_same(project, r) for r in roots):
+        roots.append(project)
+    return roots
+
+
+def _unreadable_warning(event: dict, start: Path, project: Path) -> str | None:
+    """A warning for the user when a governing guards.json cannot be read, so its rules are silently off (the hook
+    fails open by design). Once per file version and session: a marker in the temp folder remembers it was said."""
+    import hashlib
+    import tempfile
+
+    fresh = []
+    for root in _roots(start, project):
+        path = root / GUARDS
+        if _load(root) is not None:
+            continue
+        try:
+            stamp = f"{event.get('session_id', '')}|{path}|{path.stat().st_mtime_ns}"
+        except OSError:
+            continue
+        marker = Path(tempfile.gettempdir()) / f"stackfoundry-guard-warned-{hashlib.sha256(stamp.encode()).hexdigest()[:16]}"
+        if marker.exists():
+            continue
+        try:
+            marker.touch()
+        except OSError:
+            pass
+        fresh.append(str(path))
+    if not fresh:
+        return None
+    return (f"stackfoundry guard: {', '.join(fresh)} cannot be read, so its rules are off. "
+            "Run `stackfoundry guard --check` to see why.")
 
 
 def _same(a: Path, b: Path) -> bool:
@@ -210,7 +244,7 @@ def _guards_verdict(call: Call, project: Path) -> tuple[str, str] | None:
                 if rel is None:
                     continue
                 for g in guards.get("generated", []):
-                    if isinstance(g, dict) and isinstance(g.get("glob"), str) and match(rel, g["glob"]):
+                    if isinstance(g, dict) and isinstance(g.get("glob"), str) and match(rel, g["glob"], CASE_INSENSITIVE_FS):
                         how = g.get("regenerate") or "regenerate it from its source"
                         return "deny", f"{rel} is generated ({g['glob']}); never hand-edit it. {how}."
         return None
@@ -294,9 +328,14 @@ def answer(client: str, event: dict, decided: tuple[str, str] | None, can_ask: b
 def decide(event: dict, project: Path, client: str | None = None) -> str | None:
     client = client or detect(event)
     call = normalize(event, client, project)
-    if call is None:
-        return answer(client, event, None)
-    return answer(client, event, verdict(call, project), call.can_ask)
+    out = answer(client, event, None) if call is None else answer(client, event, verdict(call, project), call.can_ask)
+    if client == "claude-code":  # systemMessage is confirmed for Claude Code only (reference/clients.md)
+        warning = _unreadable_warning(event, call.base if call else project, project)
+        if warning:
+            data = json.loads(out) if out else {}
+            data["systemMessage"] = warning
+            out = json.dumps(data)
+    return out
 
 
 def check_file(path: Path) -> list[str]:
@@ -348,6 +387,11 @@ def main(args) -> int:
         for p in problems:
             print(f"guards.json: {p}")
         print("guards.json: ok" if not problems else f"guards.json: {len(problems)} problem(s)")
+        if os.name == "nt" and not shutil.which("sh"):
+            # Claude Code's hook runs `sh "<root>/scripts/stackfoundry.sh" guard`; without Git Bash that fails and,
+            # with onFailure "continue", every call goes through. A warning, not a problem in the file.
+            print("guard: warning: no `sh` on PATH, so Claude Code's guard hook cannot run here and every call goes "
+                  "through. Install Git for Windows (Git Bash).")
         return 1 if problems else 0
     client = getattr(args, "client", None)
     if client == "auto":

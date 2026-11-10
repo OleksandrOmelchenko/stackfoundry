@@ -22,9 +22,17 @@ from stackfoundry.gitutil import GitError  # noqa: E402
 from stackfoundry.profile import ProfileError  # noqa: E402
 
 
+class _Parser(argparse.ArgumentParser):
+    """No abbreviated options (`--ro` for `--root`), in every subcommand: a typo must fail, not pick an option."""
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("allow_abbrev", False)
+        super().__init__(*args, **kwargs)
+
+
 def build() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="stackfoundry", description=__doc__.splitlines()[0])
-    sub = p.add_subparsers(dest="command", required=True, metavar="<subcommand>")
+    p = _Parser(prog="stackfoundry", description=__doc__.splitlines()[0])
+    sub = p.add_subparsers(dest="command", required=True, metavar="<subcommand>", parser_class=_Parser)
 
     s = sub.add_parser("survey", help="(read-only) repo inventory as JSON: manifests, layers, tests, CI, generated code")
     s.add_argument("path", nargs="?", default=".")

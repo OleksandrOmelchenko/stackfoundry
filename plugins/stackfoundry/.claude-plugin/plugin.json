@@ -9,6 +9,7 @@
   "homepage": "https://github.com/OleksandrOmelchenko/stackfoundry",
   "repository": "https://github.com/OleksandrOmelchenko/stackfoundry",
   "license": "MIT",
+  "icon": "./.claude-plugin/icon.png",
   "keywords": [
     "testing",
     "code-review",

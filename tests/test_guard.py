@@ -25,7 +25,8 @@ class GuardTests(unittest.TestCase):
             write(root, {".stackfoundry/guards.json": json.dumps(guards)})
         proc = run_cli(["guard"], stdin=payload, env={"CLAUDE_PROJECT_DIR": str(root)})
         self.assertEqual(proc.returncode, 0, proc.stderr)
-        return json.loads(proc.stdout)["hookSpecificOutput"] if proc.stdout.strip() else None
+        # A warning alone (systemMessage, an unreadable guards.json) carries no decision: the call still goes through.
+        return json.loads(proc.stdout).get("hookSpecificOutput") if proc.stdout.strip() else None
 
     def test_generated_edit_is_denied_with_how_to_regenerate(self):
         with TempRepo() as root:

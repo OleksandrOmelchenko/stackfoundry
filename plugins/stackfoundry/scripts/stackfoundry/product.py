@@ -39,7 +39,7 @@ def check_product(data: dict) -> tuple[list[str], list[str]]:
     for key in ("name", "summary", "category"):
         if not isinstance(data.get(key), str) or not data[key].strip():
             errors.append(f"'{key}' is required")
-    if not KEBAB.match(str(data.get("domainId", ""))):
+    if not KEBAB.fullmatch(str(data.get("domainId", ""))):
         errors.append("'domainId' must be a kebab-case id (the domain brief's file name)")
     if not _str_list(data.get("audiences")) or not data.get("audiences"):
         errors.append("'audiences' must be a non-empty list of strings")
@@ -67,11 +67,11 @@ def check_domain(data: dict) -> tuple[list[str], list[str]]:
     warnings: list[str] = []
     if data.get("schemaVersion") != 1:
         errors.append("schemaVersion must be 1")
-    if not KEBAB.match(str(data.get("id", ""))):
+    if not KEBAB.fullmatch(str(data.get("id", ""))):
         errors.append("'id' must be a kebab-case id (product.json's domainId)")
     if not data.get("title"):
         errors.append("'title' is required")
-    if not DATE.match(str(data.get("researchedAt", ""))):
+    if not DATE.fullmatch(str(data.get("researchedAt", ""))):
         errors.append("researchedAt must be a YYYY-MM-DD date")
     if not isinstance(data.get("scope"), dict):
         errors.append("'scope' must be an object (the product facts the research covered)")

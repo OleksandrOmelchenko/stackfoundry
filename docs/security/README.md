@@ -9,4 +9,4 @@ open ones and `stackfoundry tracker check` verifies each file. Findings of a sec
 
 | Threat model | State | Open |
 |---|---|---|
-| [plugin](plugin-threat-model.md) | open | 🔵 T8, T10, T12, T13, T14, T17, T18 |
+| [plugin](plugin-threat-model.md) | open | 🔵 T8, T12, T13, T14, T17 |

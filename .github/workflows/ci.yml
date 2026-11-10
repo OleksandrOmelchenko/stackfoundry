@@ -47,7 +47,7 @@ jobs:
           node-version: lts/*
       - name: Install Claude Code CLI
         # Pinned so a CLI release cannot change what "valid" means between two runs of the same commit.
-        run: npm install -g @anthropic-ai/claude-code@2.1.307
+        run: npm install -g @anthropic-ai/claude-code@2.1.319
       - name: Validate marketplace
         run: claude plugin validate --strict .
       - name: Validate plugin

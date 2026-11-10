@@ -38,6 +38,7 @@ GEMINI_TOOLS = {"Read": ["read_file", "read_many_files"], "Grep": ["grep_search"
 # the table in their instruction file.
 RULE_FORMATS = {"claude-code": (".claude/rules", ".md"), "copilot": (".github/instructions", ".instructions.md"),
                 "cursor": (".cursor/rules", ".mdc")}
+SIBLING_LINK = re.compile(r"\]\(([a-z0-9][a-z0-9-]*)\.md(#[^)\s]*)?\)")  # a link to a rulebook in the same folder
 INSTRUCTION_FILES = {"claude-code": "CLAUDE.md", "codex": "AGENTS.md", "copilot": "AGENTS.md", "cursor": "AGENTS.md",
                      "gemini": "GEMINI.md"}
 AGENT_FORMATS = {"claude-code": (".claude/agents", ".md"), "codex": (".codex/agents", ".toml"),
@@ -114,7 +115,12 @@ def render_rule(text: str, client: str) -> str:
         head = ["---", f"description: {_yaml_plain_or_quoted(desc)}", f"globs: {','.join(paths)}", "alwaysApply: false"]
     else:
         raise ValueError(f"{client} has no path-scoped rules; it reads {CANONICAL_RULES}/ through its instruction file")
-    # The body is kept byte for byte, so a canonical rulebook already in Claude Code's form renders unchanged.
+    # The body is kept byte for byte, so a canonical rulebook already in Claude Code's form renders unchanged. Every
+    # assistant's folder sits as deep as the canonical one, so only links to a sibling rulebook (`tooling-x.md`)
+    # change: its copy there carries the assistant's suffix.
+    suffix = RULE_FORMATS[client][1]
+    if suffix != ".md":
+        body = SIBLING_LINK.sub(lambda m: f"]({m.group(1)}{suffix}{m.group(2) or ''})", body)
     return "\n".join(head + ["---"]) + "\n" + body.rstrip("\n") + "\n"
 
 

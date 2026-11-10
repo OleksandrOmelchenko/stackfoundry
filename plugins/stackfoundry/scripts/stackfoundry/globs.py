@@ -3,11 +3,18 @@
 `src/api/**` matches everything under `src/api/`; `**/*.cs` matches a `.cs` file at any depth, the top level
 included; a pattern without a slash (`*.md`) matches the file name at any depth, and a leading slash (`/*.md`)
 anchors the pattern at the repo root, both as in .gitignore.
+
+The guard matches with `ignore_case=CASE_INSENSITIVE_FS`: on Windows and macOS `APP/Generated/x.py` is the same file
+as `app/generated/x.py`, and a case-sensitive match would let an edit through.
 """
 from __future__ import annotations
 
+import os
 import re
+import sys
 from functools import lru_cache
+
+CASE_INSENSITIVE_FS = os.name == "nt" or sys.platform == "darwin"
 
 
 def normalize(path: str) -> str:
@@ -18,7 +25,7 @@ def normalize(path: str) -> str:
 
 
 @lru_cache(maxsize=1024)
-def compile_glob(pattern: str) -> re.Pattern[str]:
+def compile_glob(pattern: str, ignore_case: bool = False) -> re.Pattern[str]:
     raw = pattern.replace("\\", "/")
     while raw.startswith("./"):
         raw = raw[2:]
@@ -67,11 +74,12 @@ def compile_glob(pattern: str) -> re.Pattern[str]:
         else:
             out.append(re.escape(c))
             i += 1
-    return re.compile("^" + "".join(out) + "$")
+    return re.compile("".join(out), re.IGNORECASE if ignore_case else 0)
 
 
-def match(path: str, pattern: str) -> bool:
-    return compile_glob(pattern).match(normalize(path)) is not None
+def match(path: str, pattern: str, ignore_case: bool = False) -> bool:
+    # fullmatch: `^…$` with match() would accept a trailing newline in the path.
+    return compile_glob(pattern, ignore_case).fullmatch(normalize(path)) is not None
 
 
 def match_any(path: str, patterns: list[str] | tuple[str, ...]) -> bool:

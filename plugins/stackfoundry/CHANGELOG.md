@@ -38,6 +38,18 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 - **Researched text** (T9): pack and brief text must be single-line and free of HTML comments, rulebook paths must be
   plain globs, and rendering cannot break out of a line. init and research-stack show a new pack's rules before
   writing.
+- **The launcher's Python** (T10): `stackfoundry.sh` takes Python only from an absolute PATH entry. Before, with `.`
+  or an empty entry in PATH, a `python3` planted in the repo ran on every tool call.
+- **A guard that is off says so** (T18):
+  - In Claude Code, an unreadable `guards.json` shows a warning once a session.
+  - `sync` runs `guard --check`.
+  - `guard --check` warns on Windows without Git Bash, where Claude Code's hook lets every call through.
+- **Input checks:** id, name, path and date checks take the whole value; before, a trailing newline passed. On
+  Windows, only `git.exe` runs, never a `git.cmd` or `git.bat`, which cmd.exe re-parses. Options can no longer be
+  abbreviated (`--ro` for `--root`).
+- **Letter case** (T19): on Windows and macOS the guard and the role rules match protected paths case-insensitively.
+  Before, an edit naming `APP/Generated/x.py` through a relative path got past a deny for `app/generated/**`. Globs
+  take the whole path, so a trailing newline no longer passes.
 
 ### Added
 
@@ -56,6 +68,11 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 - `performance-review` gained a step, *Web pass*, before *Persist*.
 - **Breaking for scheduled runs:** existing cron or Actions lines that use `acceptEdits` keep working. Re-run
   `/stackfoundry:schedule` to move them to the bounded line.
+- `plugin.json` names its icon for Anthropic's directory listing. `verify-plumbing` knows the full current set of
+  skill frontmatter keys, so `arguments`, `disallowed-tools`, `background`, `hooks`, `shell`, `metadata` and
+  `compatibility` no longer warn.
+- The README and `reference/clients.md` say that Claude Code's guard hook needs `sh`, so on Windows it needs Git
+  Bash.
 
 ### Fixed
 
@@ -69,6 +86,8 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   `tests/_support.py`, when they sit in a folder the test paths name.
 - An unexpected error in a CLI command printed a traceback and exited 1, which callers read as "ran and found
   something". It now exits 2, and 0 for the guard, which has no opinion then.
+- `render-rule --client copilot|cursor` links a sibling rulebook by its copy's own name
+  (`tooling-x.instructions.md`, `tooling-x.mdc`). Before, the links pointed at `.md` files that do not exist there.
 - `stack-researcher` and `domain-researcher` can `Edit` their own output, so a correction no longer rewrites the
   whole file. The role guard still bounds every write to that file.
 

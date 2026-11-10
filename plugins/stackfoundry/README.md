@@ -38,4 +38,5 @@ effort) are in `.stackfoundry/config.json`; `stackfoundry config` prints them wi
 ## Requirements
 
 Claude Code (or another assistant in `reference/clients.md`), git, Python 3.11 or newer on `PATH` as `python3`,
-`python` or `py -3`, and `sh` (Git Bash on Windows) or PowerShell 7.
+`python` or `py -3`, and `sh` (Git Bash on Windows) or PowerShell 7. Claude Code's guard hook runs through `sh`: on
+Windows without Git Bash the guard is off, and `stackfoundry guard --check` says so.

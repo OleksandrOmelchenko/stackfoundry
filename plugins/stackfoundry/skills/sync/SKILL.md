@@ -36,6 +36,8 @@ Run `stackfoundry survey` (`--pretty` is not needed) and compare with `targets.j
 | A pinned major moved past the researched one | manifest vs `pack.json` `versions` | `/stackfoundry:research-stack <pack> --refresh` |
 | A pack older than the refresh window | `researchedAt` vs `stackfoundry config researchRefreshDays` | refresh |
 | A new generated folder | survey `generatedDirs` not in `generated` / `guards.json` | add the glob and its regenerate hint |
+| A `guards.json` the hook cannot read (its rules are silently off) | `stackfoundry guard --check` reports a problem | fix the file; `/stackfoundry:configure-guards` when a rule is unclear |
+| A file no target or rule maps, or one a no-target rule hides | `stackfoundry change-targets --all`: **Unmapped**, **Shadowed** | a rule, a target path, or an anchored glob (`/*.md`) |
 | A gate command whose script or project vanished | the command's target file is gone | fix or mark unproven |
 | A new manifest or lock file | survey manifests vs `ecosystems.json` pins | add it to an ecosystem |
 | An assistant in use that `config.json` does not list, or one listed that is gone | survey `assistants.detected` vs `stackfoundry config clients` | add or drop it in `clients`, then write or remove its files (below) |

@@ -16,8 +16,10 @@ MATERIALIZED = Path(".stackfoundry") / "agents"
 
 SKILL_CAP = 250
 AGENT_CAP = 300
-SKILL_KEYS = {"name", "description", "argument-hint", "disable-model-invocation", "allowed-tools", "model", "paths",
-              "when_to_use", "user-invocable", "context", "agent", "version", "license", "effort"}
+# The skill frontmatter reference (https://code.claude.com/docs/en/skills), plus `version`, which older skills carry.
+SKILL_KEYS = {"name", "description", "when_to_use", "argument-hint", "arguments", "disable-model-invocation",
+              "user-invocable", "allowed-tools", "disallowed-tools", "model", "effort", "context", "agent", "background",
+              "hooks", "paths", "shell", "metadata", "license", "compatibility", "version"}
 # The fields Claude Code honours in a plugin agent (plugins/components docs), and the ones it silently ignores there.
 AGENT_KEYS = {"name", "description", "model", "effort", "maxTurns", "autoCompactWindow", "tools", "disallowedTools",
               "skills", "memory", "background", "omitClaudeMd", "isolation", "color", "experimental"}
@@ -115,7 +117,7 @@ def check(base: Path) -> Report:
             skill_names.add(d.name)
             if fields.get("name") != d.name:
                 rep.error(f, f"name {fields.get('name')!r} does not match the folder {d.name!r}")
-            if not PORTABLE_NAME.match(d.name) or len(d.name) > 64:
+            if not PORTABLE_NAME.fullmatch(d.name) or len(d.name) > 64:
                 rep.error(f, "name must be lowercase letters, digits and single hyphens, at most 64 characters "
                              "(the Agent Skills standard other assistants enforce)")
             if plugin_mode and preamble.SKILL not in body:
