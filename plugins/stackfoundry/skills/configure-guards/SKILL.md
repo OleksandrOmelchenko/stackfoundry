@@ -57,6 +57,9 @@ Schema: `${CLAUDE_PLUGIN_ROOT}/reference/schemas/guards.schema.json`. Worked exa
      case varies; escape backslashes for JSON; avoid nested quantifiers. `decision` is `deny` (never right here) or
      `ask` (the owner's call); `reason` says what to do instead; `tools` limits it to `Bash` or `PowerShell`.
    - `git.writes`: `allow`, `ask` or `deny`, with a `reason` naming the policy.
+   - **Nested files:** a `guards.json` below the root (a worktree, a sample project, a fixture) only adds rules.
+     The hook applies every file from the call's folder up, plus the project root's, and the strictest answer
+     wins. To loosen something below the root, change the root's rule.
 4. **Test before saving.** Make a scratch project (`mktemp -d`) holding `.stackfoundry/guards.json` = the
    draft. For each new or changed rule write at least one event that must trigger it and one near miss that must
    not, plus one positive case per existing rule as a regression check. Write each event to a file with `Write`

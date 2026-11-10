@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/OleksandrOmelchenko/stackfoundry/schemas/guards.schema.json",
   "title": "stackfoundry guards (.stackfoundry/guards.json)",
-  "description": "Read by the plugin's PreToolUse hook (`stackfoundry guard`). Written by init and configure-guards. The hook fails open: no file or an unreadable file means no opinion.",
+  "description": "Read by the plugin's PreToolUse hook (`stackfoundry guard`). Written by init and configure-guards. The hook fails open: no file or an unreadable file means no opinion. Every guards.json from the call's folder up, plus the project root's, applies at once and the strictest answer wins, so a nested file adds rules and never lifts the ones above it (an unreadable one is skipped).",
   "type": "object",
   "required": ["schemaVersion"],
   "properties": {

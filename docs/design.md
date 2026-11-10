@@ -154,6 +154,12 @@ profile means no opinion: the hook exits 0.
   programs are recognised. Reads (`git config --get`, `gh api` without fields) stay reads.
 - **Coverage:** a command that can't be split, such as one with unbalanced quotes, falls back to the old
   whole-string patterns. The guard prevents accidents; it is not a security boundary.
+- **Nested files:** every `guards.json` from the call's folder up, plus the project root's, applies at once, and the
+  strictest answer wins (`guard.py` `_chain`, `verdict`).
+  - An edit is denied when any file's `generated` glob matches it, relative to that file's root.
+  - Commands take the strictest matching rule, and `git.writes` the strictest policy.
+  - A worktree, sample project or fixture adds its own rules, and an empty or broken nested file is skipped. Neither
+    can lift the rules above it.
 
 ## Product direction
 

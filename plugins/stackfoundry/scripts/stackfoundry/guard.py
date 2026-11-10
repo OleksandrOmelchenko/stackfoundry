@@ -6,9 +6,10 @@ Decisions:
   - a shell command matching a `commands` pattern                            -> that entry's decision (deny | ask);
   - a git or gh write (commit, push, pull, config set, gh api -f…) while `git.writes` is "ask" or "deny"
                                                                               -> ask or deny (shellwords reads it).
-The guards that apply are the nearest `.stackfoundry/guards.json` above the file being edited (or above the
-command's working directory), so a linked worktree or a nested repo is guarded by its own profile. Paths are
-normalized first, so `gen/../gen/x` or a relative path still meets the globs.
+Every `.stackfoundry/guards.json` above the file being edited (or above the command's working directory), plus the
+project root's, applies at once and the strictest answer wins: a nested worktree or sample project adds its own
+rules, and an empty, partial or broken nested file cannot lift the rules above it. Paths are normalized first, so
+`gen/../gen/x` or a relative path still meets the globs, each relative to the root whose file names it.
 
 Each assistant sends a different event and expects a different answer (reference/clients.md). `--client` names it;
 without it the event's shape tells. One adapter per assistant turns the event into a call (an edit of some paths,
@@ -152,12 +153,25 @@ def _absolute(raw: str, base: Path) -> Path:
     return Path(os.path.normpath(p if p.is_absolute() else base / p))
 
 
-def _governing_root(start: Path) -> Path | None:
-    """The nearest folder at or above `start` that holds a guards.json."""
-    for d in (start, *start.parents):
-        if (d / GUARDS).is_file():
-            return d
-    return None
+def _chain(start: Path, project: Path) -> list[tuple[Path, dict]]:
+    """Every guards.json that governs `start`, nearest first: each folder at or above it that holds one, plus the
+    project root's. A file that does not load, or is empty, is skipped, so it can never switch the others off."""
+    roots = [d for d in (start, *start.parents) if (d / GUARDS).is_file()]
+    if (project / GUARDS).is_file() and not any(_same(project, r) for r in roots):
+        roots.append(project)
+    chain = []
+    for r in roots:
+        guards = _load(r)
+        if guards:
+            chain.append((r, guards))
+    return chain
+
+
+def _same(a: Path, b: Path) -> bool:
+    try:
+        return os.path.normcase(str(a.resolve())) == os.path.normcase(str(b.resolve()))
+    except OSError:
+        return False
 
 
 def _load(root: Path) -> dict | None:
@@ -168,47 +182,54 @@ def _load(root: Path) -> dict | None:
     return data if isinstance(data, dict) else None
 
 
+STRICTNESS = {"allow": 0, "ask": 1, "deny": 2}
+
+
 def verdict(call: Call, project: Path) -> tuple[str, str] | None:
-    """(deny | ask, reason) or None for no opinion."""
+    """(deny | ask, reason) or None for no opinion. Every guards.json from the call's folder up to the filesystem
+    root, plus the project's, applies at once and the strictest answer wins: a nested file can add rules, never
+    lift the ones above it."""
     if call.kind == "edit":
         for raw in call.paths:
             target = _absolute(raw, call.base)
-            root = _governing_root(target.parent)
-            guards = _load(root) if root else None
-            if not guards:
-                continue
-            rel = _relative(str(target), root)
-            if rel is None:
-                continue
-            for g in guards.get("generated", []):
-                if match(rel, g["glob"]):
-                    how = g.get("regenerate") or "regenerate it from its source"
-                    return "deny", f"{rel} is generated ({g['glob']}); never hand-edit it. {how}."
+            for root, guards in _chain(target.parent, project):
+                rel = _relative(str(target), root)
+                if rel is None:
+                    continue
+                for g in guards.get("generated", []):
+                    if isinstance(g, dict) and isinstance(g.get("glob"), str) and match(rel, g["glob"]):
+                        how = g.get("regenerate") or "regenerate it from its source"
+                        return "deny", f"{rel} is generated ({g['glob']}); never hand-edit it. {how}."
         return None
 
-    root = _governing_root(Path(os.path.normpath(call.base))) or _governing_root(project)
-    guards = _load(root) if root else None
-    if not guards:
-        return None
     cmd = call.command
-    for c in guards.get("commands", []):
-        if c.get("tools") and call.shell not in c["tools"]:
-            continue
-        try:
-            if re.search(c["pattern"], cmd):
-                # The guard only ever denies or asks: a rule cannot use it to pre-approve a command.
-                decision = c.get("decision", "deny")
-                if decision not in ("deny", "ask"):
-                    decision = "ask"
-                return decision, c.get("reason", "blocked by the repo's guards.json")
-        except re.error:
-            continue
-    policy = (guards.get("git") or {}).get("writes", "allow")
-    if policy in ("ask", "deny") and _git_or_gh_write(cmd, call.shell):
-        reason = (guards.get("git") or {}).get(
-            "reason", "git and GitHub writes are the user's call in this repo; run one only when asked for it")
-        return policy, reason
-    return None
+    best: tuple[str, str] | None = None
+    git_best: tuple[str, str] | None = None
+    for _root, guards in _chain(Path(os.path.normpath(call.base)), project):
+        for c in guards.get("commands", []):
+            if not isinstance(c, dict) or (c.get("tools") and call.shell not in c["tools"]):
+                continue
+            try:
+                if not re.search(c["pattern"], cmd):
+                    continue
+            except (re.error, TypeError, KeyError):
+                continue
+            # The guard only ever denies or asks: a rule cannot use it to pre-approve a command.
+            decision = c.get("decision", "deny")
+            if decision not in ("deny", "ask"):
+                decision = "ask"
+            if best is None or STRICTNESS[decision] > STRICTNESS[best[0]]:
+                best = decision, c.get("reason", "blocked by the repo's guards.json")
+            break  # the first matching rule of each file speaks for that file
+        git = guards.get("git") or {}
+        policy = git.get("writes", "allow")
+        if policy in ("ask", "deny") and (git_best is None or STRICTNESS[policy] > STRICTNESS[git_best[0]]):
+            git_best = policy, git.get(
+                "reason", "git and GitHub writes are the user's call in this repo; run one only when asked for it")
+    if git_best and (best is None or STRICTNESS[git_best[0]] > STRICTNESS[best[0]]) \
+            and _git_or_gh_write(cmd, call.shell):
+        return git_best
+    return best
 
 
 def _git_or_gh_write(cmd: str, shell: str) -> bool:

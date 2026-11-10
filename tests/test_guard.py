@@ -112,5 +112,51 @@ class GuardTests(unittest.TestCase):
         self.assertEqual(json.loads(proc.stdout)["hookSpecificOutput"]["permissionDecision"], "ask")
 
 
+class NestedGuardsTests(unittest.TestCase):
+    """Threat model T6: a nested guards.json adds rules; it can never lift the ones above it."""
+
+    def guard(self, root, payload):
+        proc = run_cli(["guard"], stdin=payload, env={"CLAUDE_PROJECT_DIR": str(root)})
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        return json.loads(proc.stdout)["hookSpecificOutput"]["permissionDecision"] if proc.stdout.strip() else None
+
+    def shell(self, cmd, cwd):
+        return json.dumps({"tool_name": "Bash", "cwd": str(cwd), "tool_input": {"command": cmd}})
+
+    def test_empty_invalid_or_partial_nested_files_keep_the_roots_rules(self):
+        for nested in ("{}", "{not json", json.dumps({"schemaVersion": 1}),
+                       json.dumps({"schemaVersion": 1, "generated": [], "git": {"writes": "allow"}})):
+            with self.subTest(nested=nested), TempRepo() as root:
+                write(root, {".stackfoundry/guards.json": json.dumps(GUARDS),
+                             "vendor/lib/.stackfoundry/guards.json": nested})
+                lib = root / "vendor/lib"
+                self.assertEqual(self.guard(root, self.shell("git push", lib)), "ask")
+                self.assertEqual(self.guard(root, self.shell("sqlcmd -Q x", lib)), "deny")
+                edit = event("Edit", file_path=str(root / "web/src/api-client/model.ts"))
+                self.assertEqual(self.guard(root, edit), "deny")
+
+    def test_a_nested_rule_adds_and_the_strictest_wins(self):
+        inner = {"schemaVersion": 1, "generated": [{"glob": "gen/**"}],
+                 "commands": [{"pattern": "sqlcmd", "decision": "ask", "reason": "inner asks"},
+                              {"pattern": "make deploy", "decision": "deny", "reason": "inner denies"}]}
+        with TempRepo() as root:
+            write(root, {".stackfoundry/guards.json": json.dumps(GUARDS),
+                         "sample/.stackfoundry/guards.json": json.dumps(inner)})
+            sample = root / "sample"
+            self.assertEqual(self.guard(root, self.shell("sqlcmd -Q x", sample)), "deny")  # the root's deny wins
+            self.assertEqual(self.guard(root, self.shell("make deploy", sample)), "deny")  # the inner rule adds
+            self.assertIsNone(self.guard(root, self.shell("make deploy", root)))  # and only below it
+            self.assertEqual(self.guard(root, event("Edit", file_path=str(sample / "gen/x.py"))), "deny")
+
+    def test_a_deny_from_the_root_survives_a_cwd_below_a_fixture(self):
+        root_guards = {"schemaVersion": 1, "commands": [
+            {"pattern": r"claude plugin tag(?!.*--dry-run)", "decision": "deny", "reason": "tags are releases"}]}
+        with TempRepo() as root:
+            write(root, {".stackfoundry/guards.json": json.dumps(root_guards),
+                         "fixtures/x.profile/.stackfoundry/guards.json": json.dumps({"schemaVersion": 1})})
+            cwd = root / "fixtures/x.profile"
+            self.assertEqual(self.guard(root, self.shell("claude plugin tag plugins/p", cwd)), "deny")
+
+
 if __name__ == "__main__":
     unittest.main()
