@@ -173,6 +173,72 @@ class MergeTests(unittest.TestCase):
         self.assertFalse((self.root / ".stackfoundry/extensions/.base/materialized/api-hunter.md").exists())
 
 
+@unittest.skipUnless(HAS_GIT, "git not available")
+class IndexTrustTests(unittest.TestCase):
+    """`.base/index.json` is committed, so a cloned repo controls it; no path in it may reach outside the bounds
+    (threat model T4, docs/security/plugin-threat-model.md)."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory(prefix="trust-")
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+        self.plugin = plugin(self.root)
+        self.rel = ext.new(self.root, "skill", "demo", replace=True, plugin_root=self.plugin)
+        write(self.root, {"victim.txt": "keep me\n", "secret.txt": "PRIVATE KEY\n"})
+
+    def plant(self, entries: dict) -> None:
+        index = ext.load_index(self.root)
+        index["files"].update(entries)
+        (self.root / ext.INDEX).write_text(json.dumps(index), encoding="utf-8")
+
+    def text(self, rel: str) -> str:
+        return (self.root / rel).read_text(encoding="utf-8")
+
+    def test_a_planted_base_is_ignored_and_never_overwritten(self):
+        self.plant({self.rel: {"from": "skills/demo/SKILL.md", "version": "1.0.0", "base": "victim.txt"}})
+        plugin(self.root, SKILL.replace("Write the report.", "Write the report and link it."), "1.1.0")
+        self.assertEqual(ext.merge(self.root, self.rel, plugin_root=self.plugin)["status"], "merged")
+        self.assertEqual(self.text("victim.txt"), "keep me\n")
+        self.assertIn("and link it", self.text(".stackfoundry/extensions/.base/skills/demo.md"))
+        self.assertEqual(ext.load_index(self.root)["files"][self.rel]["base"], ".stackfoundry/extensions/.base/skills/demo.md")
+
+    def test_a_source_outside_the_plugin_is_refused(self):
+        for source in ("../secret.txt", str(self.root / "secret.txt"), "skills/../../secret.txt"):
+            with self.subTest(source=source):
+                self.plant({self.rel: {"from": source, "version": "1.0.0"}})
+                with self.assertRaisesRegex(ValueError, "not a plugin skill or agent"):
+                    ext.merge(self.root, self.rel, plugin_root=self.plugin)
+                self.assertNotIn("PRIVATE KEY", self.text(self.rel))
+                self.assertIn("refused entry", " ".join(ext.check(self.root, self.plugin).errors))
+                with self.assertRaises(ValueError):
+                    ext.record_base(self.root, self.rel, source, self.plugin)
+
+    def test_forget_deletes_only_the_derived_base(self):
+        ghost = ".stackfoundry/agents/ghost.md"
+        self.plant({ghost: {"from": "agents/hunter.md", "version": "1.0.0", "base": "victim.txt"},
+                    "../../victim.txt": {"from": "agents/hunter.md", "version": "1.0.0", "base": "victim.txt"}})
+        rep = ext.check(self.root, self.plugin)
+        self.assertIn("refused entry", " ".join(rep.errors))
+        self.assertNotIn("forget ../../victim.txt", " ".join(rep.warnings))
+        self.assertTrue(ext.forget(self.root, ghost))
+        self.assertEqual(self.text("victim.txt"), "keep me\n")
+        with self.assertRaises(ValueError):
+            ext.forget(self.root, "../../victim.txt")
+        self.assertTrue((self.root / "victim.txt").exists())
+
+    def test_a_base_linked_outside_is_refused(self):
+        base = self.root / ".stackfoundry/extensions/.base/skills/demo.md"
+        base.unlink()
+        try:
+            base.symlink_to(self.root / "secret.txt")
+        except (OSError, NotImplementedError):
+            self.skipTest("symlinks need a privilege here")
+        with self.assertRaisesRegex(ValueError, "resolves outside"):
+            ext.merge(self.root, self.rel, plugin_root=self.plugin)
+        self.assertIn("refused entry", " ".join(ext.check(self.root, self.plugin).errors))
+        self.assertEqual(self.text("secret.txt"), "PRIVATE KEY\n")
+
+
 class CliTests(unittest.TestCase):
     def test_check_exit_codes_and_refused_paths(self):
         with TempRepo() as root:

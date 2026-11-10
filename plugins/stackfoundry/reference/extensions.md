@@ -85,6 +85,22 @@ An extension that needs one of these changed is a request for the plugin itself:
 | `extend` | never rewritten; `extensions check` re-checks its anchors |
 | `replace` and materialized | `extensions merge` runs a three-way merge (base = the plugin text it was taken from, theirs = the new plugin text, ours = the repo's file). A clean merge is written and the base moves forward; a conflict is written to `<file>.merge.md` for the user to settle, then `extensions merge <file> --resolved` |
 
+### What the index is trusted with
+
+`.base/index.json` is committed, so whoever controls the repo controls it, and the CLI reads it as untrusted data:
+
+- **Base copies:** each base path is derived from its file's path (`.base/skills|agents|materialized/<name>.md`).
+  The index's `base` field is informational and never read.
+- **Sources:** a `from` is accepted only as `skills/<name>/SKILL.md` or `agents/<name>.md`, with no absolute paths
+  and no `..`.
+- **Files:** an entry's key must be an extension or materialized-agent file.
+- **Links:** after resolving them, the source must lie inside the plugin, the base inside `.base/`, and the file and
+  any `.merge.md` inside `.stackfoundry/`.
+
+`extensions check` reports an entry that breaks a rule as an error and never suggests a command for it. `merge`,
+`forget` and `base` refuse it. The CLI never writes such an entry, so find out who committed it before you remove it
+by hand.
+
 ## Commands
 
 | Command | Does |

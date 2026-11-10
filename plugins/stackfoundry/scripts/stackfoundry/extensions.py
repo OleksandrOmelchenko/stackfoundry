@@ -2,6 +2,10 @@
 
 `list` and `check` are read-only. `new`, `base`, `merge` and `forget` write only under `.stackfoundry/`: the extension
 file they name, its base copy under `.stackfoundry/extensions/.base/`, and `.base/index.json`.
+
+`index.json` is committed, so a cloned repo controls it: no path is taken from it as written. A base copy's path is
+derived from its fork file, a plugin source must name a plugin skill or agent, and every path is checked after
+resolving links (`_entry_paths`).
 """
 from __future__ import annotations
 
@@ -32,6 +36,8 @@ STEP_LABEL = re.compile(r"^\d+\.\s+\*\*(.+?)\*\*")  # a numbered step written as
 NUMBER = re.compile(r"^(?:step\s+)?\d+(?:\.\d+)*[.):]?\s+", re.I)
 FENCE = re.compile(r"^\s*(```|~~~)")
 MERGE_SUFFIX = ".merge.md"
+PLUGIN_FILE = re.compile(r"^(skills/[a-z0-9]+(-[a-z0-9]+)*/SKILL\.md|agents/[a-z0-9]+(-[a-z0-9]+)*\.md)$")
+FORK_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*\.md$")
 
 
 @dataclass
@@ -161,6 +167,14 @@ def _base_path(fork_rel: str) -> str:
     return (BASE_DIR / sub / p.name).as_posix()
 
 
+def _fork_ok(rel: object) -> bool:
+    """Whether a repo-relative POSIX path names an extension or a materialized agent file, by its text alone."""
+    if not isinstance(rel, str) or rel.endswith(MERGE_SUFFIX):
+        return False
+    allowed = [f"{(EXT_DIR / k).as_posix()}/" for k in KINDS] + [f"{MATERIALIZED_DIR.as_posix()}/"]
+    return any(rel.startswith(a) and FORK_NAME.match(rel[len(a):]) for a in allowed)
+
+
 def _rel(root: Path, file: str) -> str:
     """A fork file as a repo-relative POSIX path, refused unless it is an extension or a materialized agent."""
     p = Path(file)
@@ -169,32 +183,66 @@ def _rel(root: Path, file: str) -> str:
         rel = p.relative_to(root.resolve()).as_posix()
     except ValueError:
         raise ValueError(f"{file} is not inside {root}") from None
-    allowed = [f"{(EXT_DIR / k).as_posix()}/" for k in KINDS] + [f"{MATERIALIZED_DIR.as_posix()}/"]
-    in_place = any(rel.startswith(a) and "/" not in rel[len(a):] for a in allowed)
-    if not rel.endswith(".md") or rel.endswith(MERGE_SUFFIX) or not in_place:
+    if not _fork_ok(rel):
         raise ValueError(f"{rel}: not an extension or materialized agent file")
     return rel
 
 
+def _inside(path: Path, parent: Path) -> bool:
+    """Whether `path`, with every link resolved, lies under `parent` (taken as given, already resolved)."""
+    try:
+        path.resolve().relative_to(parent)
+        return True
+    except (ValueError, OSError):
+        return False
+
+
+def _source(plugin_root: Path, from_rel: object) -> Path:
+    """The plugin file a full copy follows; refused unless it names a plugin skill or agent inside the plugin."""
+    if not isinstance(from_rel, str) or not PLUGIN_FILE.match(from_rel):
+        raise ValueError(f"source {from_rel!r} is not a plugin skill or agent (skills/<name>/SKILL.md or "
+                         "agents/<name>.md)")
+    src = plugin_root / from_rel
+    if not _inside(src, plugin_root.resolve()):
+        raise ValueError(f"source {from_rel!r} resolves outside the plugin")
+    return src
+
+
+def _base(root: Path, fork_rel: object) -> Path:
+    """The base copy of a fork file: derived from the fork's path, never read from the index."""
+    if not _fork_ok(fork_rel):
+        raise ValueError(f"{fork_rel!r} is not an extension or materialized agent file")
+    base = root / _base_path(fork_rel)
+    if not _inside(base, root.resolve() / BASE_DIR):
+        raise ValueError(f"{fork_rel}: its base copy resolves outside {BASE_DIR.as_posix()}/")
+    return base
+
+
+def _entry_paths(root: Path, plugin_root: Path, fork_rel: object, entry: object) -> tuple[Path, Path]:
+    """(plugin source, base copy) of one index entry, each bounded; ValueError names what is wrong."""
+    if not isinstance(entry, dict):
+        raise ValueError(f"{fork_rel}: its index entry is not an object")
+    return _source(plugin_root, entry.get("from")), _base(root, fork_rel)
+
+
 def record_base(root: Path, fork_rel: str, from_rel: str, plugin_root: Path = PLUGIN_ROOT) -> dict:
     """Store the plugin text a full copy was taken from, so a later upgrade can merge three ways."""
-    src = plugin_root / from_rel
+    src, base = _source(plugin_root, from_rel), _base(root, fork_rel)
     if not src.is_file():
         raise ValueError(f"{from_rel}: no such file in the plugin")
-    base_rel = _base_path(fork_rel)
-    _write(root / base_rel, _body(_read(src)))
+    _write(base, _body(_read(src)))
     index = load_index(root)
-    index["files"][fork_rel] = {"from": from_rel, "version": plugin_version(plugin_root), "base": base_rel}
+    index["files"][fork_rel] = {"from": from_rel, "version": plugin_version(plugin_root), "base": _base_path(fork_rel)}
     _save_index(root, index)
     return index["files"][fork_rel]
 
 
 def forget(root: Path, fork_rel: str) -> bool:
+    base = _base(root, fork_rel)  # derived, so a planted "base" in the index can never name the file deleted
     index = load_index(root)
-    entry = index["files"].pop(fork_rel, None)
-    if entry is None:
+    if index["files"].pop(fork_rel, None) is None:
         return False
-    (root / entry["base"]).unlink(missing_ok=True)
+    base.unlink(missing_ok=True)
     _save_index(root, index)
     return True
 
@@ -212,8 +260,11 @@ def _targets(root: Path) -> set[str] | None:
     return {t.get("name") for t in data.get("targets", []) if isinstance(t, dict)}
 
 
-def _behind(root: Path, entry: dict, plugin_root: Path) -> bool | None:
-    src, base = plugin_root / entry.get("from", ""), root / entry.get("base", "")
+def _behind(root: Path, rel: str, entry: dict, plugin_root: Path) -> bool | None:
+    try:
+        src, base = _entry_paths(root, plugin_root, rel, entry)
+    except ValueError:
+        return None  # `check` reports the bad entry
     if not src.is_file() or not base.is_file():
         return None
     return _body(_read(src)) != _read(base)
@@ -238,14 +289,20 @@ def check(root: Path, plugin_root: Path = PLUGIN_ROOT) -> Report:
                 continue
             _check_one(root, plugin_root, kind, f, rel, index, targets, rep)
     for rel, entry in index["files"].items():
+        try:
+            _, base = _entry_paths(root, plugin_root, rel, entry)
+        except ValueError as exc:
+            rep.errors.append(f"{INDEX.as_posix()}: refused entry: {exc}; the CLI never writes this, so check who "
+                              "committed it before removing the entry by hand")
+            continue
         if not (root / rel).is_file():
             rep.warnings.append(f"{rel}: has a base copy but no file; run `extensions forget {rel}`")
             continue
-        if not (root / entry.get("base", "")).is_file():
-            rep.errors.append(f"{rel}: its base copy {entry.get('base')} is missing; upgrades cannot merge it")
+        if not base.is_file():
+            rep.errors.append(f"{rel}: its base copy {_base_path(rel)} is missing; upgrades cannot merge it")
         if rel.startswith(f"{MATERIALIZED_DIR.as_posix()}/"):
             rep.rows.append({"file": rel, "kind": "materialized", "extends": entry.get("from"), "mode": "replace",
-                             "baseVersion": entry.get("version"), "behind": _behind(root, entry, plugin_root)})
+                             "baseVersion": entry.get("version"), "behind": _behind(root, rel, entry, plugin_root)})
     materialized_dir = root / MATERIALIZED_DIR
     if materialized_dir.is_dir():
         for f in sorted(materialized_dir.glob("*.md")):
@@ -282,7 +339,7 @@ def _check_one(root, plugin_root, kind, f, rel, index, targets, rep: Report) -> 
             rep.errors.append(f"{rel}: mode replace needs a base copy; recreate it with "
                               f"`extensions new {kind[:-1]} {name} --replace` or record one with `extensions base`")
         else:
-            row["behind"] = _behind(root, entry, plugin_root)
+            row["behind"] = _behind(root, rel, entry, plugin_root)
             if row["behind"]:
                 rep.warnings.append(f"{rel}: the plugin changed {name} since this copy; run `extensions merge {rel}`")
         return
@@ -364,12 +421,14 @@ def merge(root: Path, fork_rel: str, resolved: bool = False, plugin_root: Path =
     entry = index["files"].get(fork_rel)
     if not entry:
         raise ValueError(f"{fork_rel}: no base copy recorded (only replace extensions and materialized agents merge)")
+    src, base_file = _entry_paths(root, plugin_root, fork_rel, entry)
     fork = root / fork_rel
+    if not _inside(fork, root.resolve() / PROFILE_DIR):
+        raise ValueError(f"{fork_rel}: resolves outside {PROFILE_DIR.as_posix()}/")
     raw = fork.read_bytes().decode("utf-8-sig")
     crlf = "\r\n" in raw
     text = raw.replace("\r\n", "\n")
     header = _header(text)
-    src = plugin_root / entry["from"]
     if not src.is_file():
         raise ValueError(f"{entry['from']}: the plugin no longer has it; keep the copy as the repo's own or delete it")
     theirs = _body(_read(src))
@@ -377,12 +436,14 @@ def merge(root: Path, fork_rel: str, resolved: bool = False, plugin_root: Path =
     if resolved:
         if not pending.is_file():
             raise ValueError(f"{pending.relative_to(root).as_posix()}: nothing to settle")
+        if not _inside(pending, root.resolve() / PROFILE_DIR):
+            raise ValueError(f"{pending.relative_to(root).as_posix()}: resolves outside {PROFILE_DIR.as_posix()}/")
         merged = _read(pending)
         if re.search(r"^(<{7}|>{7}) ", merged, re.M):
             raise ValueError(f"{pending.relative_to(root).as_posix()}: still has conflict markers")
         conflicts = 0
     else:
-        base = _read(root / entry["base"])
+        base = _read(base_file)
         if theirs == base:
             return {"status": "current", "conflicts": 0, "file": fork_rel}
         merged, conflicts = _merge3(text[len(header):] if header else text, base, theirs)
@@ -391,7 +452,8 @@ def merge(root: Path, fork_rel: str, resolved: bool = False, plugin_root: Path =
             return {"status": "conflict", "conflicts": conflicts, "file": pending.relative_to(root).as_posix()}
     _write(fork, (header + merged.lstrip("\n") if header else merged), crlf)
     pending.unlink(missing_ok=True)
-    _write(root / entry["base"], theirs)
+    _write(base_file, theirs)
+    entry["base"] = _base_path(fork_rel)
     entry["version"] = plugin_version(plugin_root)
     index["files"][fork_rel] = entry
     _save_index(root, index)
