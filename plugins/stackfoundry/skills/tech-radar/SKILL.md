@@ -38,8 +38,8 @@ and `/stackfoundry:check-updates` own version numbers, so this skill points at t
 
 ## Unattended contract
 
-Ask nothing, install nothing, never write git, write exactly one file (the report). Record `git status --porcelain`
-before starting and compare at the end.
+Ask nothing, install nothing, never write git, write exactly one file (the report): the unattended contract,
+[`reference/unattended.md`](${CLAUDE_PLUGIN_ROOT}/reference/unattended.md). Run `stackfoundry side-effects start` first.
 
 ## Procedure
 
@@ -81,8 +81,8 @@ before starting and compare at the end.
    | `refresh-pack` | the pack is stale, or new sources contradict one of its rules |
 
 5. **Not reached**: every source that failed, with the reason. Never fill a gap from memory.
-6. **Write the report**, then compare `git status --porcelain` with the start; any other change goes under
-   **Side effects**, left as it is.
+6. **Write the report**, then run `stackfoundry side-effects end --allow <the report's path>`; every change it lists
+   goes under **Side effects**, left as it is.
 
 ## Report
 

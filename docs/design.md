@@ -193,8 +193,10 @@ domain: that list would be stale and generic, which is exactly what a researched
 ## Scheduled skills
 
 Unattended skills (`check-updates`, `tech-radar`, `stackfoundry-radar`, `flaky-watch`, report-only `docs-reconciler`
-and `whats-next`) follow one contract: no questions, no installs, no git writes, exactly one output file, and a `git status` comparison
-that lists any side effect in the report. Their interactive consumers (`act-on-updates`, `act-on-radar`) ask once,
+and `whats-next`) follow one contract (`reference/unattended.md`): no questions, no installs, no git writes, exactly one
+output file, and `stackfoundry side-effects start|end`, which lists every other change in the report. That covers
+untracked files and the control plane's content. On a schedule they run with `--permission-mode dontAsk` and an
+allow list limited to their report folder and their own commands (`schedule`). Their interactive consumers (`act-on-updates`, `act-on-radar`) ask once,
 then dispatch each item to the skill that owns it.
 
 `/stackfoundry:schedule` registers them as Claude desktop scheduled tasks, which run on your machine with your

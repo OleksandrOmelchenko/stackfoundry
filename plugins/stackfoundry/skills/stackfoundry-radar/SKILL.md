@@ -40,8 +40,8 @@ updates, upgrades or syncs anything.
 
 ## Unattended contract
 
-Ask nothing, install nothing, never write git, write exactly one file (the report). Record `git status --porcelain`
-before starting and compare at the end.
+Ask nothing, install nothing, never write git, write exactly one file (the report): the unattended contract,
+[`reference/unattended.md`](${CLAUDE_PLUGIN_ROOT}/reference/unattended.md). Run `stackfoundry side-effects start` first.
 
 ## Procedure
 
@@ -62,8 +62,8 @@ before starting and compare at the end.
    plugin's workflow (skills, agents, hooks, plugins, scheduled tasks, permission modes, worktrees), each with its
    version.
 6. A fetch that fails is **not reached** with its reason; never infer a version from memory.
-7. Write the report, then compare `git status --porcelain` with the start; any other change goes under **Side
-   effects**, left as it is.
+7. Write the report, then run `stackfoundry side-effects end --allow <the report's path>`; every change it lists goes
+   under **Side effects**, left as it is.
 
 ## Report
 

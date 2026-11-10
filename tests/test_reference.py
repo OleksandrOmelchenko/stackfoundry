@@ -46,5 +46,28 @@ class ReferenceTests(unittest.TestCase):
             self.assertIn(rule["layer"], layers)
 
 
+class UnattendedTests(unittest.TestCase):
+    """Threat model T11: unattended runs never auto-accept edits, and each one checks its side effects."""
+
+    UNATTENDED = ("tech-radar", "stackfoundry-radar", "check-updates", "flaky-watch", "docs-reconciler", "whats-next")
+
+    def test_no_scheduling_line_auto_accepts_or_bypasses(self):
+        text = (PLUGIN / "skills" / "schedule" / "SKILL.md").read_text(encoding="utf-8")
+        for line in text.splitlines():
+            if "--permission-mode" in line:
+                with self.subTest(line=line.strip()[:80]):
+                    self.assertIn("--permission-mode dontAsk", line)
+        self.assertNotIn("--permission-mode acceptEdits", text)
+        self.assertNotIn("bypassPermissions", text)
+
+    def test_every_unattended_skill_runs_the_side_effects_check(self):
+        for skill in self.UNATTENDED:
+            with self.subTest(skill=skill):
+                text = (PLUGIN / "skills" / skill / "SKILL.md").read_text(encoding="utf-8")
+                self.assertIn("side-effects start", text)
+                self.assertRegex(text, r"end\s+--allow")
+                self.assertNotIn("git status --porcelain", text)
+
+
 if __name__ == "__main__":
     unittest.main()

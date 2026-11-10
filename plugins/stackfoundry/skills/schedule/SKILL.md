@@ -26,17 +26,37 @@ and catch up a missed run on the next launch. It creates nothing before the user
 
 ## Proposed cadence
 
-| Skill | Cadence | Cron (local time) | Applies when |
-|---|---|---|---|
-| `check-updates` | weekly | `0 7 * * 1` | `.stackfoundry/ecosystems.json` exists |
-| `tech-radar` | every two weeks | `0 7 1,15 * *` | packs exist under `.stackfoundry/packs/` |
-| `stackfoundry-radar` | monthly | `0 7 2 * *` | always |
-| `flaky-watch` | nightly or weekly | `0 2 * * *` or `0 2 * * 6` | some target has a `tests[].shuffle` command |
-| `docs-reconciler` (report-only) | weekly | `0 7 * * 5` | `<docsRoot>` exists |
-| `whats-next` (report-only) | quarterly | `0 7 1 1,4,7,10 *` | `.stackfoundry/product.json` exists |
+| Skill | Cadence | Cron (local time) | Applies when | Report folder | Also allow |
+|---|---|---|---|---|---|
+| `check-updates` | weekly | `0 7 * * 1` | `.stackfoundry/ecosystems.json` exists | `dependency-reports` | each ecosystem's `discover` commands; `WebFetch(domain:…)` for release-note hosts |
+| `tech-radar` | every two weeks | `0 7 1,15 * *` | packs exist under `.stackfoundry/packs/` | `radar` | `WebSearch`; `WebFetch(domain:…)` for the packs' source hosts |
+| `stackfoundry-radar` | monthly | `0 7 2 * *` | always | `radar` | `WebFetch(domain:raw.githubusercontent.com)`, `WebFetch(domain:github.com)` |
+| `flaky-watch` | nightly or weekly | `0 2 * * *` or `0 2 * * 6` | some target has a `tests[].shuffle` command | `reports` | the suites' `command` and `shuffle` |
+| `docs-reconciler` (report-only) | weekly | `0 7 * * 5` | `<docsRoot>` exists | `reports` | none |
+| `whats-next` (report-only) | quarterly | `0 7 1 1,4,7,10 *` | `.stackfoundry/product.json` exists | `reports` | none |
 
 Arguments pick a subset. Skip a row whose condition fails and say why. Nightly flaky-watch suits a machine that is on
 overnight with the gate preconditions met; otherwise weekly.
+
+## The permission line
+
+Every run follows the unattended contract (`${CLAUDE_PLUGIN_ROOT}/reference/unattended.md`). In Claude Code it runs
+with `--permission-mode dontAsk` and an explicit allow list. Whatever the run was not given is denied, never asked,
+so a run steered by a page or a test output can still only write its report. Build the list per skill:
+
+- `"Edit(<docsRoot>/<report folder>/**)"`: on the command line an `Edit` rule covers Write too, and a `Write(…)`
+  rule allows nothing.
+- `"Bash(sh \"<plugin root>/scripts/stackfoundry.sh\" *)"`: the launcher exactly as the skills call it, with the
+  absolute path quoted. A `*` inside the path does not match. The installed plugin's folder changes with each
+  version, so re-run this skill after an upgrade.
+- `"Bash(git status *)"`, `"Bash(git log *)"`.
+- The row's **Also allow**:
+  - a command as `"Bash(<command> *)"`;
+  - web access per host as `"WebFetch(domain:<host>)"`, from the hosts the packs' `sources` cite. Never a bare
+    `WebFetch`, which drops the per-host prompt for every other run.
+
+Never `acceptEdits`, which approves any edit or file command in the working directory, and never a flag that
+approves every tool.
 
 ## Procedure
 
@@ -56,24 +76,26 @@ overnight with the gate preconditions met; otherwise weekly.
    This is an unattended run: ask nothing; anything that needs a decision goes into the report.
    ```
 
-   `<args>` is empty except for docs-reconciler and whats-next, which get `--report` (their report-only mode). Tell the user that tasks run
-   while the desktop app is open and a missed run happens on the next launch, and that a command the session's
-   permissions do not allow stalls or is denied: allow the ecosystems' `discover` commands and the suites' test
-   commands in `.claude/settings.json` → `permissions.allow` (the user edits it) before relying on the schedule.
+   `<args>` is empty except for docs-reconciler and whats-next, which get `--report` (their report-only mode). Tell
+   the user:
+   - tasks run while the desktop app is open, and a missed run happens on the next launch;
+   - a desktop task takes no command-line flags, so the run gets the rules of *The permission line* above from
+     `.claude/settings.json` → `permissions.allow` (the user edits it);
+   - a command those rules don't allow stalls or is denied.
 5. **No scheduling tools in this session**: print, per approved task, the exact title, schedule and prompt to enter
    in the desktop app's scheduled-tasks screen, and show the alternatives below.
 
 ## Alternatives (documented, not created unless asked)
 
-**OS scheduler with `claude -p`.** Runs headless from the repo folder; `acceptEdits` lets it write the report, and any
-command it needs must be allowed in settings or with `--allowedTools`:
+**OS scheduler with `claude -p`.** Runs headless from the repo folder with *The permission line*. Shown for
+check-updates on an npm repo; fill in the plugin root, the docs root and the row's extras:
 
 ```text
 # cron (Linux, macOS)
-0 7 * * 1 cd /path/to/repo && claude -p "/stackfoundry:check-updates" --permission-mode acceptEdits >> "$HOME/.cache/stackfoundry-check-updates.log" 2>&1
+0 7 * * 1 cd /path/to/repo && claude -p "/stackfoundry:check-updates" --permission-mode dontAsk --allowedTools "Edit(docs/dependency-reports/**)" "Bash(sh \"/path/to/plugin/scripts/stackfoundry.sh\" *)" "Bash(git status *)" "Bash(npm outdated *)" >> "$HOME/.cache/stackfoundry-check-updates.log" 2>&1
 
-# Windows Task Scheduler
-schtasks /Create /TN "stackfoundry check-updates" /SC WEEKLY /D MON /ST 07:00 /TR "cmd /c cd /d C:\path\to\repo && claude -p \"/stackfoundry:check-updates\" --permission-mode acceptEdits"
+# Windows Task Scheduler: put the cd and claude line in a .cmd file (the quoting nests too deeply inline)
+schtasks /Create /TN "stackfoundry check-updates" /SC WEEKLY /D MON /ST 07:00 /TR "C:\path\to\stackfoundry-check-updates.cmd"
 ```
 
 **Another assistant on the OS scheduler.** The same cron or Task Scheduler line with that assistant's headless
@@ -107,7 +129,10 @@ jobs:
           plugin_marketplaces: https://github.com/OleksandrOmelchenko/stackfoundry.git
           plugins: stackfoundry@stackfoundry
           prompt: /stackfoundry:check-updates
-          claude_args: --permission-mode acceptEdits
+          # <plugin root>: where the action installs plugins on the runner (see its docs)
+          claude_args: >-
+            --permission-mode dontAsk --allowedTools "Edit(docs/dependency-reports/**)"
+            "Bash(sh \"<plugin root>/scripts/stackfoundry.sh\" *)" "Bash(git status *)" "Bash(npm outdated *)"
       - uses: actions/upload-artifact@<pinned version>
         with:
           name: dependency-report

@@ -79,10 +79,19 @@ Schema: `${CLAUDE_PLUGIN_ROOT}/reference/schemas/guards.schema.json`. Worked exa
    prove the saved file loads. The hook reads the file on every call, so nothing needs a restart.
 6. **Keep the two lists aligned.** A glob added to `guards.json` → `generated` belongs in `targets.json` →
    `generated` too, so reviewers and `change-targets` skip it: offer to add it.
+7. **Offer ask rules for the control plane** (when `clients` includes `claude-code`, and they are not there yet).
+   - **The question, once:** should the main session also prompt before changing `guards.json` and extensions?
+     The guard's role rules already ask before a subagent changes them; these rules cover the session itself.
+   - **On a yes:** merge into `.claude/settings.json` → `permissions.ask` the rules
+     `"Edit(.stackfoundry/guards.json)"` and `"Edit(.stackfoundry/extensions/**)"`, keeping every existing key and
+     rule. The host asks before that write as well.
+   - **The cost:** one prompt whenever those two rarely edited paths change, this skill's own save included.
+   - **Why:** `${CLAUDE_PLUGIN_ROOT}/reference/unattended.md`, *The control plane*.
 
 ## Boundaries
 
-- Writes only `guards.json`, plus `targets.json` → `generated` when the user agrees, and scratch files.
+- Writes only `guards.json`, plus `targets.json` → `generated` and the `.claude/settings.json` ask rules (step 7)
+  when the user agrees, and scratch files.
 - Never loosens a guard (removes a rule, turns `deny` into `ask`, relaxes the git policy) unless the user asked
   for that change in this turn.
 - `/stackfoundry:upgrade` treats an edited `guards.json` as the team's: it proposes merges, never overwrites.

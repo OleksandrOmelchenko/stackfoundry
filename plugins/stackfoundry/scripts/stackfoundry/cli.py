@@ -2,7 +2,8 @@
 
 Every subcommand is read-only except `manifest record|forget` (they write .stackfoundry/manifest.lock.json),
 `pack render --out` and `render-rule|render-agent|render-rulebook --out|--write` (each writes the one file it names), and
-`extensions new|base|merge|forget` (the extension file named, its base copy and .stackfoundry/extensions/.base/).
+`extensions new|base|merge|forget` (the extension file named, its base copy and .stackfoundry/extensions/.base/),
+and `side-effects` (its state file, in the system temp folder).
 None makes a network call.
 """
 from __future__ import annotations
@@ -15,7 +16,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from stackfoundry import (backlog, change_targets, checks, clients, config, extensions, guard,  # noqa: E402
-                          manifest, pack, plumbing, product, rulebooks, select_tests, survey, tracker, volatile)
+                          manifest, pack, plumbing, product, rulebooks, select_tests, sideeffects, survey, tracker,
+                          volatile)
 from stackfoundry.gitutil import GitError  # noqa: E402
 from stackfoundry.profile import ProfileError  # noqa: E402
 
@@ -159,6 +161,14 @@ def build() -> argparse.ArgumentParser:
     g.add_argument("--check", action="store_true", help="validate guards.json instead of reading a hook event")
     g.add_argument("--root", help="repo root for --check (default: CLAUDE_PROJECT_DIR or the current directory)")
     g.set_defaults(func=guard.main)
+
+    se = sub.add_parser("side-effects", help="start|end: prove an unattended run changed nothing but its report "
+                                             "(writes only its state file in the system temp folder)")
+    se.add_argument("action", choices=["start", "end"])
+    se.add_argument("--allow", action="append", metavar="GLOB", help="end: a path the run may change (its report)")
+    se.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/)")
+    se.add_argument("--json", action="store_true")
+    se.set_defaults(func=sideeffects.main)
     return p
 
 

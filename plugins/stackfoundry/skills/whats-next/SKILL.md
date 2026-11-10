@@ -32,8 +32,9 @@ from `.stackfoundry/product.json`, and what that kind should offer comes from a 
 
 - **Interactive** (default): asks before researching, and at the end asks which items to start.
 - **`--report`**: unattended, for `schedule`. Asks nothing, researches nothing new, writes exactly one file (the
-  report), never writes git, and compares `git status --porcelain` at the start and end (any other change goes
-  under **Side effects**).
+  report), never writes git, and follows the unattended contract ([`reference/unattended.md`](${CLAUDE_PLUGIN_ROOT}/reference/unattended.md)):
+  `stackfoundry side-effects start` first, `end --allow <the report's path>` last, any change under **Side
+  effects**.
 - `product` or `technical` limits the list to one track.
 
 ## 1. Load

@@ -69,8 +69,12 @@ manual installs, after `/hooks` trust).
 - **Permission flags:** `--permission-mode dontAsk` denies every call that would prompt; only the allowed rules run
   [claude-code-permissions].
 - **Path rules:** on the command line, `--allowedTools "Edit(docs/radar/**)"` allows writes to that folder (relative
-  to the working directory) through Write and Edit alike. A `Write(...)` rule allows nothing. Both confirmed with a
-  headless run on Claude Code 2.1.
+  to the working directory) through Write and Edit alike. A `Write(...)` rule allows nothing.
+- **The launcher:** `"Bash(sh \"<plugin root>/scripts/stackfoundry.sh\" *)"`, quoted exactly as called, is allowed;
+  a `*` inside the path does not match.
+- **Subagents:** a subagent runs under the same rules, so a `web-researcher` reads only the hosts allowed as
+  `WebFetch(domain:…)`.
+- **Confirmed:** each of these with a headless run on Claude Code 2.1.
 
 ## Rules where there is no path scoping
 

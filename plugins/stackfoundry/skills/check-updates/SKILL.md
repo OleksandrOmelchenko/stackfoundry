@@ -38,8 +38,8 @@ stop without writing.
 
 ## Unattended contract
 
-Ask nothing, install nothing, never write git, write exactly one file (the report). Record
-`git status --porcelain` before step 1 and compare at the end.
+Ask nothing, install nothing, never write git, write exactly one file (the report): the unattended contract,
+[`reference/unattended.md`](${CLAUDE_PLUGIN_ROOT}/reference/unattended.md). Run `stackfoundry side-effects start` before step 1.
 
 ## Procedure
 
@@ -63,8 +63,8 @@ Ask nothing, install nothing, never write git, write exactly one file (the repor
    --section plans --json`, then a text search of the plans for the package name).
 5. **Not reached.** A failed command or fetch is listed with its reason (CLI missing, no auth, dependencies not
    installed, network) and never filled from memory.
-6. **Write the report**, then **self-check**: compare `git status --porcelain` with the start. Any change other
-   than the report goes under **Side effects**, is left as it is, and is named in the closing lines.
+6. **Write the report**, then **self-check**: `stackfoundry side-effects end --allow <the report's path>`. Every
+   change it lists goes under **Side effects**, is left as it is, and is named in the closing lines.
 
 ## Report
 
@@ -95,7 +95,7 @@ any side effect.
 
 ## Tooling
 
-- `Bash` for the `discover` commands, `git status --porcelain` and `stackfoundry backlog`; `PowerShell` only when a
+- `Bash` for the `discover` commands, `stackfoundry side-effects` and `stackfoundry backlog`; `PowerShell` only when a
   `discover` command is a PowerShell script and the session has that tool.
 - `WebFetch` / `WebSearch` for release notes and advisories; quote every URL.
 - `Skill` → `stackfoundry:check-formats --report-only` for a `formats` ecosystem.

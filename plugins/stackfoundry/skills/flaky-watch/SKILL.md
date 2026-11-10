@@ -33,7 +33,8 @@ categories and how they are fixed are `.stackfoundry/rules/testing.md` § 11 (Fl
 ## Unattended contract
 
 Ask nothing, install nothing, start or stop no service, never write git, write exactly one file (the report).
-Record `git status --porcelain` before the first run and compare at the end.
+This is the unattended contract, [`reference/unattended.md`](${CLAUDE_PLUGIN_ROOT}/reference/unattended.md): run `stackfoundry side-effects start` before
+the first run.
 
 ## Procedure
 
@@ -57,8 +58,8 @@ Record `git status --porcelain` before the first run and compare at the end.
    - **errored suite**: every run aborted; listed with the abort reason.
    For each flaky test, note a suspected § 11 category only when the failure text shows it (a timeout, an
    ordering assertion, a time value); it is a hint for the fixer, not a classification.
-5. **Write the report**, then compare `git status --porcelain` with the start. Test runs often write results or
-   coverage files: any change other than the report goes under **Side effects**, left as it is.
+5. **Write the report**, then run `stackfoundry side-effects end --allow <the report's path>`. Test runs often write
+   results or coverage files: every change it lists goes under **Side effects**, left as it is.
 
 ## Report
 

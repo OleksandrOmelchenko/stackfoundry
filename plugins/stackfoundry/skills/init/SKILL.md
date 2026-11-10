@@ -156,6 +156,8 @@ marking each **new** or **merge** (an existing file of the same name), and ask o
   an `echo`): the live guard reads the whole command and refuses the probe itself. With `generated` globs, an `Edit` of a matching file must be denied; with none, a
   `git commit` must get the `git.writes` decision. For each other assistant in `clients`, say what its guard can do
   there (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`, *The guard in each assistant*).
+- **Control-plane ask rules** (Claude Code): offer them once, as `/stackfoundry:configure-guards` step 7 does, and
+  write them only on a yes.
 
 ## 6. Report
 
