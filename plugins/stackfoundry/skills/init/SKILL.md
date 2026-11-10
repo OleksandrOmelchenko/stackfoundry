@@ -68,7 +68,7 @@ Show one table: target · paths · stack (packs by layer) · exposure · stakes 
    data integrity).
 3. Working agreements: the git-write policy (`ask` recommended), the generated folders and how each is
    regenerated, commands that must never run (direct database writes, deploys), the docs root (`docs` unless the
-   repo already keeps docs elsewhere), the plan categories, the time zone for report dates, and the assistants the
+   repo already keeps docs elsewhere), the plan categories (only when `plans/README.md` is created here), the time zone for report dates, and the assistants the
    team uses (`clients`: claude-code, codex, copilot, cursor, gemini; `${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
 4. Roles to enable per target (default: all), and how to treat existing `.claude/` content (keep side by side
    recommended).
@@ -142,8 +142,9 @@ marking each **new** or **merge** (an existing file of the same name), and ask o
 - `--template` values are paths relative to the plugin root (`reference/templates/target.md`), or `research` /
   `profile`, exactly as the table gives them.
 - Check as you write: `stackfoundry config` right after `config.json`, `stackfoundry guard --check` right after
-  `guards.json` (an invalid file is silently ignored by the hook), `stackfoundry change-targets --files <one file per
-  target>` right after `targets.json` (it loads and validates it), `stackfoundry product check
+  `guards.json` (an invalid file is silently ignored by the hook), `stackfoundry change-targets --all` right after
+  `targets.json` (it validates it and maps every file: fix each **Shadowed** entry, judge each **Unmapped** one),
+  `stackfoundry product check
   .stackfoundry/product.json` right after `product.json`, and `stackfoundry verify-plumbing .` right after the
   code-writer skills (description caps).
 - Record every file: `stackfoundry manifest record <files> --template <id from the table>`.
@@ -156,7 +157,7 @@ marking each **new** or **merge** (an existing file of the same name), and ask o
 - `stackfoundry verify-plumbing .` (the repo's skills and agents), `stackfoundry globs-check` (every rulebook glob
   matches a file), and, when the session is Claude Code, `/stackfoundry:skill-agent-verifier` for the load probe:
   every generated rulebook loads when a matching file is read.
-- `stackfoundry change-targets --files <one source file per target>`: each maps to its own target.
+- `stackfoundry change-targets --all`: no **Shadowed** section, and every **Unmapped** file is deliberate.
 - `stackfoundry guard --check`, then a probe: write a sample event to a file with the `Write` tool, then run
   `stackfoundry guard < <file>` with `CLAUDE_PROJECT_DIR` set. Never put the event in the command line (a heredoc or
   an `echo`): the live guard reads the whole command and refuses the probe itself. With `generated` globs, an `Edit` of a matching file must be denied; with none, a

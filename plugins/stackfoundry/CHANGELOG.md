@@ -45,6 +45,8 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   nothing.
 - `stackfoundry side-effects start|end`, and `reference/unattended.md`, the one copy of the unattended-run contract.
 - `configure-guards` and `init` offer Claude Code `ask` rules for `guards.json` and `extensions/**`.
+- `stackfoundry change-targets --all` maps every tracked and untracked file. Its **Shadowed** section lists files
+  that a rule with no targets hides from a target whose paths match them. `init` checks `targets.json` with it.
 
 ### Changed
 
@@ -60,6 +62,15 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 - `stackfoundry today` dates a `UTC` (or `Etc/UTC`) profile in UTC even when Python has no zone database. Windows
   Python without the `tzdata` package used to fall back to the machine's local date. For other zones the fallback
   now says to install `tzdata`.
+- A `rules` glob without a slash (`*.md`) matches at any depth. When the surveyor drafted one for root files, every
+  skill and agent file silently became "ignored". The surveyor now anchors root files (`/*.md`), and
+  `change-targets` reports the shadowing.
+- `render-rulebook testing` also covers shared test helpers that a `rules` entry routes, such as
+  `tests/_support.py`, when they sit in a folder the test paths name.
+- An unexpected error in a CLI command printed a traceback and exited 1, which callers read as "ran and found
+  something". It now exits 2, and 0 for the guard, which has no opinion then.
+- `stack-researcher` and `domain-researcher` can `Edit` their own output, so a correction no longer rewrites the
+  whole file. The role guard still bounds every write to that file.
 
 ## [0.2.0] - 2026-11-09
 

@@ -23,7 +23,7 @@ rulebooks, trackers and code into users' repos).
   (layers, schemas, templates, rulebooks, trackers), `evals/**`, `plugins/stackfoundry/.claude-plugin/plugin.json`,
   root `.claude-plugin/marketplace.json`. Entry point: `plugin.json` (name, version, `userConfig`).
 - Authoring rules: `.stackfoundry/rules/authoring.md`; design: `docs/design.md`.
-- Tests: `tests/test_reference.py`, `tests/test_manifests.py` (stdlib `unittest`, harness `tests/_support.py`);
+- Tests: `tests/test_reference.py`, `tests/test_manifests.py`, `tests/test_build_clients.py` (stdlib `unittest`, harness `tests/_support.py`);
   `verify-plumbing` (`plugins/stackfoundry/scripts/stackfoundry/plumbing.py`); eval cases in `plugins/stackfoundry/evals/<case>/` scaffolded
   from `fixtures/` by `fixtures/scaffold-lib.sh`. `fixtures/*/EXPECTED.md` are answer keys: never show them to an agent.
 - Generated, never hand-edited: the other assistants' plugin files, written by `scripts/build_clients.py` (the

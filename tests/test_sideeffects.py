@@ -1,12 +1,7 @@
 """`stackfoundry side-effects`: an unattended run may change its report and nothing else (threat model T11)."""
-import subprocess
 import unittest
 
-from tests._support import HAS_GIT, TempRepo, run_cli, write
-
-
-def git(root, *args):
-    subprocess.run(["git", *args], cwd=root, check=True, capture_output=True)
+from tests._support import HAS_GIT, TempRepo, git, run_cli, write
 
 
 @unittest.skipUnless(HAS_GIT, "git not available")
@@ -17,7 +12,7 @@ class SideEffectsTests(unittest.TestCase):
         self.addCleanup(self._repo.__exit__, None, None, None)
         git(self.root, "init", "-q")
         git(self.root, "add", "src/app.py")  # .stackfoundry/ and notes.txt stay untracked, as in many repos
-        git(self.root, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "init")
+        git(self.root, "commit", "-qm", "init")
 
     def cli(self, *args):
         return run_cli(["side-effects", *args, "--root", str(self.root)])

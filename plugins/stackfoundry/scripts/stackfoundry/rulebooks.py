@@ -40,7 +40,13 @@ def _minimal(globs: list[str]) -> list[str]:
 
 def _globs(what: str, targets: dict, ecosystems: dict) -> list[str]:
     if what.startswith("test path of every target"):
-        return _dedupe([g for t in targets["targets"] for g in t.get("testPaths", []) or []])
+        tests = [g for t in targets["targets"] for g in t.get("testPaths", []) or []]
+        # Shared test helpers (`tests/_support.py`) are often routed by a `rules` entry rather than listed in a
+        # target's testPaths; take a routed rule glob that lives in a folder the test paths name.
+        folders = {g.lstrip("/").split("/")[0] for g in tests if "/" in g.lstrip("/")} - {"**", "*"}
+        helpers = [r.get("glob", "") for r in targets.get("rules", []) or []
+                   if isinstance(r, dict) and r.get("targets") and r.get("glob", "").lstrip("/").split("/")[0] in folders]
+        return _dedupe(tests + helpers)
     if what.startswith("pin file and lock file"):
         out: list[str] = []
         for eco in ecosystems.get("ecosystems", []) or []:

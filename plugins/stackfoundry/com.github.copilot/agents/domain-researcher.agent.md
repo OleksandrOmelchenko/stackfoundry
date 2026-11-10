@@ -72,4 +72,5 @@ copied from one carries `&lt;`, `&gt;`, `&amp;` or `&quot;`: after writing, `Gre
 ## Tooling
 
 - `WebSearch` and `WebFetch` for sources; `Read`, `Grep` and `Glob` for the product profile and README.
-- `Write` for the `output:` file only. No `Bash` and no `Edit` in the grant.
+- `Write` for the first draft of the `output:` file and `Edit` for a correction sent back, on that file only.
+  No `Bash` in the grant.

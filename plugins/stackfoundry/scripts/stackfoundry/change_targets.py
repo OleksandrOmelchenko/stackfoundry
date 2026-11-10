@@ -7,6 +7,9 @@ Classification of each changed file, first match wins:
   4. target `paths`     -> every target whose paths match (two targets may share a folder: a Vue layer and an SSR layer)
   5. target `testPaths` -> that target, as a test file
   6. otherwise          -> unmapped (judge by hand; add a rule when a path keeps coming back)
+
+A rule with no targets that takes a file some target's `paths` or `testPaths` also match is reported as
+`shadowed`: usually a glob without a slash (`*.md`), which matches at any depth, where a root file (`/*.md`) was meant.
 """
 from __future__ import annotations
 
@@ -29,6 +32,7 @@ def classify(data: dict, files: list[str]) -> dict:
         "generated": [],
         "ignored": [],
         "unmapped": [],
+        "shadowed": [],
     }
 
     def add(name: str, f: str, is_test: bool):
@@ -48,6 +52,10 @@ def classify(data: dict, files: list[str]) -> dict:
                 add(name, f, match_any(f, targets[name].get("testPaths", [])))
             if not rule.get("targets"):
                 result["ignored"].append(f)
+                hidden = [n for n, t in targets.items()
+                          if match_any(f, t.get("paths", []) + t.get("testPaths", []))]
+                if hidden:
+                    result["shadowed"].append({"file": f, "rule": rule["glob"], "targets": hidden})
             continue
         test_hits = [n for n, t in targets.items() if match_any(f, t.get("testPaths", []))]
         if test_hits:
@@ -97,8 +105,13 @@ def specialists(data: dict, root: Path, files: list[str]) -> list[dict]:
     return out
 
 
-def resolve_files(root: Path, base: str | None, files_arg, range_arg: str | None = None) -> list[str]:
-    """`files_arg`: a list of values, each a path or a comma-separated list of paths (both forms are accepted)."""
+def resolve_files(root: Path, base: str | None, files_arg, range_arg: str | None = None,
+                  all_files: bool = False) -> list[str]:
+    """`files_arg`: a list of values, each a path or a comma-separated list of paths (both forms are accepted).
+    `all_files`: every tracked file plus untracked ones not ignored by git, to check a whole profile at once."""
+    if all_files:
+        return sorted(set(gitutil.tracked_files(root))
+                      | set(gitutil.paths(["ls-files", "--others", "--exclude-standard"], root)))
     if files_arg:
         values = [files_arg] if isinstance(files_arg, str) else files_arg
         return [f.strip().replace("\\", "/") for v in values for f in v.split(",") if f.strip()]
@@ -132,18 +145,26 @@ def render_markdown(result: dict, specs: list[dict], base: str | None, source: s
                        ("unmapped", "Unmapped (judge by hand)")):
         if result[key]:
             lines += ["", f"## {title}"] + [f"- {f}" for f in result[key]]
+    if result.get("shadowed"):
+        lines += ["", "## Shadowed (a rule with no targets hides these from targets whose paths match them)"]
+        lines += [f"- {s['file']}: rule `{s['rule']}` hides it from {', '.join(s['targets'])}"
+                  for s in result["shadowed"]]
+        lines.append("  A glob without a slash matches at any depth; anchor root files as `/<name>`.")
     return "\n".join(lines) + "\n"
 
 
 def main(args) -> int:
     root = Path(args.root).resolve() if args.root else gitutil.repo_root(Path.cwd())
     data = load_targets(root)
-    files = resolve_files(root, args.base, args.files, args.range)
+    files = resolve_files(root, args.base, args.files, args.range, getattr(args, "all", False))
     result = classify(data, files)
     specs = specialists(data, root, files)
     if args.json:
         print(json.dumps({**result, "specialists": specs, "base": args.base}, indent=2))
     else:
-        source = "the files given" if args.files else (f"range {args.range}" if args.range else None)
+        if getattr(args, "all", False):
+            source = "every file"
+        else:
+            source = "the files given" if args.files else (f"range {args.range}" if args.range else None)
         print(render_markdown(result, specs, args.base, source), end="")
     return 0

@@ -96,4 +96,5 @@ the plain character (`pack check` rejects them, and an extra round trip costs th
 ## Tooling
 
 - `WebSearch` and `WebFetch` for sources; `Read`, `Grep` and `Glob` to ground every rule in the repo.
-- `Write` for the `output:` file only. No `Bash` and no `Edit` in the grant.
+- `Write` for the first draft of the `output:` file and `Edit` for a correction sent back, on that file only.
+  No `Bash` in the grant.

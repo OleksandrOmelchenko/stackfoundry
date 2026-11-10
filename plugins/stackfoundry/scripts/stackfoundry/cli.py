@@ -41,6 +41,9 @@ def build() -> argparse.ArgumentParser:
         c.add_argument("--range", help="a commit range (A..B or A...B) exactly, without uncommitted changes")
         c.add_argument("--root", help="repo root (default: git toplevel of the current directory)")
         c.add_argument("--json", action="store_true")
+        if name == "change-targets":
+            c.add_argument("--all", action="store_true",
+                           help="every tracked and untracked file: checks a whole profile (shadowed, unmapped)")
         if name == "select-tests":
             c.add_argument("--mode", choices=["affected", "full"], default="affected")
         c.set_defaults(func=mod.main)
@@ -194,6 +197,9 @@ def main(argv: list[str] | None = None) -> int:
         # read as a verdict. ValueError covers JSON and Unicode decode errors; RecursionError, absurdly nested JSON.
         print(f"stackfoundry {args.command}: {exc}", file=sys.stderr)
         return 2
+    except Exception as exc:  # noqa: BLE001 - a bug in a command must not read as "found something" (exit 1)
+        print(f"stackfoundry {args.command}: internal error: {type(exc).__name__}: {exc}", file=sys.stderr)
+        return 0 if args.command == "guard" else 2
 
 
 if __name__ == "__main__":

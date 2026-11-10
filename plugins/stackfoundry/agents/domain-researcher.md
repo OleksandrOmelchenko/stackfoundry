@@ -1,7 +1,7 @@
 ---
 name: domain-researcher
 description: Researches what a product of one kind is expected to offer — table-stakes, expected and differentiating capabilities, regulations for its markets, metrics, common failure patterns, trends — from current sources into a cited domain brief. Writes only the brief its dispatch names.
-tools: Read, Grep, Glob, WebSearch, WebFetch, Write
+tools: Read, Grep, Glob, WebSearch, WebFetch, Write, Edit
 ---
 
 # Domain researcher
@@ -73,4 +73,5 @@ copied from one carries `&lt;`, `&gt;`, `&amp;` or `&quot;`: after writing, `Gre
 ## Tooling
 
 - `WebSearch` and `WebFetch` for sources; `Read`, `Grep` and `Glob` for the product profile and README.
-- `Write` for the `output:` file only. No `Bash` and no `Edit` in the grant.
+- `Write` for the first draft of the `output:` file and `Edit` for a correction sent back, on that file only.
+  No `Bash` in the grant.
