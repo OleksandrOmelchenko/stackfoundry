@@ -26,6 +26,11 @@ KNOWN_TOOLS = {"Read", "Grep", "Glob", "Bash", "PowerShell", "Edit", "Write", "M
                "WebFetch", "Agent", "Skill", "TodoWrite", "AskUserQuestion", "SendMessage", "Monitor", "LSP"}
 # Tools whose mention in an agent's body means the grant must include them.
 GATED = ("Agent", "WebSearch", "WebFetch", "Edit", "Write", "PowerShell", "Bash")
+WEB_TOOLS = {"WebSearch", "WebFetch"}
+# Agents allowed a shell together with web or browser tools, each with the reason it is safe.
+SHELL_WITH_WEB = {
+    "web-fix-verifier": "its browser opens only the local app under test, and its brief never names a remote page",
+}
 NEGATION = re.compile(r"\b(never|not|no|don't|do not|without|cannot|isn't|must not)\b", re.I)
 LINK = re.compile(r"(?<!!)\[[^\]]*\]\(([^)\s]+)\)")
 PLUGIN_REF = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}/([^\s`\"')\]]+)")
@@ -168,6 +173,13 @@ def check(base: Path) -> Report:
             for t in tools:
                 if t not in KNOWN_TOOLS and not t.startswith("mcp__"):
                     rep.warn(f, f"unknown tool in grant: {t}")
+            # A shell together with the web lets a fetched page steer commands (threat model T2): the web goes to
+            # `web-researcher`, which holds no shell, and its notes are handed on.
+            web = [t for t in tools if t in WEB_TOOLS or (t.startswith("mcp__") and "browser" in t.lower())]
+            shell = [t for t in tools if t in ("Bash", "PowerShell")]
+            if web and shell and f.stem not in SHELL_WITH_WEB:
+                rep.error(f, f"grants {', '.join(shell)} together with {', '.join(web[:2])}; give the web part to "
+                             "web-researcher, or add the agent to plumbing.SHELL_WITH_WEB with the reason")
             if isinstance(desc, str) and re.search(r"\bread-only\b", desc, re.I):
                 for t in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
                     if t in tools:

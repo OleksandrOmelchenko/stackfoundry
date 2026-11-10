@@ -32,7 +32,7 @@ template, and renders it for each assistant the repo uses. From then on the team
   as `bug-hunter`, `fix-verifier`, `web-fix-verifier`, `test-designer`, `test-writer`, `test-reviewer`,
   `test-fixer`, `performance-reviewer`, `security-reviewer`, `code-verifier`, `debugger`. The plugin's
   `agents/` folder is the current list. A cross-target role (`change-reviewer`, the semantics reviewers, the docs
-  roles, `test-runner`, `surveyor`, `stack-researcher`) has no target to specialize for: say so and stop.
+  roles, `test-runner`, `surveyor`, `stack-researcher`, `web-researcher`) has no target to specialize for: say so and stop.
 
 ## Procedure
 

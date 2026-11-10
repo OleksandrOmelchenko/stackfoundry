@@ -57,7 +57,8 @@ class PlumbingTests(unittest.TestCase):
         for needle in ("reference/x.md does not exist", "does not match the folder", "251 characters",
                        "/stackfoundry:nope", "'ghost'", "missing.md", "read-only but granted Edit",
                        "lacks it", "single hyphens", "portable-form preamble",
-                       "read-only but granted Bash without naming"):
+                       "read-only but granted Bash without naming",
+                       "grants Bash together with WebSearch"):  # T2: a shell beside the web
             self.assertIn(needle, errors)
         def errors_for(skill):
             return " | ".join(e for e in report.errors if f"{skill}{'/'}SKILL.md" in e.replace("\\", "/"))

@@ -60,7 +60,9 @@ says so. Effort: the user's words win, else the repo's `defaultEffort` (`stackfo
      (quick: Emphasis only; thorough: every category of the target). `materialized.bug-hunter` replaces it.
    - Each specialist `change-targets` named (a plugin role as `stackfoundry:<agent>`, e.g. `security-reviewer` with
      `mode: review`; a repo agent by its own name), scoped to the files it matched. Add or drop one by judgment
-     and say why: the content scan is a hint.
+     and say why: the content scan is a hint. A diff review has no web pass. The security reviewer reads no web
+     page, and says under Not covered that advisories were not checked (`/stackfoundry:security-review-target`
+     does that).
    Brief each with `target`, `scope: files:` and `concurrency: read-only, do not build`. Nothing else. Split a large
    diff by target or area: a reviewer handed everything reviews nothing properly.
 4. **Deduplicate.** Keep the most specific statement of each finding and note who agreed; agreement between

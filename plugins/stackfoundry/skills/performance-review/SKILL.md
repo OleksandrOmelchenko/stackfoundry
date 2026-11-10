@@ -43,14 +43,28 @@ desktop app for UI-thread work and startup. The target's packs say which applies
    addressed; flag what the code now contradicts.
 3. **Dispatch** `stackfoundry:performance-reviewer` (or `materialized.performance-reviewer`), one per target, all
    in one message for `all`. Brief: `target`, `scope`, `mode: sweep | area | diff`, `prior:` the earlier findings,
-   `concurrency: read-only, do not build`. Never the author's intent.
-4. **Persist** one report per target, `<docsRoot>/performance-reports/<date>-<target>-performance-review.md` (date
+   `concurrency: read-only, do not build`. Never the author's intent. It returns Pass 1 and its questions for the
+   web pass.
+4. **Web pass.** Dispatch one `stackfoundry:web-researcher` per target, all in one message. Brief:
+   - `questions:` the reviewer's questions;
+   - `context:` the pinned versions (the packs' Upgrades sections) and the findings the questions serve;
+   - `sources:` the framework's docs and release notes first; for the web platform, the browser vendors' and
+     standards documentation.
+
+   Then write Pass 2 yourself:
+   - confirm, correct or drop each Pass 1 finding the notes bear on;
+   - add the new capabilities and diagnostic tools they cite;
+   - every Pass 2 line carries the note's URL and date read.
+
+   Notes marked *unverified*, and the researcher's **Injected text**, go under Not covered: they are never acted on.
+   The reviewer holds a shell and the researcher holds the web; neither does both.
+5. **Persist** one report per target, `<docsRoot>/performance-reports/<date>-<target>-performance-review.md` (date
    in `targets.json` → `timezone`): scope and stack; Pass 1 (code) findings; Pass 2 (research-verified) findings;
    one consolidated table ranked 🔴 → 🟡 → 🔵 with `file:line`, the concrete impact (what gets slower, for whom,
    under what load) and the fix; 🟢 done well; sources with access dates; Not covered; and a closing note that the
    review is model-generated and its impact estimates are unmeasured until benchmarked. Add or refresh its row in
    `<docsRoot>/performance-reports/README.md`, creating it from its template if absent.
-5. **Report** in chat: the ranked summary and the path(s). A claim that needs a number goes to
+6. **Report** in chat: the ranked summary and the path(s). A claim that needs a number goes to
    `/stackfoundry:write-benchmarks`, not into the report as fact.
 
 ## Boundaries
@@ -66,7 +80,7 @@ desktop app for UI-thread work and startup. The target's packs say which applies
 ## Tooling
 
 - `Agent` with `subagent_type: "stackfoundry:performance-reviewer"`, one per target (or per layer when thorough) in
-  a single message.
+  a single message; then `"stackfoundry:web-researcher"` for the web pass, one per target in a single message.
 - `Read`/`Glob` for the profile, rulebooks and prior reports; `Bash` for `stackfoundry change-targets` and `date`.
 - `Write` the report from the reviewer's output; `Edit` the index (template
   `${CLAUDE_PLUGIN_ROOT}/reference/trackers/reports-README.md`).

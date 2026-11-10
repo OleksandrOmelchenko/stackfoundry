@@ -86,6 +86,7 @@ reason the code does not show · 🔵 suggestion · 🟢 done well.
 | `surveyor` | no | Read, Grep, Glob, Bash | Runs `stackfoundry survey`, confirms each hint against code, drafts the target map and the questions for the user |
 | `stack-researcher` | its pack file only | Read, Grep, Glob, WebSearch, WebFetch, Write | Researches one technology into a pack (`reference/pack-research.md`) and writes it to the `output:` path its brief names |
 | `domain-researcher` | its domain brief only | Read, Grep, Glob, WebSearch, WebFetch, Write | Researches what a product of one kind is expected to offer, its regulations, metrics, failure patterns and trends into a cited domain brief (`reference/product-research.md`) |
+| `web-researcher` | no | Read, Grep, Glob, WebSearch, WebFetch | Answers a skill's web questions (advisories, release notes, guidance to verify a finding) with cited notes; the only role that reads the web for reviews and radars, so it holds no shell |
 | `product-analyst` | no | Read, Grep, Glob, Bash | Maps a domain brief onto the code: each capability present, partial, planned or missing with path evidence; regulation obligations; weaknesses found |
 | `bug-hunter` | no | Read, Grep, Glob, Bash | Hunts one category in one target's scope; findings with concrete failures |
 | `fix-verifier` | no | Read, Grep, Glob, Bash | Adversarially verifies one landed fix; one verdict |
@@ -94,8 +95,8 @@ reason the code does not show · 🔵 suggestion · 🟢 done well.
 | `test-writer` | tests only | Read, Grep, Glob, Bash, Edit, Write | Writes tests on the existing harness to a design or an area; never production code |
 | `test-reviewer` | no | Read, Grep, Glob, Bash | One verdict per test (`testing.md` §13), mutation-backed where a lane exists |
 | `test-fixer` | tests + harness | Read, Grep, Glob, Bash, Edit | Classifies first (`testing.md` §14), fixes by cause, never loosens |
-| `performance-reviewer` | no | Read, Grep, Glob, Bash, WebSearch, WebFetch | Two passes: the code, then current guidance from the web |
-| `security-reviewer` | no | Read, Grep, Glob, Bash, WebSearch, WebFetch | Threat model from exposure and stakes, or a security review of a scope |
+| `performance-reviewer` | no | Read, Grep, Glob, Bash | The code pass, plus the questions its skill hands to `web-researcher` for Pass 2 |
+| `security-reviewer` | no | Read, Grep, Glob, Bash | Threat model from exposure and stakes, or a security review of a scope, with `web-researcher`'s advisory notes in its brief |
 | `code-verifier` | no | Read, Grep, Glob, Bash | Stack plumbing: wiring, registration, routes, config keys, resources, CI job graphs resolve |
 | `debugger` | no | Read, Grep, Glob, Bash | Reproduce → hypothesize → bisect → root cause with evidence; proposes the fix and the regression test |
 | `change-reviewer` | no | Read, Grep, Glob, Bash | Reviews a diff as a stranger: correctness, concurrency, blast radius, contracts, security, convention fit |
@@ -210,3 +211,10 @@ backticked tool name there, on a line without a negation, must be in the grant. 
   that changes project files: `rm`, `mv`, `sed -i`, a redirect into the project, or a git write. They also ask
   before any subagent changes the control plane (`.stackfoundry/**`, instruction files) its role does not own.
 - **Other assistants:** they don't name the calling agent, so the instructions are the only bound there.
+
+**A shell and the web never share a grant.**
+- **Why:** a fetched page can carry instructions, so the agent that reads it must not be able to act on them.
+- **How:** web questions go to `web-researcher` (no shell, no write), and its cited notes travel to the reviewer in
+  the brief (`web:`).
+- **Enforced:** `verify-plumbing` reports any grant that holds `Bash` or `PowerShell` together with `WebSearch`,
+  `WebFetch` or a browser tool. The exceptions are listed, each with its reason, in `plumbing.py` `SHELL_WITH_WEB`.
