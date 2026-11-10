@@ -4,7 +4,8 @@
 Decisions:
   - an edit or write of a file under a `generated` glob                      -> deny, with how to regenerate it;
   - a shell command matching a `commands` pattern                            -> that entry's decision (deny | ask);
-  - a git write (commit, push, reset…) while `git.writes` is "ask" or "deny" -> ask or deny.
+  - a git or gh write (commit, push, pull, config set, gh api -f…) while `git.writes` is "ask" or "deny"
+                                                                              -> ask or deny (shellwords reads it).
 The guards that apply are the nearest `.stackfoundry/guards.json` above the file being edited (or above the
 command's working directory), so a linked worktree or a nested repo is guarded by its own profile. Paths are
 normalized first, so `gen/../gen/x` or a relative path still meets the globs.
@@ -27,9 +28,11 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from . import shellwords
 from .globs import match
 from .profile import GUARDS
 
+# The fallback for a command shellwords cannot split (unbalanced quotes): whole-string patterns.
 # A command can start after a separator, a parenthesis, whitespace or an opening quote (sh -c 'git push').
 _START = r"""(?:^|[;&|(\s'"`])"""
 GIT_WRITE = re.compile(
@@ -201,11 +204,19 @@ def verdict(call: Call, project: Path) -> tuple[str, str] | None:
         except re.error:
             continue
     policy = (guards.get("git") or {}).get("writes", "allow")
-    if policy in ("ask", "deny") and (GIT_WRITE.search(cmd) or GH_WRITE.search(cmd)):
+    if policy in ("ask", "deny") and _git_or_gh_write(cmd, call.shell):
         reason = (guards.get("git") or {}).get(
             "reason", "git and GitHub writes are the user's call in this repo; run one only when asked for it")
         return policy, reason
     return None
+
+
+def _git_or_gh_write(cmd: str, shell: str) -> bool:
+    """Parsed argv by argv (shellwords); a command that cannot be split falls back to the whole-string patterns."""
+    parts = shellwords.segments(cmd, shell)
+    if parts is None:
+        return bool(GIT_WRITE.search(cmd) or GH_WRITE.search(cmd))
+    return any(shellwords.git_write(argv) or shellwords.gh_write(argv) for argv in parts)
 
 
 def _relative(raw: str | None, project: Path) -> str | None:

@@ -148,6 +148,13 @@ an ask becomes a deny that says to get the user's go-ahead). It reads `.stackfou
 command patterns that are forbidden (direct database writes, raw service launches), and the git-write policy. No
 profile means no opinion: the hook exits 0.
 
+- **Git and gh writes:** `scripts/stackfoundry/shellwords.py` parses a command into argv per simple command before
+  judging it. It splits on separators, unwraps `sh -c`, `pwsh -Command`, `cmd /c` and `$(…)`, and drops wrappers
+  and `VAR=x` prefixes. Global options such as `-C`, `-c` and `--no-pager` are skipped, and path-prefixed or `.exe`
+  programs are recognised. Reads (`git config --get`, `gh api` without fields) stay reads.
+- **Coverage:** a command that can't be split, such as one with unbalanced quotes, falls back to the old
+  whole-string patterns. The guard prevents accidents; it is not a security boundary.
+
 ## Product direction
 
 `whats-next` points a team at its next product and technical steps for any kind of product. Three files make it

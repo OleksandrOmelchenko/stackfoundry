@@ -48,9 +48,14 @@ class GuardTests(unittest.TestCase):
     def test_git_writes_ask_and_reads_pass(self):
         writes = ["git commit -m x", "git push", "cd a && git reset --hard", "git -C x rebase main",
                   "git tag v1", "git stash", "git stash pop", "git branch -D old", "git checkout -- a.txt",
-                  "gh pr create --fill", "gh pr merge 3"]
+                  "gh pr create --fill", "gh pr merge 3",
+                  # threat model T5: the forms the old whole-string patterns missed (tests/test_shellwords.py has all)
+                  'git -C "a b" push', "git -c commit.gpgsign=false commit -m x", "git.exe push", "git pull",
+                  "git config core.hooksPath /dev/null", "gh api repos/o/r/issues/1/comments -f body=x",
+                  "gh workflow run ci.yml", "echo 'unclosed && git push"]
         reads = ["git status", "git diff HEAD", "git log --oneline", "git tag -l", "git branch --list",
-                 "git stash list", "git show HEAD", "gh pr view 3", "echo commit"]
+                 "git stash list", "git show HEAD", "gh pr view 3", "echo commit", "git -c color.ui=never log",
+                 "git config --get user.name", "gh api repos/o/r/pulls", "echo 'git push'"]
         with TempRepo() as root:
             for cmd in writes:
                 with self.subTest(cmd=cmd):
