@@ -5,7 +5,8 @@ Decisions:
   - an edit or write of a file under a `generated` glob                      -> deny, with how to regenerate it;
   - a shell command matching a `commands` pattern                            -> that entry's decision (deny | ask);
   - a git or gh write (commit, push, pull, config set, gh api -f…) while `git.writes` is "ask" or "deny"
-                                                                              -> ask or deny (shellwords reads it).
+                                                                              -> ask or deny (shellwords reads it);
+  - a stackfoundry subagent changing what its role must not (Claude Code names it) -> ask (roles.py).
 Every `.stackfoundry/guards.json` above the file being edited (or above the command's working directory), plus the
 project root's, applies at once and the strictest answer wins: a nested worktree or sample project adds its own
 rules, and an empty, partial or broken nested file cannot lift the rules above it. Paths are normalized first, so
@@ -29,7 +30,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import shellwords
+from . import roles, shellwords
 from .globs import match
 from .profile import GUARDS
 
@@ -60,6 +61,7 @@ class Call:
     command: str = ""
     shell: str = "Bash"            # Bash or PowerShell: what a `commands[].tools` filter names
     can_ask: bool = True           # False where the assistant has no ask for this event
+    agent: str | None = None       # the subagent that made the call, where the assistant says (roles.py)
 
 
 # --- reading the event ---------------------------------------------------------------------------------------------
@@ -105,12 +107,15 @@ def normalize(event: dict, client: str, project: Path) -> Call | None:
     base = Path(event.get("cwd") or project)
     if client in ("claude-code", "codex"):
         tool, args = event.get("tool_name", ""), _args(event.get("tool_input"))
+        agent = event.get("agent_type") if client == "claude-code" and isinstance(event.get("agent_type"), str) \
+            else None
         if tool in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
-            return Call("edit", base, _path_keys(args, "file_path", "notebook_path"))
+            return Call("edit", base, _path_keys(args, "file_path", "notebook_path"), agent=agent)
         if tool == "apply_patch":
             return Call("edit", base, _patch_paths(args), can_ask=False)
         if tool in SHELL_LABELS:
-            return Call("shell", base, command=args.get("command") or "", shell=tool, can_ask=client != "codex")
+            return Call("shell", base, command=args.get("command") or "", shell=tool, can_ask=client != "codex",
+                        agent=agent)
         return None
     if client == "copilot":
         tool, args = str(event.get("toolName", "")), _args(event.get("toolArgs"))
@@ -186,6 +191,14 @@ STRICTNESS = {"allow": 0, "ask": 1, "deny": 2}
 
 
 def verdict(call: Call, project: Path) -> tuple[str, str] | None:
+    """(deny | ask, reason) or None: the repo's guards.json rules and the role rules (roles.py), strictest first."""
+    found = [v for v in (_guards_verdict(call, project),
+                         roles.verdict(call.kind, call.paths, call.command, call.shell, call.base, project,
+                                       call.agent)) if v]
+    return max(found, key=lambda v: STRICTNESS[v[0]]) if found else None
+
+
+def _guards_verdict(call: Call, project: Path) -> tuple[str, str] | None:
     """(deny | ask, reason) or None for no opinion. Every guards.json from the call's folder up to the filesystem
     root, plus the project's, applies at once and the strictest answer wins: a nested file can add rules, never
     lift the ones above it."""

@@ -42,6 +42,9 @@ class PlumbingTests(unittest.TestCase):
             "skills/dangling/SKILL.md": "---\nname: dangling\ndescription: x\n---\nThen `/stackfoundry:nope`. "
                                         "Dispatch `Agent` with subagent_type: \"ghost\". [a](missing.md)\n",
             "agents/hunter.md": GOOD_AGENT.replace("Read, Grep, WebSearch", "Read, Grep, Edit"),
+            # read-only with a shell, but Tooling never says what the shell is for (threat model T3)
+            "agents/sheller.md": GOOD_AGENT.replace("name: hunter", "name: sheller").replace(
+                "Read, Grep, WebSearch", "Read, Grep, WebSearch, Bash"),
             "skills/No_Caps/SKILL.md": "---\nname: No_Caps\ndescription: x\n---\n# No caps\n",
             "skills/slashonly/SKILL.md": GOOD_SKILL.replace("name: good", "name: slashonly").replace(
                 "---\n#", "disable-model-invocation: true\n---\n#", 1),
@@ -53,7 +56,8 @@ class PlumbingTests(unittest.TestCase):
         errors = " | ".join(report.errors)
         for needle in ("reference/x.md does not exist", "does not match the folder", "251 characters",
                        "/stackfoundry:nope", "'ghost'", "missing.md", "read-only but granted Edit",
-                       "lacks it", "single hyphens", "portable-form preamble"):
+                       "lacks it", "single hyphens", "portable-form preamble",
+                       "read-only but granted Bash without naming"):
             self.assertIn(needle, errors)
         def errors_for(skill):
             return " | ".join(e for e in report.errors if f"{skill}{'/'}SKILL.md" in e.replace("\\", "/"))

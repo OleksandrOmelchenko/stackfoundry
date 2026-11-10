@@ -202,3 +202,11 @@ tools: <grant>
 
 `stackfoundry verify-plumbing` reads the `## Tooling` section of an agent as its instructions to use tools: a
 backticked tool name there, on a line without a negation, must be in the grant. Name tools elsewhere freely.
+
+**What "Read-only." means:**
+- **No file tools:** no `Edit`, `Write`, `MultiEdit` or `NotebookEdit` in the grant.
+- **Shell:** a shell only for the commands its `## Tooling` names, which `verify-plumbing` requires.
+- **In Claude Code:** the guard's role rules (`scripts/stackfoundry/roles.py`) ask before such a role runs anything
+  that changes project files: `rm`, `mv`, `sed -i`, a redirect into the project, or a git write. They also ask
+  before any subagent changes the control plane (`.stackfoundry/**`, instruction files) its role does not own.
+- **Other assistants:** they don't name the calling agent, so the instructions are the only bound there.

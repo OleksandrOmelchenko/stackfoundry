@@ -56,6 +56,22 @@ relying on it: which variable carries the plugin root in Copilot's plugin hooks,
 own approval prompts in place, and that Codex runs hooks from a marketplace install (its docs limit plugin hooks to
 manual installs, after `/hooks` trust).
 
+**Which agent made the call.**
+- **Claude Code:** gives a hook the calling subagent as `agent_type`. For a plugin agent that is the plugin-scoped
+  name, such as `stackfoundry:product-analyst`; for a repo agent it is the bare name. The main session sends none
+  [claude-code-hooks]; confirmed with a headless run on Claude Code 2.1.
+- **The role rules** (`guard.py`, *Roles*) use that field: the asks for read-only roles, the control-plane files and
+  the researchers' own outputs.
+- **Other assistants:** they don't send the field, so the rules don't apply there and those roles stay bound by
+  their instructions only.
+
+**Unattended Claude Code runs.**
+- **Permission flags:** `--permission-mode dontAsk` denies every call that would prompt; only the allowed rules run
+  [claude-code-permissions].
+- **Path rules:** on the command line, `--allowedTools "Edit(docs/radar/**)"` allows writes to that folder (relative
+  to the working directory) through Write and Edit alike. A `Write(...)` rule allows nothing. Both confirmed with a
+  headless run on Claude Code 2.1.
+
 ## Rules where there is no path scoping
 
 Where an assistant has no path-scoped rules (Codex, Gemini), stackfoundry writes each rulebook to
@@ -65,6 +81,8 @@ editing a matching file.
 ## Sources (accessed 2026-11-09)
 
 - [claude-code] Claude Code plugin manifest reference: https://code.claude.com/docs/en/plugins-reference
+- [claude-code-hooks] Claude Code hooks reference (`agent_type`, `agent_id`): https://code.claude.com/docs/en/hooks
+- [claude-code-permissions] Claude Code permissions (modes, rule syntax): https://code.claude.com/docs/en/permissions
 - [agent-skills] Agent Skills specification and client guide: https://agentskills.io/specification,
   https://agentskills.io/client-implementation/adding-skills-support
 - [agent-plugins] Agent Plugins specification 1.0.0: https://github.com/agentplugins/agent-plugins-spec

@@ -160,6 +160,14 @@ profile means no opinion: the hook exits 0.
   - Commands take the strictest matching rule, and `git.writes` the strictest policy.
   - A worktree, sample project or fixture adds its own rules, and an empty or broken nested file is skipped. Neither
     can lift the rules above it.
+- **Roles:** in Claude Code the hook input names the calling subagent (`agent_type`). `scripts/stackfoundry/roles.py`
+  asks before:
+  - a read-only stackfoundry role changes project files;
+  - any subagent changes a control-plane file its role does not own (`ROLE_OUTPUTS`);
+  - a web-reading role writes anything but its own output.
+
+  The main session is never judged. The definition files decide which roles are read-only, so there is no list to
+  keep in sync.
 
 ## Product direction
 

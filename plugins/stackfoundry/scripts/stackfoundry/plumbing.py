@@ -172,6 +172,14 @@ def check(base: Path) -> Report:
                 for t in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
                     if t in tools:
                         rep.error(f, f"described as read-only but granted {t}")
+                # Read-only with a shell means: the shell only for the commands its Tooling names (the guard's
+                # role rules ask before anything else that changes files, docs/authoring-guide.md).
+                section = re.search(r"^##\s+Tooling\b(.*?)(?=^##\s|\Z)", body, re.M | re.S)
+                for t in ("Bash", "PowerShell"):
+                    if t in tools and not (section and re.search(rf"\b{t}\b\S*\s*(?:for|:|—|-)\s*\S",
+                                                                  section.group(1))):
+                        rep.error(f, f"read-only but granted {t} without naming, in its `## Tooling`, the commands "
+                                     f"{t} is for")
             # Tool use is instructed in the `## Tooling` section; prose elsewhere may name a tool without using it.
             in_tooling = False
             for line in body.splitlines():
