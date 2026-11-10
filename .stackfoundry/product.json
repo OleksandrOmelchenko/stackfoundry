@@ -13,6 +13,6 @@
     {"claim": "a plugin marketplace for several assistants", "where": ".claude-plugin/marketplace.json, .agents/plugins/marketplace.json, .github/plugin/marketplace.json"},
     {"claim": "skills and agents for development roles", "where": "plugins/stackfoundry/skills/, plugins/stackfoundry/agents/"},
     {"claim": "open source under MIT", "where": "LICENSE"},
-    {"claim": "not yet released (unreleased changelog)", "where": "plugins/stackfoundry/CHANGELOG.md"}
+    {"claim": "released: versioned changelog and stackfoundry--v<version> tags", "where": "plugins/stackfoundry/CHANGELOG.md, docs/release.md"}
   ]
 }

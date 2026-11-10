@@ -19,14 +19,14 @@ enforcement point and fails open), data integrity (writes `manifest.lock.json` a
 
 ## Where things are
 
-- Source: `plugins/stackfoundry/scripts/**`, `plugins/stackfoundry/bin/**`, `plugins/stackfoundry/hooks/**`.
+- Source: `plugins/stackfoundry/scripts/**`, `plugins/stackfoundry/hooks/**`.
   Entry point: `plugins/stackfoundry/scripts/stackfoundry.sh` (finds Python >= 3.11, runs `python -I`) →
   `plugins/stackfoundry/scripts/stackfoundry/cli.py` `build()` / `main()`. Hook entry: `plugins/stackfoundry/hooks/hooks.json` PreToolUse →
   `stackfoundry guard` → `plugins/stackfoundry/scripts/stackfoundry/guard.py` `main()` / `decide()`.
 - Tests: `tests/test_*.py` (all but `test_reference.py` and `test_manifests.py`), stdlib `unittest`; harness
   `tests/_support.py` (`TempRepo`, `write`, `git`, `run_cli`, `targets_json`, `HAS_GIT`). `fixtures/**` is test
   data read by `tests/test_fixtures.py`: never product code, never "fixed".
-- Generated, never hand-edited: none.
+- Generated, never hand-edited: none in this target (the generated client files belong to `plugin`).
 
 ## Gate
 

@@ -55,6 +55,12 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 - **Breaking for scheduled runs:** existing cron or Actions lines that use `acceptEdits` keep working. Re-run
   `/stackfoundry:schedule` to move them to the bounded line.
 
+### Fixed
+
+- `stackfoundry today` dates a `UTC` (or `Etc/UTC`) profile in UTC even when Python has no zone database. Windows
+  Python without the `tzdata` package used to fall back to the machine's local date. For other zones the fallback
+  now says to install `tzdata`.
+
 ## [0.2.0] - 2026-11-09
 
 ### Added

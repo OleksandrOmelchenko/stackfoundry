@@ -26,7 +26,8 @@ rulebooks, trackers and code into users' repos).
 - Tests: `tests/test_reference.py`, `tests/test_manifests.py` (stdlib `unittest`, harness `tests/_support.py`);
   `verify-plumbing` (`plugins/stackfoundry/scripts/stackfoundry/plumbing.py`); eval cases in `plugins/stackfoundry/evals/<case>/` scaffolded
   from `fixtures/` by `fixtures/scaffold-lib.sh`. `fixtures/*/EXPECTED.md` are answer keys: never show them to an agent.
-- Generated, never hand-edited: none.
+- Generated, never hand-edited: the other assistants' plugin files, written by `scripts/build_clients.py` (the
+  globs are `targets.json` `generated`, guarded by `guards.json`). Change the source and regenerate.
 
 ## Gate
 

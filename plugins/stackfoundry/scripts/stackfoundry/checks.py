@@ -25,6 +25,7 @@ from .globs import match
 DETECTED = {"Killed", "Timeout"}
 UNDETECTED = {"Survived", "NoCoverage"}
 INVALID = {"CompileError", "RuntimeError", "Ignored", "Pending"}
+UTC_NAMES = {"UTC", "ETC/UTC", "Z", "ZULU", "GMT", "ETC/GMT", "UNIVERSAL", "ETC/UNIVERSAL"}
 
 
 def rulebooks(paths: list[Path]) -> list[Path]:
@@ -111,12 +112,15 @@ def today(root: Path) -> tuple[str, str]:
         zone = load_json(root / TARGETS).get("timezone", "") if (root / TARGETS).exists() else ""
     except Exception:  # noqa: BLE001 - a broken profile still gets a date
         zone = ""
+    if isinstance(zone, str) and zone.upper() in UTC_NAMES:
+        # UTC needs no zone database, which Windows Python lacks unless the tzdata package is installed.
+        return dt.datetime.now(dt.timezone.utc).date().isoformat(), zone
     if zone:
         try:
             from zoneinfo import ZoneInfo
             return dt.datetime.now(ZoneInfo(zone)).date().isoformat(), zone
         except Exception:  # noqa: BLE001 - no zone database
-            return dt.date.today().isoformat(), f"local (no zone data for {zone})"
+            return dt.date.today().isoformat(), f"local (no zone data for {zone}; pip install tzdata)"
     return dt.date.today().isoformat(), "local"
 
 

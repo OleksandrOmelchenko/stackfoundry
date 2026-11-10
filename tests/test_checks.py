@@ -53,6 +53,15 @@ class TodayTests(unittest.TestCase):
         with TempRepo() as root:
             self.assertTrue(re.fullmatch(r"\d{4}-\d{2}-\d{2}\n", run_cli(["today", "--root", str(root)]).stdout))
 
+    def test_utc_needs_no_zone_database(self):
+        # Windows Python has no zone database without the tzdata package; UTC must still be UTC, not the local date.
+        from datetime import datetime, timezone
+        for name in ("UTC", "Etc/UTC", "utc"):
+            with TempRepo({".stackfoundry/targets.json": json.dumps({"timezone": name})}) as root:
+                proc = run_cli(["today", "--root", str(root), "--verbose"])
+                self.assertEqual(proc.returncode, 0, proc.stderr)
+                self.assertEqual(proc.stdout.strip(), f"{datetime.now(timezone.utc).date().isoformat()} ({name})")
+
 
 if __name__ == "__main__":
     unittest.main()

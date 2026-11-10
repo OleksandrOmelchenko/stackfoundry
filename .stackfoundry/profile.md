@@ -47,7 +47,8 @@ The owner: release tags (`stackfoundry--v<version>`) and pushes (`.claude/CLAUDE
 
 - Git: single branch, work on `main`; commits only when the user asks in that turn; tags and pushes are the owner's
   (enforced as `guards.json` `git.writes: ask`, plus a deny on `claude plugin tag` without `--dry-run`).
-- Generated code: none in this repo.
+- Generated code: the other assistants' plugin files (`targets.json` `generated`), written by
+  `scripts/build_clients.py` and denied to hand edits by `guards.json`.
 - Evals (`claude plugin eval`) spend real tokens: ask before running them (guarded).
 - Docs root: `docs`. Report dates use Europe/Madrid.
 - Checks before calling a change done: the four commands in `.claude/CLAUDE.md` (they are the targets' gates).
