@@ -10,7 +10,7 @@ Claude Code names and places to the others'. Client ids are the ones `.stackfoun
 | In a skill or agent | In another assistant |
 |---|---|
 | `AskUserQuestion` | Its question tool if it has one; otherwise ask in chat, one question per decision, options listed, and wait. |
-| `Agent` with `subagent_type: "stackfoundry:<agent>"` | Its subagent or task tool, given the body of `${CLAUDE_PLUGIN_ROOT}/agents/<agent>.md` (below the frontmatter) as the instructions, then the brief. Where it installed the plugin's agents (Copilot, Cursor, Gemini), call that agent by name. No subagents at all: do the agent's work inline, one brief at a time, keeping its output format. |
+| `Agent` with `subagent_type: "stackfoundry:<agent>"` | Its subagent or task tool, given the body of `${CLAUDE_PLUGIN_ROOT}/agents/<agent>.md` (below the frontmatter) as the instructions, then the brief. Where it installed the plugin's agents (Copilot, Cursor, Gemini, Antigravity), call that agent by name. No subagents at all: do the agent's work inline, one brief at a time, keeping its output format. |
 | `SendMessage` to a dispatched agent | Dispatch again with the earlier result and the follow-up in the brief. |
 | `Skill` → `stackfoundry:<skill>` | Run that skill the way the assistant runs skills (by name, or its slash or `$` form). |
 | `EnterPlanMode` / `ExitPlanMode` | Write the plan in chat, ask for approval, and change nothing until it is given. |
@@ -22,19 +22,19 @@ Claude Code names and places to the others'. Client ids are the ones `.stackfoun
 
 ## Where each assistant looks
 
-| | Claude Code | Codex | GitHub Copilot (CLI, VS Code) | Cursor | Gemini CLI |
-|---|---|---|---|---|---|
-| Plugin manifest | `.claude-plugin/plugin.json` | `plugin.json` (Agent Plugins 1.0), legacy `.codex-plugin/plugin.json` | `plugin.json` (Agent Plugins 1.0), then `.plugin/`, `.github/plugin/`, `.claude-plugin/` | `.cursor-plugin/plugin.json`, or `plugin.json` (Agent Plugins: skills and MCP only) | `gemini-extension.json` (an extension, not a plugin) |
-| Marketplace file | `.claude-plugin/marketplace.json` | `.agents/plugins/marketplace.json`, legacy `.claude-plugin/marketplace.json` | `marketplace.json`, `.plugin/`, `.github/plugin/`, `.claude-plugin/` (in that order) | `.cursor-plugin/marketplace.json` | none: install by repository URL or release |
-| Add and install | `claude plugin marketplace add <owner/repo>`, `claude plugin install stackfoundry@stackfoundry` | `codex plugin marketplace add <owner/repo>`, then its plugins list | `copilot plugin marketplace add <owner/repo>`, `copilot plugin install stackfoundry@stackfoundry` | its marketplace, a team marketplace, or `~/.cursor/plugins/local` | `gemini extensions install <url>` |
-| Plugin root in hooks | `${CLAUDE_PLUGIN_ROOT}` | `PLUGIN_ROOT` (also sets `CLAUDE_PLUGIN_ROOT`) | `PLUGIN_ROOT` | `CURSOR_PLUGIN_ROOT`; plugin hooks run from the install folder, except `stop` and `subagentStop` (workspace root) | `${extensionPath}` |
-| Plugin subagents | `agents/*.md` | not shipped by plugins | `com.github.copilot/agents/*.agent.md` | `agents/*.md` | `agents/*.md` (preview) |
-| Plugin hooks | `hooks/hooks.json` | `hooks/hooks.json` or `extensions.com.openai.hooks` (manually installed plugins only) | `com.github.copilot/hooks/hooks.json` | `hooks/hooks.json` or the manifest's `hooks` | `hooks/hooks.json` |
-| Repo skills | `.claude/skills/` | `.agents/skills/` | `.github/skills/`, `.claude/skills/` | `.cursor/skills/`, `.agents/skills/`, `.claude/skills/`, `.codex/skills/` | `.gemini/skills/`, `.agents/skills/` (*confirm*) |
-| Repo subagents | `.claude/agents/*.md` | `.codex/agents/*.toml` (`name`, `description`, `developer_instructions`) | `.github/agents/*.agent.md`, `.claude/agents/` | `.cursor/agents/`, `.claude/agents/`, `.codex/agents/` | `.gemini/agents/*.md` |
-| Rules scoped by path | `.claude/rules/*.md` with `paths:` | none | `.github/instructions/*.instructions.md` with `applyTo:` | `.cursor/rules/*.mdc` with `globs:` | none |
-| Instruction file | `CLAUDE.md` (root or `.claude/`) | `AGENTS.md` (nested files apply below them) | `AGENTS.md`, `.github/copilot-instructions.md` | `AGENTS.md` | `GEMINI.md` (setting `context.fileName` can add `AGENTS.md`) |
-| Headless run | `claude -p "<prompt>"` | `codex exec "<prompt>"` | `copilot -p "<prompt>"` | `cursor-agent -p "<prompt>"` | `gemini -p "<prompt>"` |
+| | Claude Code | Codex | GitHub Copilot (CLI, VS Code) | Cursor | Gemini CLI | Antigravity CLI |
+|---|---|---|---|---|---|---|
+| Plugin manifest | `.claude-plugin/plugin.json` | `plugin.json` (Agent Plugins 1.0), legacy `.codex-plugin/plugin.json` | `plugin.json` (Agent Plugins 1.0), then `.plugin/`, `.github/plugin/`, `.claude-plugin/` | `.cursor-plugin/plugin.json`, or `plugin.json` (Agent Plugins: skills and MCP only) | `gemini-extension.json` (an extension, not a plugin) | `plugin.json`, or `.antigravity-plugin/plugin.json` first; its own schema, not Agent Plugins 1.0 [ag-build-plugins] |
+| Marketplace file | `.claude-plugin/marketplace.json` | `.agents/plugins/marketplace.json`, legacy `.claude-plugin/marketplace.json` | `marketplace.json`, `.plugin/`, `.github/plugin/`, `.claude-plugin/` (in that order) | `.cursor-plugin/marketplace.json` | none: install by repository URL or release | its official marketplace (`<name>@antigravity-plugins-official`); otherwise install by URL or path [ag-plugins] |
+| Add and install | `claude plugin marketplace add <owner/repo>`, `claude plugin install stackfoundry@stackfoundry` | `codex plugin marketplace add <owner/repo>`, then its plugins list | `copilot plugin marketplace add <owner/repo>`, `copilot plugin install stackfoundry@stackfoundry` | its marketplace, a team marketplace, or `~/.cursor/plugins/local` | `gemini extensions install <url>` | `agy plugin install <url or folder>`; `agy plugin import gemini` converts installed Gemini extensions [ag-plugins], [ag-gcli-migration] |
+| Plugin root in hooks | `${CLAUDE_PLUGIN_ROOT}` | `PLUGIN_ROOT` (also sets `CLAUDE_PLUGIN_ROOT`) | `PLUGIN_ROOT` | `CURSOR_PLUGIN_ROOT`; plugin hooks run from the install folder, except `stop` and `subagentStop` (workspace root) | `${extensionPath}` | hooks run with the plugin root as working directory, so commands are relative [ag-build-plugins] |
+| Plugin subagents | `agents/*.md` | not shipped by plugins | `com.github.copilot/agents/*.agent.md` | `agents/*.md` | `agents/*.md` (preview) | `agents/<name>.md` with a `tools` allowlist [ag-build-plugins] |
+| Plugin hooks | `hooks/hooks.json` | `hooks/hooks.json` or `extensions.com.openai.hooks` (manually installed plugins only) | `com.github.copilot/hooks/hooks.json` | `hooks/hooks.json` or the manifest's `hooks` | `hooks/hooks.json` | root `hooks.json`, one named entry per hook [ag-hooks] |
+| Repo skills | `.claude/skills/` | `.agents/skills/` | `.github/skills/`, `.claude/skills/` | `.cursor/skills/`, `.agents/skills/`, `.claude/skills/`, `.codex/skills/` | `.gemini/skills/`, `.agents/skills/` (*confirm*) | `.agents/skills/` [ag-rules] |
+| Repo subagents | `.claude/agents/*.md` | `.codex/agents/*.toml` (`name`, `description`, `developer_instructions`) | `.github/agents/*.agent.md`, `.claude/agents/` | `.cursor/agents/`, `.claude/agents/`, `.codex/agents/` | `.gemini/agents/*.md` | none documented |
+| Rules scoped by path | `.claude/rules/*.md` with `paths:` | none | `.github/instructions/*.instructions.md` with `applyTo:` | `.cursor/rules/*.mdc` with `globs:` | none | `.agents/rules/*.md` with `trigger: glob` and `globs:` (one comma-separated string) [ag-rules] |
+| Instruction file | `CLAUDE.md` (root or `.claude/`) | `AGENTS.md` (nested files apply below them) | `AGENTS.md`, `.github/copilot-instructions.md` | `AGENTS.md` | `GEMINI.md` (setting `context.fileName` can add `AGENTS.md`) | `AGENTS.md` or `GEMINI.md`, from the launch folder up to the repo root [ag-rules] |
+| Headless run | `claude -p "<prompt>"` | `codex exec "<prompt>"` | `copilot -p "<prompt>"` | `cursor-agent -p "<prompt>"` | `gemini -p "<prompt>"` | `agy -p "<prompt>"` [ag-cli] |
 
 ## The guard in each assistant
 
@@ -48,6 +48,13 @@ One command, `stackfoundry guard`, serves every assistant's pre-tool hook. It re
 | Copilot | `preToolUse` | `create`, `edit`, `str_replace_editor`, `apply_patch`; also `write`, matched in case it is sent | (asks; its autopilot denies an ask, and its cloud agent loads no plugin hooks) | no output |
 | Cursor | `preToolUse` for edits, `beforeShellExecution` for commands | `Write`, `Edit`, `Delete` | a deny for edits (commands can ask) | `{"permission": "allow"}`: Cursor blocks on empty output |
 | Gemini CLI | `BeforeTool` | `write_file`, `replace` | a deny saying to get the user's go-ahead | no output |
+| Antigravity CLI | `PreToolUse` | `write_to_file`, `replace_file_content`, `multi_replace_file_content` (`TargetFile`); commands are `run_command` (`CommandLine`, `Cwd`) | (asks) | no output |
+
+**Antigravity CLI** sends `toolCall.name` and `toolCall.args` and reads `{"decision": "deny"|"ask", "reason": …}`
+[ag-hooks]. A hook that exits non-zero is logged and ignored, so the call goes through [ag-build-plugins]: the guard
+always answers in JSON and exits 0. Plugin hooks run from the plugin root, so the command names the launcher
+relative to it. Gemini CLI still serves Gemini Code Assist Standard and Enterprise and paid API keys; individual
+tiers moved to Antigravity CLI on 2026-06-18 [google-antigravity], [gemini-cli-readme].
 
 Each assistant's hook file is generated (`plugin.json` → `com.openai/hooks.json`, `com.github.copilot/hooks/`,
 `com.cursor/hooks.json`, the Gemini extension's `hooks/hooks.json`). Copilot denies a tool call when a hook errors,
@@ -100,6 +107,8 @@ warning, and every file's lines, bytes and estimated tokens are listed.
 | Cursor | a rule | 500 lines | advice | [cursor-rules] |
 | Every assistant (Agent Skills) | a `SKILL.md` | 500 lines, about 5000 tokens | advice | [skills-spec] |
 | Codex | the `AGENTS.md` files on a path, combined | 32 KiB | stops reading | [codex-agents-md] |
+| Antigravity CLI | a rule file in `.agents/rules/` | 24,000 bytes | truncated | [ag-rules] |
+| Antigravity CLI | every always-on rule and instruction file, combined | 20,000 tokens | the largest become pointers | [ag-rules] |
 
 The plugin's own listing (every skill and agent description, loaded each session) has a budget too:
 `scripts/stackfoundry/plumbing.py` `LISTING_CAP`, enforced by `verify-plumbing` in plugin mode.
@@ -121,3 +130,17 @@ The plugin's own listing (every skill and agent description, loaded each session
 - [skills-spec] Agent Skills specification (SKILL.md size advice): https://agentskills.io/specification
 - [codex-agents-md] Codex AGENTS.md (combined size limit): https://learn.chatgpt.com/docs/agent-configuration/agents-md
 - [cursor-hooks] Cursor hooks (where plugin hooks run): https://cursor.com/docs/agent/hooks
+
+Antigravity CLI and the Gemini CLI transition, accessed 2026-11-11:
+
+- [google-antigravity] Google, transitioning Gemini CLI to Antigravity CLI:
+  https://developers.googleblog.com/an-important-update-transitioning-gemini-cli-to-antigravity-cli/
+- [gemini-cli-readme] Gemini CLI repository README (who it still serves): https://github.com/google-gemini/gemini-cli
+- [ag-plugins] Antigravity plugins (install, marketplace): https://antigravity.google/docs/plugins?tab=cli
+- [ag-build-plugins] Antigravity, build plugins (manifest, layout, agents, skills, hooks' working directory and exit
+  codes): https://antigravity.google/docs/build-plugins/
+- [ag-hooks] Antigravity hooks (events, input, decisions): https://antigravity.google/docs/hooks?tab=cli
+- [ag-rules] Antigravity rules (instruction files, `.agents/rules`, size limits): https://antigravity.google/docs/rules?tab=cli
+- [ag-gcli-migration] Antigravity, migrating from Gemini CLI: https://antigravity.google/docs/cli/gcli-migration
+- [ag-cli] Antigravity CLI reference (headless flags): https://antigravity.google/docs/cli/reference
+- [ag-sdk-tools] Antigravity built-in tools (`search_web`, `read_url_content`): https://www.antigravity.google/docs/sdk/tools/
