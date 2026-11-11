@@ -60,6 +60,19 @@ class BuildClientsTests(unittest.TestCase):
             return subprocess.run([*shell_args, command], input=event, capture_output=True, text=True,
                                   encoding="utf-8", env=env, timeout=60)
 
+    def test_cursor_workspace_rooted_hooks_never_take_a_relative_command(self):
+        # Threat model T17: Cursor runs stop and subagentStop plugin hooks from the workspace root, where a relative
+        # `sh ./scripts/stackfoundry.sh` would run a script the repo planted.
+        relative = {"command": "sh ./scripts/stackfoundry.sh guard --client cursor"}
+        for event in ("stop", "subagentStop"):
+            with self.assertRaisesRegex(ValueError, "workspace root"):
+                build_clients.cursor_hooks({event: [relative]})
+            ok = {event: [{"command": 'sh "${CURSOR_PLUGIN_ROOT}/scripts/stackfoundry.sh" guard --client cursor'}]}
+            self.assertEqual(build_clients.cursor_hooks(ok), ok)
+        current = json.loads((PLUGIN / "com.cursor" / "hooks.json").read_text(encoding="utf-8"))["hooks"]
+        self.assertEqual(build_clients.cursor_hooks(current), current)
+        self.assertTrue(set(current).isdisjoint(build_clients.CURSOR_WORKSPACE_EVENTS))
+
     @unittest.skipUnless(shutil.which("sh"), "sh not available")
     def test_the_copilot_bash_hook_asks_with_a_root_and_stays_silent_without_one(self):
         # Copilot denies the tool call when a preToolUse hook errors, so a missing root must mean exit 0, no output.
