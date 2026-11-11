@@ -63,5 +63,6 @@ until it has.
 
 ## Out of scope
 
-- Adding new assistants (`docs/plans/antigravity-channel.md` covers the Gemini successor).
+- Adding new assistants. The Gemini successor, Antigravity CLI, is built (`docs/specifications/antigravity-channel.md`);
+  its smoke row is in `docs/release.md`.
 - CI automation of these runs: each needs a signed-in assistant.

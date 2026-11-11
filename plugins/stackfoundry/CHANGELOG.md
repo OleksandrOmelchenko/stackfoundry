@@ -125,6 +125,9 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   scores one grader on both arms, so its delta is no longer inflated.
 - **The preamble** every skill and agent carries gains one sentence: name the extensions you applied.
 
+- `stackfoundry-radar` checks every assistant in `clients` for retirements, format changes and successors, not
+  only Claude Code's releases.
+
 ### Changed (extension anchors)
 
 - `performance-reviewer`: the heading `## Boundaries` is now `## What you must not do`. An extension anchored on

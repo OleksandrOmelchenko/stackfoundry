@@ -139,5 +139,12 @@ class PluginBundleTests(unittest.TestCase):
         self.assertIn("--client antigravity", command)
 
 
+class RadarTests(unittest.TestCase):
+    def test_the_stackfoundry_radar_watches_every_assistant_the_repo_uses(self):
+        text = (ROOT / "plugins/stackfoundry/skills/stackfoundry-radar/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("**The other assistants** in `.stackfoundry/config.json` → `clients`", text)
+        self.assertIn("moves its users to a successor", text)
+
+
 if __name__ == "__main__":
     unittest.main()
