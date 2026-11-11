@@ -6,6 +6,8 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-11
+
 ### Changed
 
 - **A short instruction block where rulebooks load by themselves.** `render-block` no longer writes the rulebook
