@@ -68,12 +68,14 @@ ambiguous app model or new target's exposure and stakes).
   `--kind merged`.
 - `stackfoundry size-check`: every generated file against the assistants' size limits; an error (a hard limit)
   is fixed before reporting, and each warning goes in the report.
+- `stackfoundry schedule rules --rewrite` when packs, ecosystems or suites changed: the scheduled runs' allow
+  rules follow them (only the rules stackfoundry wrote change).
 
 ## 4. Report
 
 What changed, what was declined, gates proven, packs still stale. Do not commit.
 
 ## Tooling
-- `Bash` for `stackfoundry survey|config|outputs|render-rule|render-agent|render-block|render-target|gate|manifest|size-check|change-targets` and gates; `Read`/`Edit`/`Write` for the profile.
+- `Bash` for `stackfoundry survey|config|outputs|render-rule|render-agent|render-block|render-target|gate|schedule|manifest|size-check|change-targets` and gates; `Read`/`Edit`/`Write` for the profile.
 - `Agent` with `subagent_type: "stackfoundry:surveyor"` when the drift is large enough to need a fresh target map.
 - `Skill` → `stackfoundry:research-stack` per pack; `AskUserQuestion` once.

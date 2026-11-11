@@ -37,8 +37,11 @@ approves any edit or file command in the working directory, and never a flag tha
 - `stackfoundry schedule rules <skill>` prints the whole list, with a reason per rule.
 
 `schedule` writes these lines per skill. A Claude desktop scheduled task takes no flags: the same rules go into
-`.claude/settings.json` → `permissions.allow`. What is not allowed is denied, not asked, so a steered run can still
-only write its report.
+`.claude/settings.local.json` → `permissions.allow` (`stackfoundry schedule rules --write`), which is this clone's
+and this machine's, not committed. The committed `.claude/settings.json` only when the team asks, since every
+teammate and session inherits it. stackfoundry records which rules it added (in the repo's git dir), so `upgrade`
+and `sync` rewrite exactly those (`--rewrite`) when the plugin's path or the packs move. What is not allowed is
+denied or stalls, so a steered run can still only write its report.
 
 ## The control plane
 

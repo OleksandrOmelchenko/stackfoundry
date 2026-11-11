@@ -13,6 +13,7 @@ by every session that reads the same settings file. Each rule comes with its rea
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import sys
@@ -20,6 +21,8 @@ from pathlib import Path
 
 from . import PLUGIN_ROOT, config
 from .cited import url_host
+from .fsutil import atomic_write
+from .gitutil import GitError, run
 from .profile import ECOSYSTEMS, PROFILE_DIR, find_root, load_json, load_targets
 
 GITHUB = ("github.com", "raw.githubusercontent.com")
@@ -110,6 +113,19 @@ def rules(root: Path, skill: str) -> list[dict]:
 
 def main(args) -> int:
     root = Path(args.root).resolve() if args.root else find_root(Path.cwd())
+    if getattr(args, "rewrite", False):
+        for r in rewrite(root):
+            print(f"{r['file']}: {len(r['added'])} added, {len(r['removed'])} removed")
+        return 0
+    if getattr(args, "write", False):
+        if not args.skills:
+            raise ValueError("--write needs the skills that are scheduled (the rules of the others are removed)")
+        r = write(root, args.skills, args.to, args.add)
+        print(f"{r['file']}: {len(r['added'])} added, {len(r['removed'])} removed")
+        print("".join(f"  + {rule}\n" for rule in r["added"]) + "".join(f"  - {rule}\n" for rule in r["removed"]), end="")
+        if args.to == "project":
+            print("note: .claude/settings.json is committed: every teammate and every session gets these rules")
+        return 0
     skills = args.skills or list(SKILLS)
     data = {s: rules(root, s) for s in skills}
     if args.json:
@@ -124,3 +140,65 @@ def main(args) -> int:
         for r in items:
             print(f"  {r['rule']}    # {r['reason']}")
     return 0
+
+
+# --- writing: rules stackfoundry owns -------------------------------------------------------------------------------
+#
+# The rules go into the local settings (`.claude/settings.local.json`) by default: they serve this clone's scheduled
+# tasks on this machine, and the committed `.claude/settings.json` would hand them to every teammate and session.
+# What stackfoundry added is recorded per clone (the repo's git dir, never committed), so a rewrite replaces exactly
+# those: a launcher rule naming the previous plugin version goes, a rule nobody needs any more goes, and a rule the
+# team wrote is never touched, even when it equals one stackfoundry needs.
+
+SETTINGS = {"local": Path(".claude") / "settings.local.json", "project": Path(".claude") / "settings.json"}
+
+
+def _state_file(root: Path) -> Path:
+    try:
+        return Path(run(["rev-parse", "--absolute-git-dir"], root).strip()) / "stackfoundry" / "schedule-rules.json"
+    except GitError:
+        key = hashlib.sha256(os.path.normcase(str(root.resolve())).encode("utf-8")).hexdigest()[:16]
+        return Path.home() / ".stackfoundry" / "schedule" / f"{key}.json"
+
+
+def load_state(root: Path) -> dict:
+    try:
+        data = json.loads(_state_file(root).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def write(root: Path, skills: list[str], to: str = "local", add: list[str] | None = None) -> dict:
+    """Merge the skills' rules (plus `add`) into the destination's `permissions.allow`, replacing what stackfoundry
+    owned there before. Returns {"file", "added", "removed"}."""
+    if to not in SETTINGS:
+        raise ValueError(f"--to must be one of {', '.join(SETTINGS)}")
+    state = load_state(root)
+    mine = state.get(to) if isinstance(state.get(to), dict) else {}
+    extra = list(dict.fromkeys([*(mine.get("extra") or []), *(add or [])]))
+    needed = list(dict.fromkeys([r["rule"] for s in skills for r in rules(root, s)] + extra))
+    path = root / SETTINGS[to]
+    raw = path.read_bytes() if path.is_file() else b""
+    data = json.loads(raw.decode("utf-8-sig")) if raw.strip() else {}
+    if not isinstance(data, dict):
+        raise ValueError(f"{SETTINGS[to].as_posix()}: the top level must be an object")
+    perms = data.setdefault("permissions", {})
+    allow = perms.get("allow") or []
+    owned = set(mine.get("rules") or [])
+    foreign = [r for r in allow if r not in owned]
+    perms["allow"] = foreign + [r for r in needed if r not in foreign]
+    added = [r for r in needed if r not in allow]
+    removed = [r for r in allow if r in owned and r not in needed]
+    crlf = raw.count(b"\r\n") > raw.count(b"\n") // 2 if raw else False
+    atomic_write(path, json.dumps(data, indent=2, ensure_ascii=False) + "\n", "\r\n" if crlf else "\n")
+    state[to] = {"skills": list(skills), "rules": [r for r in needed if r not in foreign], "extra": extra}
+    atomic_write(_state_file(root), json.dumps(state, indent=2, ensure_ascii=False) + "\n")
+    return {"file": SETTINGS[to].as_posix(), "added": added, "removed": removed}
+
+
+def rewrite(root: Path) -> list[dict]:
+    """Rewrite every destination stackfoundry wrote before, for the skills recorded there: after a plugin update the
+    launcher path moves, after a sync the packs' hosts may."""
+    return [write(root, entry.get("skills") or [], to) for to, entry in load_state(root).items()
+            if to in SETTINGS and isinstance(entry, dict)]

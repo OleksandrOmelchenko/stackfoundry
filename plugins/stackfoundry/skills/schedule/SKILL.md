@@ -51,7 +51,7 @@ from the profile, never by hand, and is what the steps below show and write. It 
   rule allows nothing.
 - `"Bash(sh \"<plugin root>/scripts/stackfoundry.sh\" *)"`: the launcher exactly as the skills call it, with the
   absolute path quoted. A `*` inside the path does not match. The installed plugin's folder changes with each
-  version, so re-run this skill after an upgrade.
+  version: `upgrade` and `sync` run `stackfoundry schedule rules --rewrite`, which replaces the old path.
 - `"Bash(git status *)"`, `"Bash(git log *)"`.
 - The row's **Also allow**:
   - a command as `"Bash(<command> *)"`;
@@ -84,8 +84,12 @@ approves every tool.
    `<args>` is empty except for docs-reconciler and whats-next, which get `--report` (their report-only mode). Tell
    the user:
    - tasks run while the desktop app is open, and a missed run happens on the next launch;
-   - a desktop task takes no command-line flags, so the run gets the rules of *The permission line* above from
-     `.claude/settings.json` → `permissions.allow` (the user edits it);
+   - a desktop task takes no command-line flags, so the run gets the rules of *The permission line* from the
+     settings: `stackfoundry schedule rules <every approved skill> --write` merges them into
+     `.claude/settings.local.json` (this clone, this machine, not committed). It records which rules it owns, so a
+     later rewrite replaces only those. `--to project` (the committed `.claude/settings.json`, which every teammate
+     and session inherits) only when the user asks for it;
+   - the trade-off: those local rules also apply to every other session in this clone;
    - a command those rules don't allow stalls or is denied.
 5. **No scheduling tools in this session**: print, per approved task, the exact title, schedule and prompt to enter
    in the desktop app's scheduled-tasks screen, and show the alternatives below.

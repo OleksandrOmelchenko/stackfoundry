@@ -97,12 +97,14 @@ rewritten by an upgrade; this step makes sure they still fit the new plugin.
 
 ## 5. Verify and report
 
-`stackfoundry verify-plumbing .` and `stackfoundry size-check`, then `/stackfoundry:skill-agent-verifier`. Report: replaced, merged, kept, skipped,
+`stackfoundry schedule rules --rewrite` (the scheduled runs' allow rules name the plugin's folder, which moved;
+it changes only rules stackfoundry wrote, and does nothing where none were), then `stackfoundry verify-plumbing .`
+and `stackfoundry size-check`, then `/stackfoundry:skill-agent-verifier`. Report: replaced, merged, kept, skipped,
 the extensions re-anchored or merged, and anything the changelog says needs a manual step. Do not commit.
 
 ## Tooling
 - `Bash` for `stackfoundry manifest diff|record`, `extensions check|list|merge`, `render-agent`, `render-rulebook`,
-  `render-target`,
+  `render-target`, `schedule rules --rewrite`,
   `render-block`, `verify-plumbing`, `size-check`, `change-targets`.
 - `Read` the templates through `${CLAUDE_PLUGIN_ROOT}/reference/templates/`, `rulebooks/` and `trackers/`;
   `Write`/`Edit` the files.

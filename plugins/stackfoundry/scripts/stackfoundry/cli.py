@@ -3,7 +3,7 @@
 Every subcommand is read-only except `manifest record|forget` (they write .stackfoundry/manifest.lock.json),
 `pack render --out` and `render-rule|render-agent|render-rulebook --out|--write` (each writes the one file it names), and
 `extensions new|base|merge|forget` (the extension file named, its base copy and .stackfoundry/extensions/.base/),
-`gate record` (.stackfoundry/gates.json), `render-target --write` (the target profile named), and `side-effects` (its state file, in the repo's git dir or ~/.stackfoundry).
+`gate record` (.stackfoundry/gates.json), `schedule rules --write|--rewrite` (a settings file's allow list, and its record in the git dir), `render-target --write` (the target profile named), and `side-effects` (its state file, in the repo's git dir or ~/.stackfoundry).
 None makes a network call.
 """
 from __future__ import annotations
@@ -158,9 +158,17 @@ def build() -> argparse.ArgumentParser:
     rt.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/)")
     rt.set_defaults(func=target_profile.main_render)
 
-    sc = sub.add_parser("schedule", help="(read-only) the permission rules a scheduled, unattended run of each skill "
-                                         "needs, with a reason per rule")
+    sc = sub.add_parser("schedule", help="the permission rules a scheduled, unattended run of each skill needs, with "
+                                         "a reason per rule; read-only unless --write or --rewrite")
     sc.add_argument("action", choices=["rules"])
+    scw = sc.add_mutually_exclusive_group()
+    scw.add_argument("--write", action="store_true", help="merge the named skills' rules into the settings file, "
+                                                          "replacing the rules stackfoundry owned there")
+    scw.add_argument("--rewrite", action="store_true", help="rewrite every destination written before, for the "
+                                                            "skills recorded there (after a plugin update or a sync)")
+    sc.add_argument("--to", choices=["local", "project"], default="local",
+                    help="local: .claude/settings.local.json (default); project: the committed .claude/settings.json")
+    sc.add_argument("--add", action="append", default=[], help="with --write: an extra owned rule (repeatable)")
     sc.add_argument("skills", nargs="*", help=f"default: every schedulable skill ({', '.join(schedule.SKILLS)})")
     sc.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/)")
     sc.add_argument("--json", action="store_true")
