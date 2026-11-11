@@ -44,8 +44,10 @@ approves any edit or file command in the working directory, and never a flag tha
 `.claude/settings.local.json` → `permissions.allow` (`stackfoundry schedule rules --write`), which is this clone's
 and this machine's, not committed. The committed `.claude/settings.json` only when the team asks, since every
 teammate and session inherits it. stackfoundry records which rules it added (in the repo's git dir), so `upgrade`
-and `sync` rewrite exactly those (`--rewrite`) when the plugin's path or the packs move. What is not allowed is
-denied or stalls, so a steered run can still only write its report.
+and `sync` rewrite exactly those (`--rewrite`) when the plugin's path or the packs move. The trade-off: local
+settings apply to every session in this clone on this machine, not only to the scheduled run, which is why the
+list is kept minimal. What is not allowed is denied or stalls, so a steered run can still only write its report.
+`stackfoundry schedule check` shows what a run would still be denied.
 
 ## The control plane
 

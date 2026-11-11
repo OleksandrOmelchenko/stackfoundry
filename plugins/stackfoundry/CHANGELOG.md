@@ -6,6 +6,29 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 
 ## [Unreleased]
 
+### Added
+
+- **`stackfoundry schedule rules <skill>`** prints the permission rules a scheduled, unattended run of the skill
+  needs, each with its reason: the report folder, the launcher, read-only git, the ecosystems' discover commands or
+  the suites, and web access only for the hosts the packs name as release notes or migration guides, plus GitHub.
+  BookStore's tech-radar went from 158 cited hosts to 41.
+- **`--write`** merges them into `.claude/settings.local.json` (`--to project` for the committed file, on request
+  only). The rules stackfoundry added are recorded in the repo's git dir, so a rewrite replaces exactly those: a
+  previous plugin version's launcher rule goes, and a rule the team wrote is never touched. `--rewrite` replays every
+  destination; `upgrade` and `sync` run it. `--add` and `--remove` manage an extra owned rule.
+- **`stackfoundry schedule check`** reports, per scheduled skill, the rules that are missing, denied, stale or allowed
+  only through a broad rule, across the user, project and local settings. `stackfoundry-radar` reports it, and
+  `upgrade` and `schedule` run it.
+- **`--format cmd`** prints a Windows Task Scheduler `.cmd` file running the skill headless with exactly its rules.
+- Every unattended report has a **Denied** section: each refused call, with the rule that would allow it.
+  `act-on-radar` offers those rules, adding one the skill is not known to need only on an explicit yes.
+
+### Changed
+
+- `schedule` writes the rules to the local settings instead of telling you to edit the committed
+  `.claude/settings.json`, and says the trade-off: they apply to every session in that clone.
+- `pack check` rejects a source or upgrade URL whose host is not a real DNS name (a placeholder like `api.<host>`).
+
 ## [0.4.0] - 2026-11-11
 
 ### Changed

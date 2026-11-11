@@ -90,6 +90,17 @@ manual installs, after `/hooks` trust).
   `WebFetch(domain:…)`.
 - **Confirmed:** each of these with a headless run on Claude Code 2.1.
 
+**Claude desktop scheduled tasks.**
+- **What the app's scheduling tool says:** a task is stored as `~/.claude/scheduled-tasks/<taskId>/SKILL.md`; it
+  takes no command-line flags; a run starts with the task's stored prompt, its permission mode (a task created
+  from an Auto or Bypass session may be saved in that mode), and the tool approvals the user already granted that
+  task.
+- **So the rules live in settings:** `stackfoundry schedule rules --write` puts them in
+  `.claude/settings.local.json`, which every session in that clone on that machine also gets. That is the
+  trade-off until a task can carry its own list.
+- *Confirm:* whether `allowed-tools` in a task's `SKILL.md` frontmatter pre-approves tools for its runs, as it
+  does for a skill. The probe is in `docs/plans/desktop-task-allowed-tools.md` of the stackfoundry repo.
+
 ## Rules where there is no path scoping
 
 Where an assistant has no path-scoped rules (Codex, Gemini), stackfoundry writes each rulebook to
