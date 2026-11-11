@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Casts a repo-grounded swarm of specialists for each stack in your repo, for Claude Code, Codex, GitHub Copilot, Cursor and Gemini CLI: code writers, verifiers, test designers and writers, bug hunters, fix verifiers, security and performance reviewers, dependency bumpers and a scheduled tech radar.",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "pluginRoot": "plugins"
   },
   "plugins": [
@@ -14,7 +14,7 @@
       "name": "stackfoundry",
       "source": "stackfoundry",
       "description": "Casts a repo-grounded swarm of specialists per stack (language x app model): code writers, verifiers, test designers/writers/reviewers/fixers, bug hunters, fix verifiers, security and performance reviewers, dependency bumpers and a scheduled tech radar.",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "category": "development",
       "tags": [
         "testing",

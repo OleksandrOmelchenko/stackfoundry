@@ -6,6 +6,8 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-12
+
 ### Added
 
 - **`stackfoundry schedule rules <skill>`** prints the permission rules a scheduled, unattended run of the skill
