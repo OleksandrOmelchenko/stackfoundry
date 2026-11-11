@@ -228,18 +228,8 @@ def agent_path(src: Path, client: str) -> str:
 def _write(root: Path, rel: str, text: str, newline: str = "\n") -> None:
     """Atomic, like `pack render --out`: an interrupted write never leaves a truncated rulebook or agent. Line endings
     are `newline` whatever the platform (LF unless an existing file the caller splices into uses CRLF)."""
-    import os
-    import tempfile
-    out = root / rel
-    out.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(prefix=f".{out.name}.", dir=str(out.parent))
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8", newline=newline) as fh:
-            fh.write(text)
-        os.replace(tmp, out)
-    except BaseException:
-        Path(tmp).unlink(missing_ok=True)
-        raise
+    from .fsutil import atomic_write
+    atomic_write(root / rel, text, newline)
     print(f"wrote {rel}")
 
 

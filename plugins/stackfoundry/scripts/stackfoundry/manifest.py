@@ -16,13 +16,12 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import re
-import tempfile
 from pathlib import Path
 
 from . import PLUGIN_ROOT
 from .frontmatter import split
+from .fsutil import atomic_write
 from .profile import MANIFEST
 
 
@@ -39,15 +38,7 @@ def sha256(path: Path) -> str:
 
 def write_json(path: Path, data: dict) -> None:
     """Atomic and LF-only: an interrupted run never leaves a truncated manifest."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(prefix=".manifest-", dir=str(path.parent))
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
-            fh.write(json.dumps(data, indent=2) + "\n")
-        os.replace(tmp, path)
-    except BaseException:
-        Path(tmp).unlink(missing_ok=True)
-        raise
+    atomic_write(path, json.dumps(data, indent=2) + "\n")
 
 
 def plugin_version() -> str:

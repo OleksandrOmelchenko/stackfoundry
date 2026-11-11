@@ -179,7 +179,8 @@ def _roots(start: Path, project: Path) -> list[Path]:
 
 def _unreadable_warning(event: dict, start: Path, project: Path) -> str | None:
     """A warning for the user when a governing guards.json cannot be read, so its rules are silently off (the hook
-    fails open by design). Once per file version and session: a marker in the temp folder remembers it was said."""
+    fails open by design). Once per file version and session: a marker in the temp folder remembers it was said. The
+    marker is created exclusively and never through a symlink, so a planted link cannot make it touch another file."""
     import hashlib
     import tempfile
 
@@ -193,12 +194,14 @@ def _unreadable_warning(event: dict, start: Path, project: Path) -> str | None:
         except OSError:
             continue
         marker = Path(tempfile.gettempdir()) / f"stackfoundry-guard-warned-{hashlib.sha256(stamp.encode()).hexdigest()[:16]}"
-        if marker.exists():
+        if os.path.lexists(marker):  # a dangling symlink counts; Windows has no O_NOFOLLOW and follows it
             continue
         try:
-            marker.touch()
+            os.close(os.open(marker, os.O_CREAT | os.O_EXCL | os.O_WRONLY | getattr(os, "O_NOFOLLOW", 0), 0o600))
+        except FileExistsError:
+            continue  # already said this session
         except OSError:
-            pass
+            pass  # cannot remember it: say it anyway
         fresh.append(str(path))
     if not fresh:
         return None
@@ -340,15 +343,27 @@ def decide(event: dict, project: Path, client: str | None = None) -> str | None:
 
 def check_file(path: Path) -> list[str]:
     """Problems that would make the hook silently ignore a rule (it fails open on them)."""
+    duplicates: list[str] = []
+
+    def pairs(items: list[tuple[str, object]]) -> dict:
+        seen = set()
+        for key, _ in items:
+            if key in seen:
+                duplicates.append(key)
+            seen.add(key)
+        return dict(items)
+
     try:
-        data = json.loads(path.read_text(encoding="utf-8-sig"))
+        data = json.loads(path.read_text(encoding="utf-8-sig"), object_pairs_hook=pairs)
     except FileNotFoundError:
         return [f"{path}: not found"]
     except ValueError as exc:
         return [f"{path}: invalid JSON ({exc}); the hook ignores the whole file"]
     if not isinstance(data, dict):
         return [f"{path}: the top level must be an object; the hook ignores the whole file"]
-    problems = []
+    # The hook keeps the last of duplicate keys (rejecting the file would switch every rule off), so the earlier
+    # value is silently lost; say so here.
+    problems = [f"key {k!r} appears more than once; only the last one counts" for k in dict.fromkeys(duplicates)]
     if data.get("schemaVersion") != 1:
         problems.append("schemaVersion must be 1")
     for i, g in enumerate(data.get("generated", [])):

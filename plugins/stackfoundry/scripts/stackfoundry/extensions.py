@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import difflib
 import json
-import os
 import re
 import subprocess
 import tempfile
@@ -20,6 +19,7 @@ from pathlib import Path
 
 from . import PLUGIN_ROOT
 from .frontmatter import split
+from .fsutil import atomic_write
 from .gitutil import GitError, git_exe
 from .profile import PROFILE_DIR, TARGETS, ProfileError, find_root, load_json
 
@@ -145,15 +145,7 @@ def load_index(root: Path) -> dict:
 
 
 def _write(path: Path, text: str, crlf: bool = False) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(prefix=f".{path.name}.", dir=str(path.parent))
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8", newline="\r\n" if crlf else "\n") as fh:
-            fh.write(text)
-        os.replace(tmp, path)
-    except BaseException:
-        Path(tmp).unlink(missing_ok=True)
-        raise
+    atomic_write(path, text, "\r\n" if crlf else "\n")
 
 
 def _save_index(root: Path, index: dict) -> None:

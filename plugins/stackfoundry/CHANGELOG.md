@@ -64,6 +64,14 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   reported rather than followed.
 - **Cursor hooks** (T17): the builder refuses a relative command on `stop` and `subagentStop`, which Cursor runs from
   the workspace root.
+- **Side-effects state** now lives in the repo's git dir (or `~/.stackfoundry/` without git), not in a shared temp
+  folder. On a shared POSIX machine, another user could create that folder first or plant a symlink in it, and so
+  truncate a file of yours or forge the "before" snapshot.
+- **The guard's once-a-session warning marker** is created exclusively and never through a symlink.
+- **Generated files keep their permissions.** Atomic writes went through `mkstemp`, so a spliced `AGENTS.md` or a
+  rendered rulebook came back at mode 0600. They now keep the file's mode, or take the umask's for a new file.
+- **`guard --check` reports a key given twice in `guards.json`.** The hook keeps the last one, so the first was
+  silently lost.
 
 ### Added
 
@@ -125,6 +133,8 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   (`tooling-x.instructions.md`, `tooling-x.mdc`). Before, the links pointed at `.md` files that do not exist there.
 - `stack-researcher` and `domain-researcher` can `Edit` their own output, so a correction no longer rewrites the
   whole file. The role guard still bounds every write to that file.
+- Copilot's hook matcher includes `write`, which the guard already maps to an edit. Before, the hook never fired for
+  it.
 
 ## [0.2.0] - 2026-11-09
 

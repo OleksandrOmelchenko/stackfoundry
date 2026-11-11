@@ -14,14 +14,13 @@ render  Writes the canonical rulebook (`.stackfoundry/rules/<id>.md`) to stdout,
 from __future__ import annotations
 
 import json
-import os
 import re
 import sys
-import tempfile
 from pathlib import Path
 
 from .cited import DATE, check_cited, check_inline, check_plain_text, check_sources, strings
 from .clients import LIMITS, _yaml_plain_or_quoted, _yaml_str
+from .fsutil import atomic_write
 from .profile import find_root
 
 LAYERS = ("language", "app-model", "capability", "tooling")
@@ -291,16 +290,7 @@ def main(args) -> int:
         return 1
     text = render(pack)
     if args.out:
-        out = Path(args.out)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        fd, tmp = tempfile.mkstemp(prefix=f".{out.name}.", dir=str(out.parent))
-        try:
-            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
-                fh.write(text)
-            os.replace(tmp, out)  # atomic: an interrupted render never leaves a truncated rulebook
-        except BaseException:
-            Path(tmp).unlink(missing_ok=True)
-            raise
+        atomic_write(Path(args.out), text)  # atomic: an interrupted render never leaves a truncated rulebook
         print(f"wrote {args.out}")
     else:
         sys.stdout.write(text)

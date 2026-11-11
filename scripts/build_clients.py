@@ -129,7 +129,7 @@ def build_plugin_files(src: dict) -> dict[str, str]:
     root_ps = "$r = @($env:PLUGIN_ROOT, $env:COPILOT_PLUGIN_ROOT, $env:CLAUDE_PLUGIN_ROOT) | Where-Object { $_ } | Select-Object -First 1"
     files["com.github.copilot/hooks/hooks.json"] = dump({"version": 1, "hooks": {"preToolUse": [{
         "type": "command",
-        "matcher": "bash|powershell|create|edit|str_replace_editor|apply_patch",
+        "matcher": "bash|powershell|create|edit|write|str_replace_editor|apply_patch",
         "bash": f'r="{root_sh}"; if [ -n "$r" ] && [ -f "$r/{GUARD_SH}" ]; then sh "$r/{GUARD_SH}" guard --client copilot; fi; exit 0',
         "powershell": f'{root_ps}; if ($r -and (Test-Path -LiteralPath "$r/{GUARD_PS1}")) {{ & pwsh -NoProfile -NonInteractive -File "$r/{GUARD_PS1}" guard --client copilot }}; exit 0',
         "timeoutSec": 10,

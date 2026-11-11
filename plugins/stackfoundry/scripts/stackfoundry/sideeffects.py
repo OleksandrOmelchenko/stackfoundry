@@ -6,16 +6,17 @@ the control plane (`.stackfoundry/**`, `.claude/**`, instruction files) and of e
 changed or untracked, so an edit to a file that was dirty or untracked before the run is caught too. Works without
 git (hashes only).
 
-Writes only its state file, in the system temp folder (outside the repo), and removes it at `end`.
+Writes only its state file and removes it at `end`. The file is the user's own: inside the repo's git dir, or under
+`~/.stackfoundry/` without git. Never a shared temp folder, where another user could plant it first.
 """
 from __future__ import annotations
 
 import hashlib
 import json
 import os
-import tempfile
 from pathlib import Path
 
+from .fsutil import atomic_write
 from .gitutil import GitError, run
 from .globs import match
 from .profile import find_root
@@ -26,8 +27,11 @@ SKIP_DIRS = {".git", "node_modules", ".venv", "venv", "__pycache__", "bin", "obj
 
 
 def _state_file(root: Path) -> Path:
-    key = hashlib.sha256(os.path.normcase(str(root.resolve())).encode("utf-8")).hexdigest()[:16]
-    return Path(tempfile.gettempdir()) / "stackfoundry-side-effects" / f"{key}.json"
+    try:
+        return Path(run(["rev-parse", "--absolute-git-dir"], root).strip()) / "stackfoundry" / "side-effects.json"
+    except GitError:
+        key = hashlib.sha256(os.path.normcase(str(root.resolve())).encode("utf-8")).hexdigest()[:16]
+        return Path.home() / ".stackfoundry" / "side-effects" / f"{key}.json"
 
 
 def _status(root: Path) -> dict[str, str]:
@@ -95,8 +99,7 @@ def main(args) -> int:
     root = Path(args.root).resolve() if getattr(args, "root", None) else find_root(Path.cwd())
     state = _state_file(root)
     if args.action == "start":
-        state.parent.mkdir(parents=True, exist_ok=True)
-        state.write_text(json.dumps(snapshot(root)), encoding="utf-8")
+        atomic_write(state, json.dumps(snapshot(root)))
         print(f"side-effects: recorded {root}")
         return 0
     if not state.is_file():
