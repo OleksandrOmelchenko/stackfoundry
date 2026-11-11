@@ -13,8 +13,9 @@ newer template (or a re-research) always comes back as a merge to ask about.
 Template versions come from a `templateVersion:` line in the template's frontmatter (default "1"). Two template ids
 have no template: `research` (a researched pack and its rulebook, refreshed by research-stack) and `profile` (facts
 init wrote from the survey and the interview, such as targets.json, refreshed by sync). A file carrying the
-`<!-- stackfoundry:begin` ... `<!-- stackfoundry:end -->` markers (the CLAUDE.md block) is hashed by that block only,
-so the team's edits elsewhere in the file are not edits of the generated part.
+`<!-- stackfoundry:begin` ... `<!-- stackfoundry:end -->` markers is hashed by those blocks only (the CLAUDE.md block,
+a target profile's Stack and Gate sections), so the team's edits elsewhere in the file are not edits of the
+generated part.
 """
 from __future__ import annotations
 
@@ -36,8 +37,8 @@ BLOCK = re.compile(rb"<!-- stackfoundry:begin.*?<!-- stackfoundry:end -->", re.S
 def sha256(path: Path) -> str:
     # Hash with line endings normalized, so a checkout with autocrlf does not look like an edit.
     data = path.read_bytes().replace(b"\r\n", b"\n")
-    block = BLOCK.search(data)
-    return hashlib.sha256(block.group(0) if block else data).hexdigest()
+    blocks = BLOCK.findall(data)  # every stackfoundry block: a CLAUDE.md block, a profile's rendered sections
+    return hashlib.sha256(b"".join(blocks) if blocks else data).hexdigest()
 
 
 def write_json(path: Path, data: dict) -> None:

@@ -3,7 +3,7 @@ import json
 import unittest
 
 from tests._support import PLUGIN, TempRepo, run_cli, targets_json, write
-from stackfoundry import target_profile
+from stackfoundry import manifest, target_profile
 
 TARGETS = {"targets": [{
     "name": "api", "paths": ["src/**"], "packs": ["language-python", "tooling-pytest"],
@@ -66,6 +66,118 @@ class GateTests(unittest.TestCase):
         schema = json.loads((PLUGIN / "reference/schemas/gates.schema.json").read_text(encoding="utf-8"))
         self.assertEqual(schema["properties"]["targets"]["additionalProperties"]["additionalProperties"]["enum"],
                          ["proven", "failed"])
+
+
+PROFILE = """# Target `api`
+
+The API. Exposure: public.
+
+## Stack
+
+| Layer | Pack | Rulebook |
+|---|---|---|
+| language | `language-python` | hand-written row |
+
+## Where things are
+
+- Source: `src/**`. Entry point: `src/app.py` `main`.
+
+## Gate
+
+Hand-written gate notes that the renderer now owns.
+
+## Oracle sources
+
+The team's own oracle notes.
+
+## Traps
+
+- One trap, with its evidence.
+"""
+
+
+class RenderTargetTests(unittest.TestCase):
+    def setUp(self):
+        self.repo = TempRepo()
+        self.root = self.repo.__enter__()
+        self.addCleanup(self.repo.__exit__, None, None, None)
+        targets_json(self.root, TARGETS)
+        write(self.root, {".stackfoundry/rules/language-python.md": "---\ndescription: d\npaths: ['**/*.py']\n---\n",
+                          ".stackfoundry/targets/api.md": PROFILE})
+        self.path = self.root / ".stackfoundry/targets/api.md"
+
+    def cli(self, *args):
+        proc = run_cli(["render-target", "api", *args, "--root", str(self.root)])
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        return proc.stdout
+
+    def test_stack_and_gate_come_from_the_profile(self):
+        run_cli(["gate", "record", "api", "--command", "pytest -q", "--status", "proven", "--root", str(self.root)])
+        bodies = target_profile.render(self.root, "api")
+        self.assertEqual(bodies["stack"].splitlines(), [
+            "| Layer | Pack | Rulebook |", "|---|---|---|",
+            "| language | `language-python` | [language-python](../rules/language-python.md) |",
+            "| tooling | `tooling-pytest` | not researched yet |"])
+        gate = bodies["gate"]
+        self.assertIn("```sh\npython -m build\npytest -q\nruff check .\n```", gate)
+        self.assertIn("- `pytest -q`: proven\n", gate)
+        self.assertIn("- `python -m build`: unproven\n", gate)
+        self.assertIn("Preconditions: Docker running.", gate)
+        self.assertIn("shuffled `pytest -q -p random` (unproven)", gate)
+        self.assertIn("mutation: none yet (/stackfoundry:setup-mutation)", " ".join(gate.split()))
+        self.assertIn("Local URL for live repros: `http://localhost:8000`.", gate)
+
+    def test_the_first_write_migrates_an_unmarked_profile_and_keeps_every_other_section(self):
+        self.cli("--write")
+        text = self.path.read_text(encoding="utf-8")
+        self.assertNotIn("hand-written row", text)
+        self.assertNotIn("Hand-written gate notes", text)
+        for kept in ("The API. Exposure: public.", "- Source: `src/**`. Entry point: `src/app.py` `main`.",
+                     "## Oracle sources\n\nThe team's own oracle notes.\n", "## Traps\n\n- One trap, with its evidence.\n"):
+            self.assertIn(kept, text)
+        self.assertEqual(text.count("<!-- stackfoundry:begin target-"), 2)
+        self.assertEqual(self.cli("--diff"), "render-target: no change\n")  # idempotent
+
+    def test_prose_outside_the_markers_survives_a_re_render(self):
+        self.cli("--write")
+        text = self.path.read_text(encoding="utf-8").replace("The API. Exposure: public.", "The API, edited by the team.")
+        self.path.write_text(text, encoding="utf-8")
+        edited = json.loads(json.dumps(TARGETS))
+        edited["targets"][0]["packs"].append("capability-auth")
+        targets_json(self.root, edited)
+        self.cli("--write")
+        after = self.path.read_text(encoding="utf-8")
+        self.assertIn("The API, edited by the team.", after)
+        self.assertIn("| capability | `capability-auth` | not researched yet |", after)
+
+    def test_crlf_is_kept_and_diff_writes_nothing(self):
+        self.path.write_bytes(PROFILE.replace("\n", "\r\n").encode("utf-8"))
+        before = self.path.read_bytes()
+        out = self.cli("--diff")
+        self.assertIn("+<!-- stackfoundry:begin target-stack", out)
+        self.assertRegex(out, r"size: \.stackfoundry/targets/api\.md \d+ bytes -> \d+ bytes")
+        self.assertEqual(self.path.read_bytes(), before)
+        self.cli("--write")
+        data = self.path.read_bytes()
+        self.assertEqual(data.count(b"\n"), data.count(b"\r\n"))
+
+    def test_a_profile_without_its_heading_is_an_error(self):
+        self.path.write_text("# Target `api`\n\nNo sections.\n", encoding="utf-8")
+        proc = run_cli(["render-target", "api", "--write", "--root", str(self.root)])
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("no '## Stack' heading", proc.stderr)
+
+    def test_the_manifest_hashes_only_the_rendered_sections_of_a_profile(self):
+        self.cli("--write")
+        recorded = manifest.sha256(self.path)
+        self.path.write_text(self.path.read_text(encoding="utf-8").replace("The team's own oracle notes.", "Changed."),
+                             encoding="utf-8")
+        self.assertEqual(manifest.sha256(self.path), recorded)  # prose edit: still untouched
+        one = "a\n<!-- stackfoundry:begin x -->\nb\n<!-- stackfoundry:end -->\nc\n"
+        write(self.root, {"CLAUDE.md": one})
+        import hashlib
+        block = b"<!-- stackfoundry:begin x -->\nb\n<!-- stackfoundry:end -->"
+        self.assertEqual(manifest.sha256(self.root / "CLAUDE.md"), hashlib.sha256(block).hexdigest())  # unchanged
 
 
 if __name__ == "__main__":

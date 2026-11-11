@@ -111,9 +111,16 @@ class SecondRunTests(unittest.TestCase):
             self.assertIn('`--exclude "<layer>-*"`', (PLUGIN / rel).read_text(encoding="utf-8"))
 
     def test_the_target_template_records_gate_status_and_allows_no_shuffle(self):
+        # Since template v3 the Gate section is rendered (`render-target`): a status per command, never a count, and
+        # a suite with no shuffle option says so.
+        from stackfoundry import target_profile
+        gate = target_profile._gate({"name": "cli", "gate": {"test": ["python -m unittest"]},
+                                     "tests": [{"name": "unit", "command": "python -m unittest"}]}, {})
+        self.assertIn("- `python -m unittest`: unproven", gate)
+        self.assertIn("shuffled run: none recorded", gate)
+        self.assertNotRegex(gate, r"\b\d+ (tests|passed)\b")
         text = (PLUGIN / "reference/templates/target.md").read_text(encoding="utf-8")
-        self.assertIn("never a count of tests", text)
-        self.assertIn("has no shuffle option", text)
+        self.assertIn("<!-- stackfoundry:begin target-gate", text)
 
     def test_the_eval_workflow_runs_the_guard_case_after_a_failed_step(self):
         text = (ROOT / ".github/workflows/evals.yml").read_text(encoding="utf-8")

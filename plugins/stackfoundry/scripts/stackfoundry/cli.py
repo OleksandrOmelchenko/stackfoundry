@@ -3,7 +3,7 @@
 Every subcommand is read-only except `manifest record|forget` (they write .stackfoundry/manifest.lock.json),
 `pack render --out` and `render-rule|render-agent|render-rulebook --out|--write` (each writes the one file it names), and
 `extensions new|base|merge|forget` (the extension file named, its base copy and .stackfoundry/extensions/.base/),
-`gate record` (.stackfoundry/gates.json), and `side-effects` (its state file, in the repo's git dir or ~/.stackfoundry).
+`gate record` (.stackfoundry/gates.json), `render-target --write` (the target profile named), and `side-effects` (its state file, in the repo's git dir or ~/.stackfoundry).
 None makes a network call.
 """
 from __future__ import annotations
@@ -147,6 +147,16 @@ def build() -> argparse.ArgumentParser:
                                                          "and after; writes nothing")
     bl.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/)")
     bl.set_defaults(func=block.main)
+
+    rt = sub.add_parser("render-target", help="a target profile's Stack and Gate sections from the profile: "
+                                              "stdout, or writes --write, or previews --diff")
+    rt.add_argument("target")
+    rtd = rt.add_mutually_exclusive_group()
+    rtd.add_argument("--write", action="store_true", help="splice the sections between their markers (adding them "
+                                                          "under the headings the first time); prose is never touched")
+    rtd.add_argument("--diff", action="store_true", help="show what --write would change, with the size; writes nothing")
+    rt.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/)")
+    rt.set_defaults(func=target_profile.main_render)
 
     gt = sub.add_parser("gate", help="the proof of each target's gate and suite commands: record writes "
                                      ".stackfoundry/gates.json; list is read-only")

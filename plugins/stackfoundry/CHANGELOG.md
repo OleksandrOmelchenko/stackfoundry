@@ -25,6 +25,14 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 
 ### Added
 
+- **`stackfoundry render-target <target> [--write | --diff]`** renders a target profile's Stack and Gate sections
+  between markers, from `targets.json` (packs, gate, tests, `localUrl`) and the gate proof. The prose around them
+  (summary, where things are, oracles, emphasis, traps) is never touched. A profile without the markers is migrated
+  once: the body under `## Stack` and `## Gate` is replaced, which `--diff` shows first. Target template version 3.
+- **`stackfoundry gate record|list`** keeps the proof of each gate and suite command in `.stackfoundry/gates.json`
+  (proven or failed; a missing or edited command is unproven).
+- The manifest hashes every stackfoundry marker block in a file, so editing a profile's prose no longer makes it
+  read as edited. A file with one block hashes as before.
 - `stackfoundry render-block --diff`: what `--write` would change in each instruction file and the rulebook
   index, with each file's size before and after, writing nothing. `upgrade` and `sync` show it before writing, so
   a block growing from 1 KB to 40 KB is seen first.

@@ -1,19 +1,21 @@
 ---
-templateVersion: 2
+templateVersion: 3
 output: .stackfoundry/targets/{{target}}.md
 ---
 # Target `{{target}}`
 
 <!-- Facts every role agent needs for this target. Grounded: every line names a path + symbol or a command that
-     init ran. No counts, no file:line. Owned by the team; /stackfoundry:sync proposes changes, never overwrites. -->
+     init ran. No counts, no file:line. Owned by the team; /stackfoundry:sync proposes changes, never overwrites.
+     The Stack and Gate sections between markers are rendered by `stackfoundry render-target` from targets.json and
+     gates.json: change those files and re-render, never edit inside the markers. -->
 
 {{one line: what it is, who reaches it (exposure), what is at stake}}
 
 ## Stack
 
-| Layer | Pack | Rulebook |
-|---|---|---|
-{{one row per pack: layer | pack id | .stackfoundry/rules/<pack-id>.md}}
+<!-- stackfoundry:begin target-stack (rendered by stackfoundry render-target; edit outside the markers) -->
+{{rendered by stackfoundry render-target}}
+<!-- stackfoundry:end -->
 
 ## Where things are
 
@@ -23,18 +25,9 @@ output: .stackfoundry/targets/{{target}}.md
 
 ## Gate
 
-```sh
-{{build}}
-{{test}}
-{{lint}}
-```
-
-Preconditions: {{e.g. services that lock build output must be stopped; a container runtime; a built artifact}}.
-Status: {{"unproven" when written; init's step 5 marks each command proven or failed (never a count of tests)}}.
-Shuffled run (assurance gate): {{`shuffle command`, or "none: <framework> has no shuffle option"}}. Coverage: `{{coverage command}}`. Mutation lane:
-{{command, or "none yet: /stackfoundry:setup-mutation"}}.
-
-Local URL for live repros: {{localUrl, or "not served locally"}}.
+<!-- stackfoundry:begin target-gate (rendered by stackfoundry render-target; edit outside the markers) -->
+{{rendered by stackfoundry render-target}}
+<!-- stackfoundry:end -->
 
 ## Benchmarks
 
