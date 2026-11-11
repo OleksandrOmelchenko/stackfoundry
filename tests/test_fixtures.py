@@ -1,12 +1,11 @@
 """The eval fixtures survey to the stacks their EXPECTED.md promises, and the scaffold hides the answer key."""
-import os
 import shutil
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 
-from tests._support import HAS_GIT, ROOT
+from tests._support import HAS_GIT, ROOT, clean_env
 from stackfoundry.survey import survey
 
 FIXTURES = ROOT / "fixtures"
@@ -56,11 +55,12 @@ class ScaffoldTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as ws:
             script = f'SCAFFOLD_LIB="{(FIXTURES / "scaffold-lib.sh").as_posix()}"; . "$SCAFFOLD_LIB"; scaffold vue-spa'
             proc = subprocess.run(["sh", "-c", script], cwd=ws, capture_output=True, text=True, encoding="utf-8",
-                                  env={**os.environ, "GIT_CONFIG_NOSYSTEM": "1"}, timeout=120)
+                                  env=clean_env(GIT_CONFIG_NOSYSTEM="1"), timeout=120)
             self.assertEqual(proc.returncode, 0, proc.stderr)
             self.assertTrue((Path(ws) / "src/components/CartBadge.vue").is_file())
             self.assertFalse((Path(ws) / "EXPECTED.md").exists())
-            log = subprocess.run(["git", "log", "--oneline"], cwd=ws, capture_output=True, text=True, encoding="utf-8", timeout=120).stdout
+            log = subprocess.run(["git", "log", "--oneline"], cwd=ws, capture_output=True, text=True, encoding="utf-8",
+                                 env=clean_env(), timeout=120).stdout
             self.assertIn("fixture: vue-spa", log)
 
 

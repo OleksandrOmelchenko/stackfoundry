@@ -12,7 +12,9 @@ REF = PLUGIN / "reference"
 
 class ReferenceTests(unittest.TestCase):
     def test_every_json_file_parses(self):
-        for path in REF.rglob("*.json"):
+        paths = sorted(REF.rglob("*.json"))
+        self.assertIn(REF / "schemas" / "pack.schema.json", paths)  # the loop below found the files at all
+        for path in paths:
             with self.subTest(path=path.name):
                 json.loads(path.read_text(encoding="utf-8"))
 

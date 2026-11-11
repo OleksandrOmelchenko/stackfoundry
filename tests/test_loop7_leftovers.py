@@ -1,4 +1,5 @@
 """Regressions for the loop 7 leftovers: findings and researcher questions confirmed against the code afterwards."""
+import importlib.util
 import json
 import os
 import stat
@@ -7,8 +8,8 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from tests._support import HAS_GIT, PLUGIN, TempRepo, git, write
-from stackfoundry import clients, guard, sideeffects
+from tests._support import HAS_GIT, PLUGIN, ROOT, TempRepo, clean_env, git, write
+from stackfoundry import clients, guard, plumbing, sideeffects
 from stackfoundry.profile import PROFILE_DIR
 
 GUARDS_PATH = (PROFILE_DIR / "guards.json").as_posix()
@@ -89,6 +90,49 @@ class CopilotMatcherTests(unittest.TestCase):
                   if guard.normalize({"toolName": t, "toolArgs": {}}, "copilot", Path.cwd()) is not None}
         self.assertIn("write", mapped)
         self.assertEqual(mapped - matched, set())
+
+
+class PluginRefAnchorTests(unittest.TestCase):
+    def test_a_section_anchor_after_a_plugin_path_is_not_part_of_it(self):
+        rep = plumbing.Report()
+        body = "See `${CLAUDE_PLUGIN_ROOT}/reference/clients.md#size-limits` for the limits."
+        plumbing._check_links(PLUGIN / "skills/init/SKILL.md", body, PLUGIN, rep)
+        self.assertEqual(rep.errors, [])
+
+
+class DescriptionTests(unittest.TestCase):
+    def load_builder(self):
+        spec = importlib.util.spec_from_file_location("build_clients", ROOT / "scripts" / "build_clients.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    def test_the_marketplace_entry_describes_the_plugin_as_plugin_json_does(self):
+        b = self.load_builder()
+        self.assertEqual(b.check_marketplace_entry(b.load_claude_manifest(), b.load_claude_marketplace()), [])
+        self.assertEqual(b.check_marketplace_entry({"name": "stackfoundry", "description": "a"},
+                                                   {"plugins": [{"name": "stackfoundry", "description": "b"}]}),
+                         [".claude-plugin/marketplace.json: the plugin entry's description differs from plugin.json's"])
+
+
+class GitEnvironmentTests(unittest.TestCase):
+    def test_the_tests_never_hand_a_subprocess_the_outer_repos_git_variables(self):
+        with mock.patch.dict(os.environ, {"GIT_INDEX_FILE": "/outer/.git/index", "GIT_DIR": "/outer/.git"}):
+            env = clean_env(X="1")
+        self.assertNotIn("GIT_INDEX_FILE", env)
+        self.assertNotIn("GIT_DIR", env)
+        self.assertEqual(env["X"], "1")
+
+    def test_the_pre_commit_hook_unsets_them_before_the_tests(self):
+        hook = (ROOT / ".githooks" / "pre-commit").read_text(encoding="utf-8")
+        self.assertLess(hook.index("unset GIT_DIR"), hook.index("unittest discover"))
+
+
+class InitProbeWordingTests(unittest.TestCase):
+    def test_the_probe_never_reads_as_a_shell_bypass(self):
+        text = (PLUGIN / "skills/init/SKILL.md").read_text(encoding="utf-8")
+        self.assertNotIn("a shell write is not checked the same way", text)
+        self.assertIn("never a way around a refused write", text)
 
 
 if __name__ == "__main__":

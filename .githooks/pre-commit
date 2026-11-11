@@ -20,6 +20,9 @@ pick_python() {
 }
 
 fail=0
+# git exports these to its hooks; the tests' temp repos must not inherit the outer repo's index or objects.
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_COMMON_DIR \
+  GIT_PREFIX
 
 if py=$(pick_python); then
   echo "pre-commit: unit tests"

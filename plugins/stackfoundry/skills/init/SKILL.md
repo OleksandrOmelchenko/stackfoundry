@@ -34,8 +34,10 @@ and agent reads. It **never overwrites** existing `.claude/` content or docs: it
   Claude Code protects that folder: every write there is prompted (interactive), routed to a classifier (`auto`
   mode) or allowed only in `bypassPermissions` mode; allow rules such as `Edit(.claude/**)` do not change that. The
   facts in `.stackfoundry/` are not affected. Check now, before any research is spent: write
-  `.claude/.stackfoundry-write-probe` with the `Write` tool (a shell write is not checked the same way, so it proves
-  nothing) and delete it. If it is refused, stop here and say how to rerun (Tooling).
+  `.claude/.stackfoundry-write-probe` with the `Write` tool and delete it. The probe tests the `Write` and `Edit`
+  writes init makes there (skills, the settings merge). The CLI's `--write` commands run under the `Bash`
+  permission instead, and they are never a way around a refused write. If the probe is refused, stop here and say
+  how to rerun (Tooling).
 - **Non-interactive run** (`claude -p`, a scheduled task, CI): nobody answers questions. Take answers from the
   arguments; where none is given, choose the option this skill recommends (or the most conservative one) and list
   every such choice under "Decisions made without the user" in the report. Never route around a refused write.

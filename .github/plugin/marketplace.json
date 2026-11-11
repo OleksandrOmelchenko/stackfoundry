@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "stackfoundry",
-      "description": "Studies your repo, researches each language and app model from current sources, and generates grounded rulebooks and target profiles that drive generic role agents and orchestrator skills.",
+      "description": "Casts a repo-grounded swarm of specialists per stack (language x app model): code writers, verifiers, test designers/writers/reviewers/fixers, bug hunters, fix verifiers, security and performance reviewers, dependency bumpers and a scheduled tech radar.",
       "version": "0.2.0",
       "source": "./plugins/stackfoundry"
     }

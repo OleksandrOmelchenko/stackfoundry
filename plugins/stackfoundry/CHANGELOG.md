@@ -135,6 +135,13 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   whole file. The role guard still bounds every write to that file.
 - Copilot's hook matcher includes `write`, which the guard already maps to an edit. Before, the hook never fired for
   it.
+- `verify-plumbing` drops a `#section` anchor after `${CLAUDE_PLUGIN_ROOT}/<path>` before checking that the path
+  exists.
+- The marketplace's plugin entry carries `plugin.json`'s description, and `build_clients.py --check` fails when they
+  differ.
+- init's write probe no longer reads as if a shell write were a way around a refused one.
+- The test suite no longer passes git's hook variables (`GIT_INDEX_FILE`, `GIT_DIR`…) to the temp repos it creates,
+  so a run from the pre-commit hook cannot touch the outer repo's index.
 
 ## [0.2.0] - 2026-11-09
 

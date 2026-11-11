@@ -6,7 +6,7 @@ import sys
 import unittest
 from pathlib import Path
 
-from tests._support import CLI, HAS_GIT, ROOT, TempRepo, git, run_cli, targets_json, write
+from tests._support import CLI, HAS_GIT, ROOT, TempRepo, clean_env, git, run_cli, targets_json, write
 from stackfoundry import manifest
 from stackfoundry.change_targets import specialists
 from stackfoundry.pack import check as pack_check
@@ -22,7 +22,7 @@ CYRILLIC = "Александр"
 def guard_bytes(payload: bytes, project: Path):
     """Feed the guard raw bytes, as Claude Code does, with no text-mode decoding on the way in."""
     return subprocess.run([sys.executable, "-I", str(CLI), "guard"], input=payload, capture_output=True,
-                          env={**os.environ, "CLAUDE_PROJECT_DIR": str(project)}, timeout=120)
+                          env=clean_env(CLAUDE_PROJECT_DIR=str(project)), timeout=120)
 
 
 class GuardEncodingTests(unittest.TestCase):

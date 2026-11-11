@@ -92,7 +92,7 @@ def _check_links(path: Path, body: str, plugin_root: Path, rep: Report):
         if target and not (path.parent / target).exists():
             rep.error(path, f"link target does not exist: {target}")
     for m in PLUGIN_REF.finditer(body):
-        rel = m.group(1).rstrip(".,;:")
+        rel = m.group(1).split("#", 1)[0].rstrip(".,;:")  # a #section anchor is not part of the path
         if any(c in rel for c in "<*{"):
             continue
         if not (plugin_root / rel).exists():

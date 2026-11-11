@@ -21,6 +21,18 @@ if str(SCRIPTS) not in sys.path:
 
 HAS_GIT = shutil.which("git") is not None
 
+# Set by git while a hook runs (the pre-commit hook runs this suite). Inherited, they point a temp repo's git at
+# the outer repo's index and object store.
+GIT_REPO_VARS = ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_OBJECT_DIRECTORY",
+                 "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_COMMON_DIR", "GIT_PREFIX")
+
+
+def clean_env(**extra: str) -> dict:
+    """os.environ without the git variables that tie a subprocess to another repo, plus `extra`."""
+    env = {k: v for k, v in os.environ.items() if k not in GIT_REPO_VARS}
+    env.update(extra)
+    return env
+
 
 class TempRepo:
     """A temporary directory, optionally a git repo with one commit. Use as a context manager."""
@@ -51,15 +63,15 @@ def write(root: Path, files: dict[str, str]):
 
 
 def git(root: Path, *args: str) -> str:
-    env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@example.invalid",
-           "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.invalid", "GIT_CONFIG_NOSYSTEM": "1"}
+    env = clean_env(GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@example.invalid", GIT_COMMITTER_NAME="t",
+                    GIT_COMMITTER_EMAIL="t@example.invalid", GIT_CONFIG_NOSYSTEM="1")
     return subprocess.run(["git", "-c", "core.autocrlf=false", "-c", "commit.gpgsign=false", *args], cwd=root,
                           check=True, capture_output=True, text=True, encoding="utf-8", env=env, timeout=120).stdout
 
 
 def run_cli(args: list[str], cwd: Path | None = None, stdin: str = "", env: dict | None = None):
     return subprocess.run([sys.executable, "-I", str(CLI), *args], cwd=cwd, input=stdin, capture_output=True,
-                          text=True, encoding="utf-8", env={**os.environ, **(env or {})}, timeout=120)
+                          text=True, encoding="utf-8", env=clean_env(**(env or {})), timeout=120)
 
 
 def targets_json(root: Path, data: dict):

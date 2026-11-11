@@ -63,6 +63,17 @@ def dump(data) -> str:
     return json.dumps(data, indent=2, ensure_ascii=False) + "\n"
 
 
+def check_marketplace_entry(src: dict, market: dict) -> list[str]:
+    """The Claude marketplace's entry for the plugin repeats plugin.json's description, so every catalog and the
+    installed plugin describe it the same way. The marketplace's own top-level description may differ."""
+    entry = next((p for p in market.get("plugins", []) if p.get("name") == src["name"]), None)
+    if entry is None:
+        return [f".claude-plugin/marketplace.json lists no plugin named {src['name']!r}"]
+    if entry.get("description") != src.get("description"):
+        return [".claude-plugin/marketplace.json: the plugin entry's description differs from plugin.json's"]
+    return []
+
+
 def check_agent_plugins_manifest(data: dict) -> list[str]:
     """The checks of schemas/agent-plugins-1.0.0/plugin.schema.json, which is closed and small enough to check by hand."""
     errors = [f"unknown key {k!r}" for k in sorted(set(data) - AGENT_PLUGINS_KEYS)]
@@ -248,6 +259,11 @@ def main(argv: list[str] | None = None) -> int:
     problems = check_agent_plugins_manifest(json.loads(files[PLUGIN / "plugin.json"]))
     if problems:
         print("plugin.json breaks Agent Plugins 1.0:\n  " + "\n  ".join(problems), file=sys.stderr)
+        return 1
+    problems = check_marketplace_entry(load_claude_manifest(), load_claude_marketplace())
+    if problems:
+        print("\n".join(problems) + " (edit it by hand; this script does not write the Claude catalog)",
+              file=sys.stderr)
         return 1
     differ = [p for p, text in files.items() if not p.exists() or p.read_text(encoding="utf-8") != text]
     stale = stale_generated(files)
