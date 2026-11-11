@@ -1,9 +1,10 @@
 ---
-templateVersion: 1
+templateVersion: 2
 output: .stackfoundry/rules/dependency-bumps.md
 ---
 ---
 description: How any version pin is bumped — classify patch/minor/major first, a major waits for the user, route every finding, move lock-step chains together, read the technology's own release sources, one ecosystem per change.
+covers: classifying patch, minor and major bumps, lock-step chains, release sources, one ecosystem per commit
 paths:
 {{one "  - \"<glob>\"" line per pin file and lock file in ecosystems.json}}
 ---

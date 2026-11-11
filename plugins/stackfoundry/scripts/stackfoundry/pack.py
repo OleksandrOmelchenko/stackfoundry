@@ -171,6 +171,10 @@ def render(pack: dict) -> str:
     out: list[str] = [
         "---",
         f"description: {_yaml_plain_or_quoted(description)}",
+    ]
+    if pack.get("covers"):  # optional; render-block falls back to the title (existing rulebooks render unchanged)
+        out.append(f"covers: {_yaml_plain_or_quoted(pack['covers'])}")
+    out += [
         "paths:",
     ]
     out += [f"  - {_yaml_str(g)}" for g in pack.get("rulebookPaths", [])] or ["  []"]

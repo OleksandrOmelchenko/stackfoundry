@@ -1,9 +1,10 @@
 ---
-templateVersion: 1
+templateVersion: 2
 output: .stackfoundry/rules/benchmarking.md
 ---
 ---
 description: Benchmarking rulebook — pre-register question, hypothesis and decision rule; what makes a micro-benchmark wrong; a quiet machine that the tooling never reconfigures; comparing runs and the verdict vocabulary; reports.
+covers: pre-registered questions and decision rules, equal work, a quiet machine, multi-run verdicts
 paths:
 {{one "  - \"<glob>\"" line per benchmark project folder, plus "  - \"{{docsRoot}}/performance-reports/*-benchmarks.md\""}}
 ---

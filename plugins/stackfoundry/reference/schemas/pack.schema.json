@@ -18,6 +18,7 @@
     "id": {"type": "string", "pattern": "^(language|app-model|capability|tooling)-[a-z0-9-]+$"},
     "layer": {"enum": ["language", "app-model", "capability", "tooling"]},
     "title": {"type": "string"},
+    "covers": {"type": "string", "description": "What the rulebook covers, in one short line for the instruction-file table (stackfoundry render-block): the decisions it settles, not the technology name again."},
     "researchedAt": {"type": "string", "format": "date"},
     "versions": {
       "type": "array",

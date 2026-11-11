@@ -88,7 +88,8 @@ the plain character (`pack check` rejects them, and an extra round trip costs th
 ## Report
 
 1. **Write the pack** to the `output:` path with `Write`: plain JSON, UTF-8, plain characters (never HTML
-   entities such as `&gt;`), every required field of the schema present.
+   entities such as `&gt;`), every required field of the schema present, plus `covers`: one short line naming the
+   decisions the rulebook settles.
 2. **Your final message** is short: the path you wrote, the counts of rules and bug categories, then the conflicts
    between the docs and the repo, questions for the user, sources not reached, and any claim you could ground only
    weakly. Never paste the pack into the message: the dispatching skill reads the file and runs

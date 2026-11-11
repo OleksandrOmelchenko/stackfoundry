@@ -67,7 +67,8 @@ new · keep mine · merge by hand (you produce the merged text and show it befor
   (`stackfoundry change-targets --files <any>` loads and checks `targets.json`).
 - `stackfoundry manifest record <files> --template <template>` for every file written or kept by choice, so the
   manifest's version and hash move forward.
-- Each instruction file's block (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`) is regenerated between its markers only.
+- Each instruction file's block (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`) is regenerated between its markers only,
+  with `stackfoundry render-block --write`; text outside the markers is never touched.
 
 ## 4. Repo extensions
 
@@ -94,8 +95,8 @@ rewritten by an upgrade; this step makes sure they still fit the new plugin.
 the extensions re-anchored or merged, and anything the changelog says needs a manual step. Do not commit.
 
 ## Tooling
-- `Bash` for `stackfoundry manifest diff|record`, `extensions check|list|merge`, `render-agent`, `verify-plumbing`,
-  `change-targets`.
+- `Bash` for `stackfoundry manifest diff|record`, `extensions check|list|merge`, `render-agent`, `render-rulebook`,
+  `render-block`, `verify-plumbing`, `change-targets`.
 - `Read` the templates through `${CLAUDE_PLUGIN_ROOT}/reference/templates/`, `rulebooks/` and `trackers/`;
   `Write`/`Edit` the files.
 - `AskUserQuestion` once (one question per edited file, four per call).

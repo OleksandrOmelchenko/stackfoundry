@@ -58,7 +58,7 @@ ambiguous app model or new target's exposure and stakes).
 - New targets: their target profile and gate, as `/stackfoundry:init` steps 4–5 do for one target (prove the gate
   once, with permission).
 - A changed `clients` list: for each assistant added, write what `stackfoundry outputs` lists for it (rulebook
-  copies with `render-rule --write`, its instruction-file block, code-writer skills, materialized agents with
+  copies with `render-rule --write`, its instruction-file block with `render-block --write`, code-writer skills, materialized agents with
   `render-agent --write`); for one removed, list its generated files (`stackfoundry manifest list`) and ask before
   deleting any.
 - `stackfoundry manifest record` for every generated file written.
@@ -68,6 +68,6 @@ ambiguous app model or new target's exposure and stakes).
 What changed, what was declined, gates proven, packs still stale. Do not commit.
 
 ## Tooling
-- `Bash` for `stackfoundry survey|config|outputs|render-rule|render-agent|manifest|change-targets` and gates; `Read`/`Edit`/`Write` for the profile.
+- `Bash` for `stackfoundry survey|config|outputs|render-rule|render-agent|render-block|manifest|change-targets` and gates; `Read`/`Edit`/`Write` for the profile.
 - `Agent` with `subagent_type: "stackfoundry:surveyor"` when the drift is large enough to need a fresh target map.
 - `Skill` → `stackfoundry:research-stack` per pack; `AskUserQuestion` once.

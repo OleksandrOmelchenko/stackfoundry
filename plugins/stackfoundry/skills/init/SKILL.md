@@ -119,19 +119,20 @@ marking each **new** or **merge** (an existing file of the same name), and ask o
 | each assistant's copy of every rulebook (`outputs` → rules: `.claude/rules/`, `.github/instructions/`, `.cursor/rules/`) | `stackfoundry render-rule .stackfoundry/rules/<id>.md --client <assistant> --write` | as its canonical rulebook |
 | `<app-model>-code-writer/SKILL.md` per app model (bare id: `app-model-wpf` → `wpf`), in each `outputs` → skills folder | `reference/templates/code-writer-skill.md` | that template |
 | under the docs root, only where missing: `bug-reports/README.md`, `test-designs/README.md`, `plans/README.md`, `plans/_template.md`, `plans/deferred-upgrades.md`, `specifications/README.md`, `security/README.md`, and the reports README in `dependency-reports/`, `radar/` (plus `radar/decisions.md`), `performance-reports/` and `reports/` | `reference/trackers/` (strip each template's own frontmatter) | that tracker |
-| the stackfoundry block in each `outputs` → instructions file (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`) | `reference/templates/instructions-block.md`, between its markers | that template (the block alone is hashed) |
+| the stackfoundry block in each `outputs` → instructions file (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`) | `stackfoundry render-block --write`, after the canonical rulebooks; never by hand | `reference/templates/instructions-block.md` (the block alone is hashed) |
 | Claude Code only: `.claude/settings.json`: `extraKnownMarketplaces.stackfoundry` (GitHub `OleksandrOmelchenko/stackfoundry`) and `enabledPlugins["stackfoundry@stackfoundry"]` | merged into the existing JSON | `profile` |
 
-- **Which instruction file**: for `CLAUDE.md`, the root one when it exists, else `.claude/CLAUDE.md` when that
-  exists, else create the root one; `AGENTS.md` and `GEMINI.md` at the root. For Codex and Gemini, which have no
-  path-scoped rules, the block's table is the instruction to read a rulebook before editing a matching file.
+- **Which instruction file** (`render-block` applies it): for `CLAUDE.md`, the root one when it exists, else
+  `.claude/CLAUDE.md` when that exists, else a new root one; `AGENTS.md` and `GEMINI.md` at the root. For Codex and
+  Gemini, which have no path-scoped rules, the block's table is the instruction to read a rulebook before editing a
+  matching file.
 - **A repo that is itself the stackfoundry marketplace** (its `.claude-plugin/marketplace.json` lists `stackfoundry`):
   skip the `settings.json` entries; contributors run the working tree with `claude --plugin-dir plugins/stackfoundry`.
 - A name collision with an existing rule, skill or doc: write `stackfoundry-<name>` beside it and list it for the
   user to merge, never replace.
 - Every generated file is grounded: a placeholder the repo cannot fill is left out, never invented.
-- **Links in an instruction block** are relative to the file that holds it: in `.claude/CLAUDE.md` a rulebook is
-  `../.stackfoundry/rules/<id>.md`; in a root `CLAUDE.md`, `AGENTS.md` or `GEMINI.md`, `.stackfoundry/rules/<id>.md`.
+- **Links in an instruction block** are relative to the file that holds it (`render-block` writes them): in
+  `.claude/CLAUDE.md` a rulebook is `../.stackfoundry/rules/<id>.md`; in a root file, `.stackfoundry/rules/<id>.md`.
 - **Write JSON with the `Write` tool**, never through a shell heredoc or `echo`: the shell can eat backslashes in
   regex patterns (`guards.json`), and `guard --check` then reports a pattern that no longer means what was agreed.
 - **A check that costs money or needs a person** (a paid eval suite, a manual smoke test) is never a `tests` entry
@@ -185,7 +186,7 @@ what is ready to commit.
 - `Agent` with `subagent_type: "stackfoundry:surveyor"`, then `"stackfoundry:stack-researcher"` (one per pack, one
   message).
 - `AskUserQuestion` for the interview rounds and the one write confirmation.
-- `Bash` for `stackfoundry survey|config|outputs|pack|product|render-rule|render-rulebook|manifest|extensions|verify-plumbing|globs-check|change-targets|guard` and the gate
+- `Bash` for `stackfoundry survey|config|outputs|pack|product|render-rule|render-rulebook|render-block|manifest|extensions|verify-plumbing|globs-check|change-targets|guard` and the gate
   commands (`run_in_background` for long suites). `Read`/`Write`/`Edit` for the files.
 - `Skill` → `stackfoundry:skill-agent-verifier` for the load probe.
 - Non-interactive runs: `.claude/` is a protected path, and neither `acceptEdits` nor an allow rule covers it.

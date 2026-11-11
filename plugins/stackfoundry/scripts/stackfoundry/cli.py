@@ -15,7 +15,7 @@ from pathlib import Path
 # -I leaves the script directory off sys.path; add this package's parent explicitly (our own code only).
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from stackfoundry import (backlog, change_targets, checks, clients, config, extensions, guard,  # noqa: E402
+from stackfoundry import (backlog, block, change_targets, checks, clients, config, extensions, guard,  # noqa: E402
                           manifest, pack, plumbing, product, rulebooks, select_tests, sideeffects, survey, tracker,
                           volatile)
 from stackfoundry.gitutil import GitError  # noqa: E402
@@ -130,6 +130,15 @@ def build() -> argparse.ArgumentParser:
     rbd.add_argument("--write", action="store_true", help="write the canonical .stackfoundry/rules/<name>.md")
     rb.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/)")
     rb.set_defaults(func=rulebooks.main)
+
+    bl = sub.add_parser("render-block", help="the stackfoundry block of an instruction file (CLAUDE.md, AGENTS.md, "
+                                             "GEMINI.md) from the profile: stdout, or writes --out | --write")
+    bl.add_argument("file", nargs="?", help="one instruction file (default with --write: every one the assistants read)")
+    bld = bl.add_mutually_exclusive_group()
+    bld.add_argument("--out", help="write the block alone here")
+    bld.add_argument("--write", action="store_true", help="splice the block between the file's markers, or append it")
+    bl.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/)")
+    bl.set_defaults(func=block.main)
 
     pk = sub.add_parser("pack", help="check a researched pack (read-only), or render its rulebook (writes only --out)")
     pk.add_argument("action", choices=["check", "render"])
