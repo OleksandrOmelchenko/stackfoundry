@@ -3,6 +3,7 @@
   "id": "app-model-claude-code-plugin",
   "layer": "app-model",
   "title": "Claude Code plugin (skills, subagents, hooks, manifest)",
+  "covers": "plugin components, tool grants, briefs, paths",
   "researchedAt": "2026-11-09",
   "versions": [
     {"version": "0.1.0", "pinnedIn": "plugins/stackfoundry/.claude-plugin/plugin.json (version)"},

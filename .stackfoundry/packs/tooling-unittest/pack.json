@@ -3,6 +3,7 @@
   "id": "tooling-unittest",
   "layer": "tooling",
   "title": "Python stdlib unittest (floor 3.11, CI 3.11 + 3.x on three OSes)",
+  "covers": "the unittest suite on the 3.11 floor and three OSes",
   "researchedAt": "2026-11-09",
   "versions": [
     {

@@ -3,6 +3,7 @@
   "id": "capability-claude-code-marketplace",
   "layer": "capability",
   "title": "Claude Code plugin marketplace (marketplace.json, versions, release tags, team settings)",
+  "covers": "marketplace entry, versions, tags",
   "researchedAt": "2026-11-09",
   "versions": [
     {

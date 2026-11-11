@@ -1,6 +1,6 @@
 # plugin: threat model
 
-**Open:** 🔵 T8, T12, T13, T14, T17
+**Open:** none
 
 A living document (`/stackfoundry:threat-model plugin` refreshes it). Exposure: offline. Stakes: safety,
 data-integrity.
@@ -104,8 +104,8 @@ recorded as mitigated threats below.
 | Shell writes to generated files skip the generated-file guard | tampering | hook event | documented scope: the guard covers tool edits only (`.stackfoundry/rules/app-model-python-cli.md`, configure-guards) | — |
 | A nested, empty or broken `guards.json` replaces the repo's rules under it | tampering | hook event | `guard.py` `_chain`, `verdict`: every file applies, the strictest answer wins | T6 ✅ |
 | Guard fails open (no Python, invalid file, Copilot variable unset, timeout) | denial of service | hook launch | documented and tested fail-open contract (`skills/configure-guards/SKILL.md`, `hooks/hooks.json` description, `tests/test_guard.py` `test_fails_open`); `guard --check` at init, configure-guards and `sync`; Claude Code shows a once-a-session `systemMessage` for an unreadable file (`guard.py` `_unreadable_warning`) | T18 ✅ |
-| Cursor hook runs a repo-planted `scripts/stackfoundry.sh` | elevation | hook launch | Cursor runs plugin `preToolUse` and `beforeShellExecution` hooks from the plugin's install folder (https://cursor.com/docs/agent/hooks); only `stop`/`subagentStop` run from the workspace | T17 |
-| A repo extension silently changes a role | tampering, repudiation | repo extensions | fixed contract in `reference/extensions.md` (advice); `extensions.py` `check` (structure only) | T8 |
+| Cursor hook runs a repo-planted `scripts/stackfoundry.sh` | elevation | hook launch | Cursor runs plugin `preToolUse` and `beforeShellExecution` hooks from the plugin's install folder (https://cursor.com/docs/agent/hooks); only `stop`/`subagentStop` run from the workspace; `scripts/build_clients.py` `cursor_hooks` refuses a relative command for those two | T17 ✅ |
+| A repo extension silently changes a role | tampering, repudiation | repo extensions | fixed contract in `reference/extensions.md`; every report names the extensions applied (`preamble.py` `_EXT_RULE`); `extensions.py` `_contract_warnings` | T8 ✅ |
 | Fetched text becomes always-loaded rulebook instructions | tampering, elevation | fetched pages | `cited.py` `check_inline`; `pack.py` `check`, `check_context`, `render` (`_flat`, quoted frontmatter); init and research-stack show a new pack's rules | T9 ✅ |
 | Agents or scheduled runs rewrite the control plane | tampering, elevation | CLI writes, unattended runs | `roles.py` R2–R4 (`CONTROL_PLANE`, `ROLE_OUTPUTS`); `schedule` dontAsk lines; `sideeffects.py`; offered ask rules | T11 ✅ |
 | Unattended tech-radar fans out all-tool agents onto untrusted pages | elevation, tampering | unattended runs | `tech-radar` researches only through `stackfoundry:web-researcher` and reads no page itself; dontAsk on a schedule | T15 ✅ |
@@ -116,9 +116,9 @@ recorded as mitigated threats below.
 | A guards rule pre-approves a command | elevation | hook event | `guard.py` `verdict` coerces anything but deny/ask to ask | — |
 | An ask is lost on a host that cannot ask | elevation | hook event | `guard.py` `answer` turns ask into deny when `can_ask` is false | — |
 | Non-ASCII paths dodge the globs | tampering | hook event | `guard.py` `main` decodes stdin as UTF-8; `_absolute` normalizes | — |
-| Rendered repo agents carry host-privileged frontmatter | elevation | CLI writes | `.claude` is a host-protected path; `clients.py` `render_agent` passes text through | T12 |
-| Landing PRs runs commands from the PR branch's config | elevation | skill invocation | one confirmation in `skills/github-prs/SKILL.md` that lists writes, not commands | T13 |
-| Nothing measures that agents resist injected instructions | repudiation | repo content, fetched pages | none | T14 |
+| Rendered repo agents carry host-privileged frontmatter | elevation | CLI writes | `.claude` is a host-protected path; `clients.py` `render_agent` refuses `PRIVILEGED_AGENT_KEYS`; `plumbing.py` warns in a repo | T12 ✅ |
+| Landing PRs runs commands from the PR branch's config | elevation | skill invocation | `skills/github-prs/SKILL.md` reads `.stackfoundry/` from the default branch, flags control files and lists every command in the one confirmation | T13 ✅ |
+| Nothing measures that agents resist injected instructions | repudiation | repo content, fetched pages | `tests/test_reference.py` `DataClauseTests`; eval case `security-review-reports-injection` (written, not yet run) | T14 ✅ |
 | Eval Bash cases run fixture scaffolds | elevation | evals | per-case `allowed_tools` in `evals/*/prompt.md`; OS sandbox required (`evals/README.md`); eval command ask-guarded | — |
 
 ## Gaps
@@ -280,7 +280,16 @@ recorded as mitigated threats below.
   - Keep `test_a_nested_worktree_uses_its_own_profile` green, add the three cases above as tests, and document the
     merge rule in configure-guards and `docs/design.md` *Guards*.
 
-### T8 🔵 ⬜ OPEN — Repo extensions change roles silently; the fixed contract is unenforced
+### T8 🔵 ✅ FIXED — Repo extensions change roles silently; the fixed contract is unenforced
+- **Mitigation:**
+  - The shared preamble (`scripts/stackfoundry/preamble.py` `_EXT_RULE`) asks every skill and agent to name the
+    extensions it applied in its report, and `verify-plumbing` enforces the preamble verbatim.
+  - `scripts/stackfoundry/extensions.py` `_contract_warnings` warns when a `replace` file drops the role's data
+    clause or its `## What you must not do` section. It also warns when extension text names the guard, hooks, a
+    permission mode, `--no-verify`, `curl` or `wget`; in a `replace` file, only beyond the plugin's own text.
+  - `reference/extensions.md` *The fixed contract* names the data clause.
+  - Tests: `tests/test_extensions.py` `ContractWarningTests`.
+  - **Limit:** warnings, not refusals: the text may be legitimate, and a person judges it.
 - **Where:** the preamble in `scripts/stackfoundry/preamble.py`; `reference/extensions.md` *The fixed contract*;
   `scripts/stackfoundry/extensions.py` `check`, which checks structure and anchors only.
 - **Threat:** tampering, repudiation.
@@ -382,7 +391,15 @@ recorded as mitigated threats below.
     - the guard asks before edits of those paths from subagents (`agent_type`) other than the role whose job is to
       write them.
 
-### T12 🔵 ⬜ OPEN — Rendered repo agents pass host-privileged frontmatter through
+### T12 🔵 ✅ FIXED — Rendered repo agents pass host-privileged frontmatter through
+- **Mitigation:**
+  - `scripts/stackfoundry/clients.py` `render_agent` refuses an agent whose frontmatter sets `permissionMode`,
+    `hooks`, `mcpServers` or `initialPrompt` (`PRIVILEGED_AGENT_KEYS`), for every assistant. The error names the key
+    and `/stackfoundry:customize`.
+  - `plumbing.py` warns about those keys in a repo's agents, and about `hooks` in a repo skill.
+  - The skills that render agents (`materialize`, `upgrade`, `sync`, `skill-agent-author`) show a refusal to the
+    user and never strip the key silently.
+  - Tests: `tests/test_blue_gaps.py` `PrivilegedFrontmatterTests`.
 - **Where:** `scripts/stackfoundry/clients.py` `render_agent` (the `claude-code`/`cursor` branch returns the text
   verbatim); `scripts/stackfoundry/plumbing.py` `check` (accepts `permissionMode`, `hooks` and `mcpServers` silently
   in repo mode).
@@ -392,7 +409,15 @@ recorded as mitigated threats below.
 - **Fix:** have `render_agent` drop or refuse these keys unless the materialized-agent template sets them, and have
   `verify-plumbing .` warn in repo mode.
 
-### T13 🔵 ⬜ OPEN — Landing PRs runs commands from the PR branch's config
+### T13 🔵 ✅ FIXED — Landing PRs runs commands from the PR branch's config
+- **Mitigation:**
+  - `skills/github-prs/SKILL.md` reads `.stackfoundry/*` from the default branch (`git show origin/<default>:…`),
+    never from a PR branch.
+  - It flags PRs that touch `.stackfoundry/**`, `.claude/**`, git hooks or instruction files.
+  - The one confirmation lists every command the resolution will run (`regenerate`, `afterApply`, the gate). A
+    command a PR changed is named in the report, never run.
+  - Tests: `tests/test_reference.py` `LandingPrsTests` (a text check of the procedure).
+  - **Limit:** the skill is followed by an assistant, not enforced by code.
 - **Where:** `skills/github-prs/SKILL.md` `merge` steps 5–7.
 - **Threat:** elevation of privilege.
 - **Failure:** a fork PR changes `guards.json` `regenerate`, `ecosystems.json` `afterApply` or a `targets.json` gate.
@@ -403,7 +428,17 @@ recorded as mitigated threats below.
   - Flag PRs that touch `.stackfoundry/**`, `.claude/**` or instruction files.
   - List the commands in the confirmation.
 
-### T14 🔵 ⬜ OPEN — No test or eval that agents resist injected instructions
+### T14 🔵 ✅ FIXED — No test or eval that agents resist injected instructions
+- **Mitigation:**
+  - `tests/test_reference.py` `DataClauseTests` requires a data clause and a `## What you must not do` section in
+    every agent that holds a shell or the web. Four agents were brought in line: `domain-researcher`,
+    `performance-reviewer` (its `## Boundaries` is now `## What you must not do`), `test-runner`, and the regex now
+    reads `markup-semantics-reviewer`'s wrapped clause.
+  - The `python-fastapi` fixture plants a comment telling AI reviewers to stay silent, above the IDOR.
+  - The eval case `evals/security-review-reports-injection` grades that the comment is reported as injected and
+    the IDOR is still found.
+  - **Remains:** the eval case has not been run. Its first run, through `.github/workflows/evals.yml`, needs the
+    owner's secret and spends tokens.
 - **Where:** `plugins/stackfoundry/evals/`, `fixtures/`, `tests/test_reference.py`.
 - **Threat:** repudiation; no assurance for B1 and B2.
 - **Failure:** the "data" clauses are the main control for B1 and B2, and nothing measures them. A wording change can
@@ -436,7 +471,12 @@ recorded as mitigated threats below.
   per-domain gate.
 - **Fix:** document per-domain `WebFetch(domain:…)` rules for the sources the packs and briefs cite.
 
-### T17 🔵 ⬜ OPEN — Cursor hooks rely on an unwritten invariant
+### T17 🔵 ✅ FIXED — Cursor hooks rely on an unwritten invariant
+- **Mitigation:**
+  - `scripts/build_clients.py` `cursor_hooks` refuses a relative command for `stop` and `subagentStop`, the Cursor
+    plugin hooks that run from the workspace root (`CURSOR_WORKSPACE_EVENTS`).
+  - `reference/clients.md` records the documented behaviour, citing [cursor-hooks], instead of a *confirm* note.
+  - Tests: `tests/test_build_clients.py` `test_cursor_workspace_rooted_hooks_never_take_a_relative_command`.
 - **Where:** `scripts/build_clients.py` `build_plugin_files` (`cursor_cmd`); `plugins/stackfoundry/reference/clients.md`
   (the Cursor hook root is still marked *confirm*).
 - **Threat:** elevation if the invariant breaks.

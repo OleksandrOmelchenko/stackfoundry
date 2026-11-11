@@ -50,6 +50,20 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 - **Letter case** (T19): on Windows and macOS the guard and the role rules match protected paths case-insensitively.
   Before, an edit naming `APP/Generated/x.py` through a relative path got past a deny for `app/generated/**`. Globs
   take the whole path, so a trailing newline no longer passes.
+- **Applied extensions are visible** (T8): every skill and agent names the repo extensions it applied in its report.
+  `extensions check` warns when a `replace` file drops a role's data clause or limits section, and when extension
+  text names the guard, hooks, a permission mode, `--no-verify`, `curl` or `wget`.
+- **Privileged agent keys** (T12): `render-agent` refuses an agent that sets `permissionMode`, `hooks`, `mcpServers`
+  or `initialPrompt`. Before, it rendered them into `.claude/agents`, where project agents honour them.
+  `verify-plumbing` warns about them in a repo.
+- **Landing PRs** (T13): `github-prs` reads `.stackfoundry/` from the default branch, flags PRs that touch control
+  files, and lists every command it will run in its one confirmation. Before, a fork PR could change a command the
+  merge then ran.
+- **Injected text** (T14): every agent with a shell or the web keeps a data clause and a limits section (a test
+  enforces it). A new eval case, `security-review-reports-injection`, grades whether a planted instruction is
+  reported rather than followed.
+- **Cursor hooks** (T17): the builder refuses a relative command on `stop` and `subagentStop`, which Cursor runs from
+  the workspace root.
 
 ### Added
 
@@ -59,6 +73,17 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 - `configure-guards` and `init` offer Claude Code `ask` rules for `guards.json` and `extensions/**`.
 - `stackfoundry change-targets --all` maps every tracked and untracked file. Its **Shadowed** section lists files
   that a rule with no targets hides from a target whose paths match them. `init` checks `targets.json` with it.
+- `stackfoundry render-block` generates the stackfoundry block of `CLAUDE.md`, `AGENTS.md` and `GEMINI.md` from the
+  profile. It writes a loading sentence per assistant, one row per rulebook and the targets, splices between the
+  markers and keeps the file's line endings. `init`, `sync`, `upgrade` and `research-stack` use it; nobody fills the
+  block by hand.
+- An optional `covers` field in a pack: one line on what its rulebook settles, shown in the block's table (the title
+  otherwise). The shared rulebook templates carry one.
+- `stackfoundry size-check`: every generated instruction file, rulebook copy, skill and agent against the
+  assistants' size limits (`clients.LIMITS`, cited in `reference/clients.md`). `verify-plumbing` caps the plugin's
+  always-on listing of descriptions, and `pack check` warns when a pack would render past the rule advice.
+- `.github/workflows/evals.yml`: the read-only eval cases and the guard case, on demand only, with a cost ceiling.
+  It needs the `CLAUDE_CODE_OAUTH_TOKEN` secret.
 
 ### Changed
 
@@ -73,6 +98,16 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   `compatibility` no longer warn.
 - The README and `reference/clients.md` say that Claude Code's guard hook needs `sh`, so on Windows it needs Git
   Bash.
+- **Templates:** `instructions-block` moves to version 4, filled only by `render-block`, and the shared rulebook
+  templates to version 2, with a `covers` line. `upgrade` offers both.
+- **Eval graders:** the report-only cases check file contents and the trace, not only created paths. The guard case
+  scores one grader on both arms, so its delta is no longer inflated.
+- **The preamble** every skill and agent carries gains one sentence: name the extensions you applied.
+
+### Changed (extension anchors)
+
+- `performance-reviewer`: the heading `## Boundaries` is now `## What you must not do`. An extension anchored on
+  `Boundaries` moves to the new heading.
 
 ### Fixed
 

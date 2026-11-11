@@ -1,5 +1,6 @@
 ---
 description: GitHub Actions (CI workflows, action pins, Dependabot for actions) rulebook (tooling layer). Researched 2026-11-09; source pack .stackfoundry/packs/tooling-github-actions/pack.json.
+covers: workflow security, pinning, runners
 paths:
   - ".github/**"
 ---

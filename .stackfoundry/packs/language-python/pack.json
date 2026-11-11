@@ -3,6 +3,7 @@
   "id": "language-python",
   "layer": "language",
   "title": "Python (standard library only, floor 3.11, Windows/macOS/Linux)",
+  "covers": "encodings, the 3.11 floor, subprocess and path handling across OSes",
   "researchedAt": "2026-11-09",
   "versions": [
     {"version": "3.11 (floor)", "pinnedIn": "plugins/stackfoundry/scripts/stackfoundry.sh (ok(): sys.version_info >= (3, 11))", "latest": "3.15.2"},

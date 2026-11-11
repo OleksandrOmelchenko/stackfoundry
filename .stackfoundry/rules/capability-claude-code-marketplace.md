@@ -1,5 +1,6 @@
 ---
 description: Claude Code plugin marketplace (marketplace.json, versions, release tags, team settings) rulebook (capability layer). Researched 2026-11-09; source pack .stackfoundry/packs/capability-claude-code-marketplace/pack.json.
+covers: marketplace entry, versions, tags
 paths:
   - ".claude-plugin/**"
   - "docs/release.md"

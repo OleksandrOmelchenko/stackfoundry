@@ -3,6 +3,7 @@
   "id": "app-model-python-cli",
   "layer": "app-model",
   "title": "Standard-library Python CLI that is also a Claude Code PreToolUse hook",
+  "covers": "subcommand contract, the guard's hook contract, fail-open",
   "researchedAt": "2026-11-09",
   "versions": [
     {"version": ">= 3.11 (floor; argparse/json/sys from the stdlib)", "pinnedIn": "plugins/stackfoundry/scripts/stackfoundry.sh (ok(): sys.version_info >= (3, 11))", "latest": "3.15 (released 2026-10-09; docs at 3.15.2)"},

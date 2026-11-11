@@ -3,6 +3,7 @@
   "id": "tooling-github-actions",
   "layer": "tooling",
   "title": "GitHub Actions (CI workflows, action pins, Dependabot for actions)",
+  "covers": "workflow security, pinning, runners",
   "researchedAt": "2026-11-09",
   "versions": [
     {"version": "actions/checkout v7.0.1 (3d3c42e5aac5ba805825da76410c181273ba90b1)", "pinnedIn": ".github/workflows/ci.yml jobs unit, validate", "latest": "v7.0.1"},

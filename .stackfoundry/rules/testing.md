@@ -1,5 +1,6 @@
 ---
 description: The testing rulebook for every suite — where an expected value may come from, test layers, doubles, design techniques, determinism, assertions, no-gaming rules, the assurance gate, mutation/property/a11y testing, flaky tests, smells, review verdicts and fixer classes.
+covers: where expected values come from, test layers, doubles, determinism, the assurance gate, flaky tests, review verdicts
 paths:
   - "tests/**"
   - "fixtures/**"

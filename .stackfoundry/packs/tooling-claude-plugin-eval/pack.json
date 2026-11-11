@@ -3,6 +3,7 @@
   "id": "tooling-claude-plugin-eval",
   "layer": "tooling",
   "title": "claude plugin eval (Claude Code plugin eval suites)",
+  "covers": "eval cases, graders, scaffolds",
   "researchedAt": "2026-11-09",
   "versions": [
     {

@@ -1,5 +1,6 @@
 ---
 description: claude plugin eval (Claude Code plugin eval suites) rulebook (tooling layer). Researched 2026-11-09; source pack .stackfoundry/packs/tooling-claude-plugin-eval/pack.json.
+covers: eval cases, graders, scaffolds
 paths:
   - "plugins/stackfoundry/evals/**"
   - "fixtures/**"

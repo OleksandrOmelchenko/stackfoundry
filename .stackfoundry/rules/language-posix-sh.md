@@ -1,5 +1,6 @@
 ---
 description: POSIX sh (launcher, git hook, eval scaffolds) rulebook (language layer). Researched 2026-11-09; source pack .stackfoundry/packs/language-posix-sh/pack.json.
+covers: portable POSIX sh, quoting, exit codes
 paths:
   - ".githooks/**"
   - "**/*.sh"

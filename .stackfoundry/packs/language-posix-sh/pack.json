@@ -3,6 +3,7 @@
   "id": "language-posix-sh",
   "layer": "language",
   "title": "POSIX sh (launcher, git hook, eval scaffolds)",
+  "covers": "portable POSIX sh, quoting, exit codes",
   "researchedAt": "2026-11-09",
   "versions": [
     {

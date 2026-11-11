@@ -1,5 +1,6 @@
 ---
 description: Claude Code plugin (skills, subagents, hooks, manifest) rulebook (app-model layer). Researched 2026-11-09; source pack .stackfoundry/packs/app-model-claude-code-plugin/pack.json.
+covers: plugin components, tool grants, briefs, paths
 paths:
   - "plugins/stackfoundry/skills/**"
   - "plugins/stackfoundry/agents/**"

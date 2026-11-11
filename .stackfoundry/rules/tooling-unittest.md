@@ -1,5 +1,6 @@
 ---
 description: Python stdlib unittest (floor 3.11, CI 3.11 + 3.x on three OSes) rulebook (tooling layer). Researched 2026-11-09; source pack .stackfoundry/packs/tooling-unittest/pack.json.
+covers: the unittest suite on the 3.11 floor and three OSes
 paths:
   - "tests/**"
 ---

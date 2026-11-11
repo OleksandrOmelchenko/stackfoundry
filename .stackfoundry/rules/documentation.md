@@ -1,5 +1,6 @@
 ---
 description: Documentation rulebook — write what stays true. Living vs snapshot vs tracker docs, what not to write (counts, file:line, dates, SHAs, versions as background), always-loaded files stay small, and the plans → specifications lifecycle.
+covers: living vs snapshot docs, no hand-synced facts, the plans and specs lifecycle
 paths:
   - "docs/**"
   - ".claude/**"

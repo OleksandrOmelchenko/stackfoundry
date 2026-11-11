@@ -61,17 +61,17 @@ Claude Code loads each rulebook's copy in `.claude/rules/` when it reads a match
 
 | Rulebook | Applies to | Covers |
 |---|---|---|
-| [language-python](../.stackfoundry/rules/language-python.md) | any Python file | encodings, the 3.11 floor, subprocess and path handling across OSes |
-| [language-posix-sh](../.stackfoundry/rules/language-posix-sh.md) | the launcher, git hooks, shell scripts | portable POSIX sh, quoting, exit codes |
-| [app-model-python-cli](../.stackfoundry/rules/app-model-python-cli.md) | the plugin's scripts and hooks | subcommand contract, the guard's hook contract, fail-open |
-| [app-model-claude-code-plugin](../.stackfoundry/rules/app-model-claude-code-plugin.md) | skills, agents, reference, hooks, plugin manifest | plugin components, tool grants, briefs, paths |
-| [capability-claude-code-marketplace](../.stackfoundry/rules/capability-claude-code-marketplace.md) | the marketplace manifest, the release doc | marketplace entry, versions, tags |
-| [tooling-unittest](../.stackfoundry/rules/tooling-unittest.md) | `tests/` | the unittest suite on the 3.11 floor and three OSes |
-| [tooling-claude-plugin-eval](../.stackfoundry/rules/tooling-claude-plugin-eval.md) | evals, fixtures | eval cases, graders, scaffolds |
-| [tooling-github-actions](../.stackfoundry/rules/tooling-github-actions.md) | `.github/` | workflow security, pinning, runners |
-| [testing](../.stackfoundry/rules/testing.md) | tests, fixtures, evals, test designs | oracles, assurance gate, flaky tests |
-| [dependency-bumps](../.stackfoundry/rules/dependency-bumps.md) | version pin files | classifying and applying bumps |
-| [documentation](../.stackfoundry/rules/documentation.md) | docs, `.claude/`, READMEs, CLAUDE.md | living vs snapshot docs, plans and specs |
+| [language-python](../.stackfoundry/rules/language-python.md) | `**/*.py` | encodings, the 3.11 floor, subprocess and path handling across OSes |
+| [language-posix-sh](../.stackfoundry/rules/language-posix-sh.md) | `.githooks/**`, `**/*.sh` | portable POSIX sh, quoting, exit codes |
+| [app-model-python-cli](../.stackfoundry/rules/app-model-python-cli.md) | `plugins/stackfoundry/scripts/**`, `plugins/stackfoundry/hooks/**` | subcommand contract, the guard's hook contract, fail-open |
+| [tooling-unittest](../.stackfoundry/rules/tooling-unittest.md) | `tests/**` | the unittest suite on the 3.11 floor and three OSes |
+| [tooling-github-actions](../.stackfoundry/rules/tooling-github-actions.md) | `.github/**` | workflow security, pinning, runners |
+| [app-model-claude-code-plugin](../.stackfoundry/rules/app-model-claude-code-plugin.md) | `plugins/stackfoundry/skills/**`, `plugins/stackfoundry/agents/**`, `plugins/stackfoundry/reference/**`, `plugins/stackfoundry/hooks/**`, `plugins/stackfoundry/.claude-plugin/**` | plugin components, tool grants, briefs, paths |
+| [capability-claude-code-marketplace](../.stackfoundry/rules/capability-claude-code-marketplace.md) | `.claude-plugin/**`, `docs/release.md` | marketplace entry, versions, tags |
+| [tooling-claude-plugin-eval](../.stackfoundry/rules/tooling-claude-plugin-eval.md) | `plugins/stackfoundry/evals/**`, `fixtures/**` | eval cases, graders, scaffolds |
+| [testing](../.stackfoundry/rules/testing.md) | `tests/**`, `fixtures/**`, `plugins/stackfoundry/evals/**`, `docs/test-designs/**` | where expected values come from, test layers, doubles, determinism, the assurance gate, flaky tests, review verdicts |
+| [dependency-bumps](../.stackfoundry/rules/dependency-bumps.md) | `plugins/stackfoundry/scripts/stackfoundry.sh`, `.githooks/pre-commit`, `.github/workflows/*.yml`, `.github/dependabot.yml` | classifying patch, minor and major bumps, lock-step chains, release sources, one ecosystem per commit |
+| [documentation](../.stackfoundry/rules/documentation.md) | `docs/**`, `.claude/**`, `**/CLAUDE.md`, `**/README.md` | living vs snapshot docs, no hand-synced facts, the plans and specs lifecycle |
 
 Targets: `cli`, `plugin`.
 

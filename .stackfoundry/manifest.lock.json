@@ -4,8 +4,8 @@
   "files": {
     ".claude/CLAUDE.md": {
       "template": "reference/templates/instructions-block.md",
-      "templateVersion": "3",
-      "sha256": "3a949f5a975eb5447d42023caa76aa6571b87d6acbe39c1e9792d5b57382100f",
+      "templateVersion": "4",
+      "sha256": "2e88dcebc7344f9454dc55868b80712438e9ae1993aad08cbebd8794104f028d",
       "kind": "generated"
     },
     ".claude/rules/app-model-claude-code-plugin.md": {
@@ -28,13 +28,13 @@
     },
     ".claude/rules/dependency-bumps.md": {
       "template": "reference/rulebooks/dependency-bumps.md",
-      "templateVersion": "1",
+      "templateVersion": "2",
       "sha256": "31e63aa28141e6258a18ccaa68c6eb5193f73d687d61caa367146314c0bd942f",
       "kind": "generated"
     },
     ".claude/rules/documentation.md": {
       "template": "reference/rulebooks/documentation.md",
-      "templateVersion": "1",
+      "templateVersion": "2",
       "sha256": "617f2661d28f2b9fab1dd58c7ec4077f87c8bbac83416cf829fc1aa0bb9702e3",
       "kind": "generated"
     },
@@ -52,14 +52,14 @@
     },
     ".claude/rules/testing.md": {
       "template": "reference/rulebooks/testing.md",
-      "templateVersion": "1",
+      "templateVersion": "2",
       "sha256": "2463584fcd518dcec5592e72e39b3aa3a6a22bd42c281da1cef319b3118a98db",
       "kind": "generated"
     },
     ".claude/rules/tooling-claude-plugin-eval.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "ba06a6405dc33174af08117db5435198a8d40a5a8944657d9560cec13fb854a1",
+      "sha256": "662fd406283a559afebfa94f27809cd964841fc71329945a61d095a0fd8d571c",
       "kind": "generated"
     },
     ".claude/rules/tooling-github-actions.md": {
@@ -107,49 +107,49 @@
     ".stackfoundry/packs/app-model-claude-code-plugin/pack.json": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "bc81fb25e5d11b614ad628e916526212c8172e42e4fc92db8adaa198bb39b504",
+      "sha256": "2dfe379829404b41f8bb295e032c98901c747648143e76e406394759d26918e5",
       "kind": "generated"
     },
     ".stackfoundry/packs/app-model-python-cli/pack.json": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "c8581b9ce59b49711e166836a02c447371186ec69bdafc8d4b12545519e4e75e",
+      "sha256": "3f99339d41133d1dea94dce0b22fbe800151ac46c91f1cb33a5b344ce72a709e",
       "kind": "generated"
     },
     ".stackfoundry/packs/capability-claude-code-marketplace/pack.json": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "aa1005b4f0cfc0a75f03e2485de6e8b74e4f4c441cbca782097bfc019286c20f",
+      "sha256": "e16ab4be0cb741684fd33ab88d4c7d26845d77735aadb74d8b9e2b3332507dd3",
       "kind": "generated"
     },
     ".stackfoundry/packs/language-posix-sh/pack.json": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "d518f9ca0c06160bfae5e6ccbfe13d4fd8ae553fb334d77adb99e5d7c494d3de",
+      "sha256": "f8998d9688b62ae5f090a6bb16e1d8eb8ebf5c79f3f089a2c523ab73cd813df8",
       "kind": "generated"
     },
     ".stackfoundry/packs/language-python/pack.json": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "d38fef51bc3108a815388633986a7560e0a652dc8240eef8473086e2cec3c721",
+      "sha256": "1bdc7b345b278a6f69eecf8457171209b0974e04de85feebb6f5d7d9cbe993b2",
       "kind": "generated"
     },
     ".stackfoundry/packs/tooling-claude-plugin-eval/pack.json": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "7cd3a093f703368b0869cba3cfcfb272410041fca9030754c310b343cab3d341",
+      "sha256": "80d402ee3246a8d368684df71f91a9595b8e7cd807dfa34a8ad15518cef1fee1",
       "kind": "generated"
     },
     ".stackfoundry/packs/tooling-github-actions/pack.json": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "fa9774a8ae35b2f6740299d843cbdf8eb2dcc21e192e12d1d647983b1ca4438f",
+      "sha256": "a95ff5bc43298c84481ad5bd46f21bc7a9667fa3560cd52a899f2b1b47114aa2",
       "kind": "generated"
     },
     ".stackfoundry/packs/tooling-unittest/pack.json": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "11fae456bd328d39d360e8ed953919b9d8b44ea9c66f49bfa3f6c265f98beec6",
+      "sha256": "edcf2b34757c48ae57d1152f2715bdd17772c804f4fc04e560b0c8a69ba388be",
       "kind": "generated"
     },
     ".stackfoundry/product.json": {
@@ -167,67 +167,67 @@
     ".stackfoundry/rules/app-model-claude-code-plugin.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "8993cc88be3ec8756eb879b6f4590b4fef67a13ab93a7af23137b1e041df92da",
+      "sha256": "56880a5c588b735a8d8312ced21f97dc3b0f983c3d0a38c55a031c929dcb9e53",
       "kind": "generated"
     },
     ".stackfoundry/rules/app-model-python-cli.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "0729cdfb3c8e6280aaa43336dd243220721df6ff01705d8cb84294f922c658ed",
+      "sha256": "5bc17a99e1f240f9063c925e23fd1aa4c655b7ac7ba0bcd4eec68957f01789dd",
       "kind": "generated"
     },
     ".stackfoundry/rules/capability-claude-code-marketplace.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "9f4411795b9d398efaa6b17e30d591c37a0e3fd795d6aaa45c50dadb77827afd",
+      "sha256": "da52996c10c20218bedae685d083dc62883b4ddafd234698fb0ac142318f3ca4",
       "kind": "generated"
     },
     ".stackfoundry/rules/dependency-bumps.md": {
       "template": "reference/rulebooks/dependency-bumps.md",
-      "templateVersion": "1",
-      "sha256": "31e63aa28141e6258a18ccaa68c6eb5193f73d687d61caa367146314c0bd942f",
+      "templateVersion": "2",
+      "sha256": "eb6da8f119013476eb988be5450c3dc7de57fc3c35699e70c17c8bbc1b8e92bb",
       "kind": "generated"
     },
     ".stackfoundry/rules/documentation.md": {
       "template": "reference/rulebooks/documentation.md",
-      "templateVersion": "1",
-      "sha256": "617f2661d28f2b9fab1dd58c7ec4077f87c8bbac83416cf829fc1aa0bb9702e3",
+      "templateVersion": "2",
+      "sha256": "c4cb8d74e981eb80f298d85e864b6b17012ddb202c092db9135aa0535846fc99",
       "kind": "generated"
     },
     ".stackfoundry/rules/language-posix-sh.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "da49d82bd0f83cbfc5018e1946d3b34ac913f698f78d5c8410e1b7971d0550b7",
+      "sha256": "57038103d38b9259b9e143fe7e70ba62b8d7ef5bbb77d02a0a52e4a2d8e90928",
       "kind": "generated"
     },
     ".stackfoundry/rules/language-python.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "a71c7875b5c9d2ce83fa2a6ebf57cc22ebfe16eed9b2d7cc026c97e47159d040",
+      "sha256": "cf354d1fec0eff9e9e041be3e25dbdb3e23f89d741e93cc8b890c0addd450e82",
       "kind": "generated"
     },
     ".stackfoundry/rules/testing.md": {
       "template": "reference/rulebooks/testing.md",
-      "templateVersion": "1",
-      "sha256": "2463584fcd518dcec5592e72e39b3aa3a6a22bd42c281da1cef319b3118a98db",
+      "templateVersion": "2",
+      "sha256": "0db922ab6e313e9943ada564cbe93a7a334842f93ad72b0eaea825be84384ec1",
       "kind": "generated"
     },
     ".stackfoundry/rules/tooling-claude-plugin-eval.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "ba06a6405dc33174af08117db5435198a8d40a5a8944657d9560cec13fb854a1",
+      "sha256": "00870aa2835b814daaf85bb145a27ce64faa30dcc999e73f8641bb55fd134d55",
       "kind": "generated"
     },
     ".stackfoundry/rules/tooling-github-actions.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "c607fa6e2243ea19f4064c1de0ba14b1a85bfbfac6cabc982cbf46ba1a3276eb",
+      "sha256": "e953d828bdf8d0a1fca38f0b9a52787947c64a94bf0f98eac1f1319f716564cb",
       "kind": "generated"
     },
     ".stackfoundry/rules/tooling-unittest.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "204290e124f905dd76b5ffd3b0ecf44807d2912d8bb5fa60e2b6ab259e64fe6b",
+      "sha256": "0a337353e9f14591fadf403490333bea70b4a5a3c3dcdc5e520de1b7ac0eeb76",
       "kind": "generated"
     },
     ".stackfoundry/targets.json": {

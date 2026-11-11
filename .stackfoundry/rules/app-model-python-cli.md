@@ -1,5 +1,6 @@
 ---
 description: Standard-library Python CLI that is also a Claude Code PreToolUse hook rulebook (app-model layer). Researched 2026-11-09; source pack .stackfoundry/packs/app-model-python-cli/pack.json.
+covers: subcommand contract, the guard's hook contract, fail-open
 paths:
   - "plugins/stackfoundry/scripts/**"
   - "plugins/stackfoundry/hooks/**"

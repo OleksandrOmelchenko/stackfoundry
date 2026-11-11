@@ -1,5 +1,6 @@
 ---
 description: Python (standard library only, floor 3.11, Windows/macOS/Linux) rulebook (language layer). Researched 2026-11-09; source pack .stackfoundry/packs/language-python/pack.json.
+covers: encodings, the 3.11 floor, subprocess and path handling across OSes
 paths:
   - "**/*.py"
 ---
