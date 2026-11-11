@@ -38,7 +38,7 @@ Run `stackfoundry survey` (`--pretty` is not needed) and compare with `targets.j
 | A new generated folder | survey `generatedDirs` not in `generated` / `guards.json` | add the glob and its regenerate hint |
 | A `guards.json` the hook cannot read (its rules are silently off) | `stackfoundry guard --check` reports a problem | fix the file; `/stackfoundry:configure-guards` when a rule is unclear |
 | A file no target or rule maps, or one a no-target rule hides | `stackfoundry change-targets --all`: **Unmapped**, **Shadowed** | a rule, a target path, or an anchored glob (`/*.md`) |
-| A gate command whose script or project vanished | the command's target file is gone | fix or mark unproven |
+| A gate command whose script or project vanished | the command's target file is gone | fix it in `targets.json`, or `stackfoundry gate record <target> --command "<command>" --status unproven` |
 | A new manifest or lock file | survey manifests vs `ecosystems.json` pins | add it to an ecosystem |
 | An assistant in use that `config.json` does not list, or one listed that is gone | survey `assistants.detected` vs `stackfoundry config clients` | add or drop it in `clients`, then write or remove its files (below) |
 | An assistant's copy missing or differing from its source | `stackfoundry outputs` vs the files; `stackfoundry render-rule <canonical> --client <assistant>` vs the copy | re-render it (an edited copy: ask first) |
@@ -53,7 +53,9 @@ ambiguous app model or new target's exposure and stakes).
 
 ## 3. Apply
 
-- Profile JSON and target profiles: edit in place (show the diff).
+- Profile JSON: edit in place (show the diff). Target profiles: their prose in place; when a target's `packs`,
+  `gate`, `tests` or `localUrl` changed, `stackfoundry render-target <target> --diff`, then `--write` (the Stack and
+  Gate sections are never edited by hand).
 - New and refreshed packs: `/stackfoundry:research-stack` for each, dispatched in one message when there are several.
 - New targets: their target profile and gate, as `/stackfoundry:init` steps 4–5 do for one target (prove the gate
   once, with permission).
@@ -72,6 +74,6 @@ ambiguous app model or new target's exposure and stakes).
 What changed, what was declined, gates proven, packs still stale. Do not commit.
 
 ## Tooling
-- `Bash` for `stackfoundry survey|config|outputs|render-rule|render-agent|render-block|manifest|size-check|change-targets` and gates; `Read`/`Edit`/`Write` for the profile.
+- `Bash` for `stackfoundry survey|config|outputs|render-rule|render-agent|render-block|render-target|gate|manifest|size-check|change-targets` and gates; `Read`/`Edit`/`Write` for the profile.
 - `Agent` with `subagent_type: "stackfoundry:surveyor"` when the drift is large enough to need a fresh target map.
 - `Skill` → `stackfoundry:research-stack` per pack; `AskUserQuestion` once.

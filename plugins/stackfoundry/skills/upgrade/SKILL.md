@@ -42,7 +42,7 @@ template has a newer version, and the action:
 
 | Action | Meaning |
 |---|---|
-| `replace` | untouched since generation and the template moved: regenerate and write |
+| `replace` | untouched since generation and the template moved: regenerate and write (a target profile: `render-target --write`, which keeps its prose; an unmarked profile's first migration replaces the body under `## Stack` and `## Gate`, so show its `render-target --diff` in the one confirmation) |
 | `three-way merge, ask` | edited by the team and the template moved: show both, the user chooses |
 | `leave deleted` | the team deleted it: never recreate |
 | `merge via extensions merge (materialized)` | the team owns it; the extensions step merges it with the new generic role |
@@ -102,6 +102,7 @@ the extensions re-anchored or merged, and anything the changelog says needs a ma
 
 ## Tooling
 - `Bash` for `stackfoundry manifest diff|record`, `extensions check|list|merge`, `render-agent`, `render-rulebook`,
+  `render-target`,
   `render-block`, `verify-plumbing`, `size-check`, `change-targets`.
 - `Read` the templates through `${CLAUDE_PLUGIN_ROOT}/reference/templates/`, `rulebooks/` and `trackers/`;
   `Write`/`Edit` the files.

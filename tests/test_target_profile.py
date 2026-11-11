@@ -180,5 +180,23 @@ class RenderTargetTests(unittest.TestCase):
         self.assertEqual(manifest.sha256(self.root / "CLAUDE.md"), hashlib.sha256(block).hexdigest())  # unchanged
 
 
+class SkillWiringTests(unittest.TestCase):
+    """The skills that write a profile's Stack or Gate call the renderer instead of editing those sections by hand."""
+
+    def test_each_writer_renders_and_records_through_the_cli(self):
+        expected = {"skills/init/SKILL.md": ("render-target <target> --write", "gate record"),
+                    "skills/sync/SKILL.md": ("render-target <target> --diff", "--status unproven"),
+                    "skills/upgrade/SKILL.md": ("render-target --write", "render-target --diff"),
+                    "skills/scaffold-test-harness/SKILL.md": ("render-target <target> --write", "gate record"),
+                    "skills/setup-mutation/SKILL.md": ("render-target <target> --write", "gate record")}
+        for rel, needles in expected.items():
+            text = " ".join((PLUGIN / rel).read_text(encoding="utf-8").split())
+            for needle in needles:
+                with self.subTest(skill=rel, needle=needle):
+                    self.assertIn(needle, text)
+        mutation = (PLUGIN / "skills/setup-mutation/SKILL.md").read_text(encoding="utf-8")
+        self.assertNotIn("*Mutation lane* line of the", mutation)
+
+
 if __name__ == "__main__":
     unittest.main()
