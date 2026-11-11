@@ -4,7 +4,7 @@
   "files": {
     ".claude/CLAUDE.md": {
       "template": "reference/templates/instructions-block.md",
-      "templateVersion": "5",
+      "templateVersion": "6",
       "sha256": "deab6056626b5480eb358ef524f24f7d27d1b72156041efbd34e1a8270346060",
       "kind": "generated"
     },
