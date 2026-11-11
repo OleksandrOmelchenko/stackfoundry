@@ -1,6 +1,6 @@
 {
   "name": "stackfoundry",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Casts a repo-grounded swarm of specialists per stack (language x app model): code writers, verifiers, test designers/writers/reviewers/fixers, bug hunters, fix verifiers, security and performance reviewers, dependency bumpers and a scheduled tech radar.",
   "author": {
     "name": "Oleksandr Omelchenko",

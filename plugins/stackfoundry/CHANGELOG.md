@@ -6,6 +6,8 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-11
+
 ### Security
 
 - `stackfoundry extensions` no longer trusts the paths in a committed `.stackfoundry/extensions/.base/index.json`.
