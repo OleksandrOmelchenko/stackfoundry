@@ -248,6 +248,7 @@ def check(base: Path) -> Report:
                         f"{LISTING_CAP} every session pays: shorten descriptions, or raise LISTING_CAP with the reason")
     rep.listing = listing  # type: ignore[attr-defined]
     rep.skills = sorted(skill_names)  # type: ignore[attr-defined]
+    rep.skill_files = sum(1 for f, _ in bodies if f.name == "SKILL.md")  # type: ignore[attr-defined]
     rep.agents = sorted(agent_names)  # type: ignore[attr-defined]
     return rep
 
@@ -281,6 +282,7 @@ def main(args) -> int:
         for w in rep.warnings:
             print(f"warning: {w}")
         listing = f", listing {rep.listing}/{LISTING_CAP} characters" if is_plugin_root(Path(args.dir)) else ""
-        print(f"verify-plumbing: {len(rep.skills)} skill(s), {len(rep.agents)} agent(s), "
+        copies = f" in {rep.skill_files} files" if rep.skill_files > len(rep.skills) else ""
+        print(f"verify-plumbing: {len(rep.skills)} skill(s){copies}, {len(rep.agents)} agent(s), "
               f"{len(rep.errors)} error(s), {len(rep.warnings)} warning(s){listing}")
     return 1 if rep.errors else 0

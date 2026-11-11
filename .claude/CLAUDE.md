@@ -1,7 +1,7 @@
 # stackfoundry repository
 
 This repo is a plugin **marketplace** with one plugin, `plugins/stackfoundry/`, for Claude Code (its source
-layout) and, through generated files, Codex, GitHub Copilot, Cursor and Gemini CLI. The plugin generates, for any repository, a grounded set of rulebooks and target profiles
+layout) and, through generated files, Codex, GitHub Copilot, Cursor, Gemini CLI and Antigravity CLI. The plugin generates, for any repository, a grounded set of rulebooks and target profiles
 that drive generic role agents and orchestrator skills. Read [`docs/design.md`](../docs/design.md) before changing
 the architecture.
 

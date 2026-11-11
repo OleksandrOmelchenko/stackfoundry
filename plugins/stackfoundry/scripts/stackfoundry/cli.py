@@ -205,7 +205,8 @@ def build() -> argparse.ArgumentParser:
     ex.add_argument("--json", action="store_true")
     ex.set_defaults(func=extensions.main)
 
-    g = sub.add_parser("guard", help="(read-only) pre-tool hook entry for every assistant: reads the hook event on stdin")
+    g = sub.add_parser("guard", help="pre-tool hook entry for every assistant: reads the hook event on stdin; changes nothing in the "
+                                         "repo (it writes only a once-a-session warning marker in the temp folder)")
     g.add_argument("--client", choices=["auto", *clients.CLIENTS], default="auto",
                    help="the assistant sending the event (default: told by the event's shape)")
     g.add_argument("--check", action="store_true", help="validate guards.json instead of reading a hook event")

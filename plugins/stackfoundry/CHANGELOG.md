@@ -44,6 +44,13 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   file is now recorded with `--kind merged`. `manifest diff` always routes it to a three-way merge, and to a
   merge by hand after a re-research. init, sync, upgrade and research-stack record it that way. A file recorded
   before this release as plain `generated` needs `manifest record … --kind merged` once.
+- `render-rulebook testing` counted a routed rule as a test helper when it only shared a test path's first folder:
+  `plugins/x/evals/**` made every rule under `plugins/` one, so the testing rulebook loaded on hooks and launchers.
+  A helper must now sit under a test path's whole folder.
+- init renders a target profile after the rulebooks exist and again once the gates are recorded, and never writes
+  a template's own frontmatter into the generated file.
+- `verify-plumbing .` says how many skill files it checked when a repo keeps copies in several skills folders.
+- `guard`'s help no longer calls it read-only: it writes a once-a-session warning marker in the temp folder.
 
 ## [0.3.0] - 2026-11-11
 

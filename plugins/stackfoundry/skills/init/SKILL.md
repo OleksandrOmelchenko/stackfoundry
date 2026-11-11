@@ -115,7 +115,7 @@ reads. List every file to be written, marking each **new** or **merge** (an exis
 | `.stackfoundry/targets.json`, `ecosystems.json`, `guards.json` | the agreed map; schemas in `reference/schemas/` | `profile` |
 | `.stackfoundry/product.json` | the confirmed product draft, without the surveyor's `confidence` (schema `reference/schemas/product.schema.json`); `profile.md`'s "The product" says the same in prose | `profile` |
 | `.stackfoundry/packs/<pack-id>/pack.json` | written by its researcher (step 3) | `research` |
-| `.stackfoundry/targets/<target>.md` | `reference/templates/target.md` for the prose, then `stackfoundry render-target <target> --write` for the Stack and Gate sections (never by hand) | that template |
+| `.stackfoundry/targets/<target>.md` | `reference/templates/target.md` for the prose, after the rulebooks are written; then `stackfoundry render-target <target> --write` for the Stack and Gate sections (never by hand), and again in step 5 once the gates are recorded | that template |
 | `.stackfoundry/rules/<pack-id>.md` | `stackfoundry pack render <pack.json> --out <rule>`, never by hand | `research` |
 | `.stackfoundry/rules/testing.md`, `dependency-bumps.md`, `documentation.md` (+ `benchmarking.md` when a benchmark harness exists) | `stackfoundry render-rulebook <name> --write`, after `targets.json` and `ecosystems.json`; never by hand | `reference/rulebooks/<name>.md` |
 | each assistant's copy of every rulebook (`outputs` → rules: `.claude/rules/`, `.github/instructions/`, `.cursor/rules/`, `.agents/rules/`) | `stackfoundry render-rule .stackfoundry/rules/<id>.md --client <assistant> --write` | as its canonical rulebook |
@@ -137,6 +137,8 @@ reads. List every file to be written, marking each **new** or **merge** (an exis
 - A name collision with an existing rule, skill or doc: write `stackfoundry-<name>` beside it and list it for the
   user to merge, never replace.
 - Every generated file is grounded: a placeholder the repo cannot fill is left out, never invented.
+- A template's own frontmatter (`templateVersion`, `output`) is the plugin's bookkeeping: it is never written into
+  the generated file. The manifest records the version.
 - **Links in a block's table** are relative to the file that holds it (`render-block` writes them): in
   `.claude/CLAUDE.md` a rulebook is `../.stackfoundry/rules/<id>.md`; in a root file, `.stackfoundry/rules/<id>.md`.
 - **Write JSON with the `Write` tool**, never through a shell heredoc or `echo`: the shell can eat backslashes in
@@ -162,8 +164,8 @@ reads. List every file to be written, marking each **new** or **merge** (an exis
 - **Gates**: ask once, then run each target's gate commands, respecting its preconditions (never stop a service you
   did not start; ask). Long suites run in the background. Record each result with `stackfoundry gate record
   <target> --command "<command>" --status proven|failed` (it writes `.stackfoundry/gates.json`, recorded as
-  `profile`), then `stackfoundry render-target <target> --write`. A failing gate stays in the profile, marked, and
-  goes in the report.
+  `profile`), then `stackfoundry render-target <target> --write` and record the profile again in the manifest
+  (`manifest record`). A failing gate stays in the profile, marked, and goes in the report.
 - `stackfoundry verify-plumbing .` (the repo's skills and agents), `stackfoundry globs-check` (every rulebook glob
   matches a file), and, when the session is Claude Code, `/stackfoundry:skill-agent-verifier` for the load probe:
   every generated rulebook loads when a matching file is read.
