@@ -27,7 +27,7 @@ Claude Code names and places to the others'. Client ids are the ones `.stackfoun
 | Plugin manifest | `.claude-plugin/plugin.json` | `plugin.json` (Agent Plugins 1.0), legacy `.codex-plugin/plugin.json` | `plugin.json` (Agent Plugins 1.0), then `.plugin/`, `.github/plugin/`, `.claude-plugin/` | `.cursor-plugin/plugin.json`, or `plugin.json` (Agent Plugins: skills and MCP only) | `gemini-extension.json` (an extension, not a plugin) |
 | Marketplace file | `.claude-plugin/marketplace.json` | `.agents/plugins/marketplace.json`, legacy `.claude-plugin/marketplace.json` | `marketplace.json`, `.plugin/`, `.github/plugin/`, `.claude-plugin/` (in that order) | `.cursor-plugin/marketplace.json` | none: install by repository URL or release |
 | Add and install | `claude plugin marketplace add <owner/repo>`, `claude plugin install stackfoundry@stackfoundry` | `codex plugin marketplace add <owner/repo>`, then its plugins list | `copilot plugin marketplace add <owner/repo>`, `copilot plugin install stackfoundry@stackfoundry` | its marketplace, a team marketplace, or `~/.cursor/plugins/local` | `gemini extensions install <url>` |
-| Plugin root in hooks | `${CLAUDE_PLUGIN_ROOT}` | `PLUGIN_ROOT` (also sets `CLAUDE_PLUGIN_ROOT`) | `PLUGIN_ROOT` | `${CURSOR_PLUGIN_ROOT}` / `${CLAUDE_PLUGIN_ROOT}` in MCP config; hooks: *confirm* | `${extensionPath}` |
+| Plugin root in hooks | `${CLAUDE_PLUGIN_ROOT}` | `PLUGIN_ROOT` (also sets `CLAUDE_PLUGIN_ROOT`) | `PLUGIN_ROOT` | `CURSOR_PLUGIN_ROOT`; plugin hooks run from the install folder, except `stop` and `subagentStop` (workspace root) | `${extensionPath}` |
 | Plugin subagents | `agents/*.md` | not shipped by plugins | `com.github.copilot/agents/*.agent.md` | `agents/*.md` | `agents/*.md` (preview) |
 | Plugin hooks | `hooks/hooks.json` | `hooks/hooks.json` or `extensions.com.openai.hooks` (manually installed plugins only) | `com.github.copilot/hooks/hooks.json` | `hooks/hooks.json` or the manifest's `hooks` | `hooks/hooks.json` |
 | Repo skills | `.claude/skills/` | `.agents/skills/` | `.github/skills/`, `.claude/skills/` | `.cursor/skills/`, `.agents/skills/`, `.claude/skills/`, `.codex/skills/` | `.gemini/skills/`, `.agents/skills/` (*confirm*) |
@@ -54,7 +54,10 @@ Each assistant's hook file is generated (`plugin.json` → `com.openai/hooks.jso
 so its hook command exits 0 with no opinion when it cannot find the launcher. Claude Code runs a shell-form hook in
 PowerShell when Git Bash is missing ([hooks](https://code.claude.com/docs/en/hooks)), where `sh` does not exist; the
 hook sets `"onFailure": "continue"`, so the call goes through with no guard rather than being blocked.
-`stackfoundry guard --check` warns when `sh` is missing on Windows. *Confirm* in each assistant before
+`stackfoundry guard --check` warns when `sh` is missing on Windows. Cursor runs plugin hooks from the plugin's
+install folder, so its guard command names the launcher relative to it; `stop` and `subagentStop` plugin hooks run
+from the workspace root instead ([cursor-hooks](https://cursor.com/docs/agent/hooks)), so `scripts/build_clients.py`
+`cursor_hooks` refuses a relative command for them. *Confirm* in each assistant before
 relying on it: which variable carries the plugin root in Copilot's plugin hooks, whether Cursor's `allow` leaves its
 own approval prompts in place, and that Codex runs hooks from a marketplace install (its docs limit plugin hooks to
 manual installs, after `/hooks` trust).

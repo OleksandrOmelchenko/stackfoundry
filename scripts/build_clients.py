@@ -141,11 +141,30 @@ def build_plugin_files(src: dict) -> dict[str, str]:
     cursor_manifest = {**_metadata(src), "hooks": "./com.cursor/hooks.json"}
     files[".cursor-plugin/plugin.json"] = dump(cursor_manifest)
     cursor_cmd = f"sh ./{GUARD_SH} guard --client cursor"
-    files["com.cursor/hooks.json"] = dump({"version": 1, "hooks": {
+    files["com.cursor/hooks.json"] = dump({"version": 1, "hooks": cursor_hooks({
         "preToolUse": [{"command": cursor_cmd, "matcher": "Write|Edit|MultiEdit|Delete", "timeout": 10}],
         "beforeShellExecution": [{"command": cursor_cmd, "timeout": 10}],
-    }})
+    })})
     return files
+
+
+# Cursor runs these plugin hooks from the workspace root, not the plugin's install folder
+# (https://cursor.com/docs/agent/hooks): a relative command there would run a script the repo planted (threat model
+# T17). Every other plugin hook runs from the install folder, where the relative launcher path is the plugin's own.
+CURSOR_WORKSPACE_EVENTS = frozenset({"stop", "subagentStop"})
+
+
+def cursor_hooks(events: dict) -> dict:
+    """The Cursor hook events, refused when a workspace-rooted event's command does not name an absolute path."""
+    for event, hooks in events.items():
+        if event not in CURSOR_WORKSPACE_EVENTS:
+            continue
+        for hook in hooks:
+            cmd = hook.get("command", "")
+            if not re.match(r'\s*\S+\s+"?(\$\{?CURSOR_PLUGIN_ROOT\b|/)', cmd):
+                raise ValueError(f"Cursor runs {event} hooks from the workspace root: {cmd!r} must name the launcher "
+                                 "through ${CURSOR_PLUGIN_ROOT}, never a relative path")
+    return events
 
 
 def build_marketplace_files(src: dict, market: dict) -> dict[str, str]:
