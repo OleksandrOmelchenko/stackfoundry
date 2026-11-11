@@ -7,9 +7,24 @@ JSON went through a renderer instead of being written plainly.
 from __future__ import annotations
 
 import re
+from urllib.parse import urlsplit
 
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 ENTITY = re.compile(r"&(?:gt|lt|amp|quot|apos|#\d+|#x[0-9a-fA-F]+);")
+# A public DNS name: dotted labels of letters, digits and hyphens. Placeholders (`api.<host>`), a bare word
+# (`internal-host`) or a scheme-like `name:` are not hosts, and become broken WebFetch allow rules when scheduled.
+HOST = re.compile(r"(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z][a-z0-9-]{0,62}", re.I)
+
+
+def url_host(url: str) -> str | None:
+    """The host of an http(s) URL when it is a real DNS name, else None."""
+    if not isinstance(url, str) or not url.startswith(("http://", "https://")):
+        return None
+    try:
+        host = urlsplit(url).hostname or ""
+    except ValueError:
+        return None
+    return host.lower() if HOST.fullmatch(host) else None
 
 
 def strings(node, where=""):
@@ -33,6 +48,8 @@ def check_sources(doc: dict, errors: list[str]) -> dict:
     for key, src in sources.items():
         if not isinstance(src, dict) or not str(src.get("url", "")).startswith(("http://", "https://")):
             errors.append(f"source [{key}] needs an http(s) url")
+        elif url_host(src["url"]) is None:
+            errors.append(f"source [{key}]: {src['url']!r} names no real host; re-research it (research-stack)")
         elif not DATE.fullmatch(str(src.get("accessed", ""))):
             errors.append(f"source [{key}] needs an accessed date (YYYY-MM-DD)")
     return sources

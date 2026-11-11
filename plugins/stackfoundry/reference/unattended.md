@@ -32,8 +32,9 @@ approves any edit or file command in the working directory, and never a flag tha
 - **Per skill:**
   - check-updates: each ecosystem's `discover` command;
   - flaky-watch: the suites' commands;
-  - the research skills: `WebFetch(domain:<host>)` for the hosts its packs' sources cite. A bare `WebFetch` allow
-    removes the per-domain prompt that guards every other run.
+  - the research skills: `WebFetch(domain:<host>)` for the hosts the packs name as release notes or migration
+    guides, plus GitHub. A bare `WebFetch` allow removes the per-domain prompt that guards every other run.
+- `stackfoundry schedule rules <skill>` prints the whole list, with a reason per rule.
 
 `schedule` writes these lines per skill. A Claude desktop scheduled task takes no flags: the same rules go into
 `.claude/settings.json` → `permissions.allow`. What is not allowed is denied, not asked, so a steered run can still

@@ -18,7 +18,7 @@ import re
 import sys
 from pathlib import Path
 
-from .cited import DATE, check_cited, check_inline, check_plain_text, check_sources, strings
+from .cited import DATE, check_cited, check_inline, check_plain_text, check_sources, strings, url_host
 from .clients import LIMITS, _yaml_plain_or_quoted, _yaml_str
 from .fsutil import atomic_write
 from .profile import find_root
@@ -60,6 +60,12 @@ def check(pack: dict) -> tuple[list[str], list[str]]:
     if not isinstance(pack.get("versions"), list):
         errors.append("versions must be a list (empty when the version is not pinned anywhere)")
     sources = check_sources(pack, errors)
+    upgrade = pack.get("upgrade") or {}
+    for key in ("releaseNotes", "migrationGuides"):
+        for i, url in enumerate(upgrade.get(key, []) or [] if isinstance(upgrade, dict) else []):
+            if url_host(url) is None:
+                errors.append(f"upgrade.{key}[{i}]: {url!r} is not an http(s) URL with a real host; scheduled runs "
+                              "allow WebFetch by these hosts")
     if not pack.get("rules"):
         errors.append("rules must be a non-empty list")
     for section, required in CITED_SECTIONS.items():

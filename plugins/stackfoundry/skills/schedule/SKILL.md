@@ -28,8 +28,8 @@ and catch up a missed run on the next launch. It creates nothing before the user
 
 | Skill | Cadence | Cron (local time) | Applies when | Report folder | Also allow |
 |---|---|---|---|---|---|
-| `check-updates` | weekly | `0 7 * * 1` | `.stackfoundry/ecosystems.json` exists | `dependency-reports` | each ecosystem's `discover` commands; `WebFetch(domain:…)` for release-note hosts |
-| `tech-radar` | every two weeks | `0 7 1,15 * *` | packs exist under `.stackfoundry/packs/` | `radar` | `WebSearch`; `WebFetch(domain:…)` for the packs' source hosts |
+| `check-updates` | weekly | `0 7 * * 1` | `.stackfoundry/ecosystems.json` exists | `dependency-reports` | each ecosystem's `discover` commands; the packs' release-note and migration-guide hosts |
+| `tech-radar` | every two weeks | `0 7 1,15 * *` | packs exist under `.stackfoundry/packs/` | `radar` | `WebSearch`; the packs' release-note and migration-guide hosts |
 | `stackfoundry-radar` | monthly | `0 7 2 * *` | always | `radar` | `WebFetch(domain:raw.githubusercontent.com)`, `WebFetch(domain:github.com)` |
 | `flaky-watch` | nightly or weekly | `0 2 * * *` or `0 2 * * 6` | some target has a `tests[].shuffle` command | `reports` | the suites' `command` and `shuffle` |
 | `docs-reconciler` (report-only) | weekly | `0 7 * * 5` | `<docsRoot>` exists | `reports` | none |
@@ -42,7 +42,10 @@ overnight with the gate preconditions met; otherwise weekly.
 
 Every run follows the unattended contract (`${CLAUDE_PLUGIN_ROOT}/reference/unattended.md`). In Claude Code it runs
 with `--permission-mode dontAsk` and an explicit allow list. Whatever the run was not given is denied, never asked,
-so a run steered by a page or a test output can still only write its report. Build the list per skill:
+so a run steered by a page or a test output can still only write its report.
+
+`stackfoundry schedule rules <skill>` prints the list for each skill, one rule per line with its reason. It is built
+from the profile, never by hand, and is what the steps below show and write. It holds:
 
 - `"Edit(<docsRoot>/<report folder>/**)"`: on the command line an `Edit` rule covers Write too, and a `Write(…)`
   rule allows nothing.
@@ -52,8 +55,10 @@ so a run steered by a page or a test output can still only write its report. Bui
 - `"Bash(git status *)"`, `"Bash(git log *)"`.
 - The row's **Also allow**:
   - a command as `"Bash(<command> *)"`;
-  - web access per host as `"WebFetch(domain:<host>)"`, from the hosts the packs' `sources` cite. Never a bare
-    `WebFetch`, which drops the per-host prompt for every other run.
+  - web access per host as `"WebFetch(domain:<host>)"`, only for the hosts the packs name as release notes or
+    migration guides (`upgrade.releaseNotes`, `upgrade.migrationGuides`), plus GitHub for the plugin's own changelog.
+    Every host a pack cites would be far wider. Never a bare `WebFetch`, which drops the per-host prompt for every
+    other run.
 
 Never `acceptEdits`, which approves any edit or file command in the working directory, and never a flag that
 approves every tool.
@@ -150,6 +155,6 @@ settings change or git write unless the user asks for that exact action.
 
 ## Tooling
 
-- `Read` / `Bash` for the profile and the repo path.
+- `Read` / `Bash` for the profile, the repo path and `stackfoundry schedule rules`.
 - `ToolSearch` (`scheduled task`) to load the scheduled-tasks tools, then their list and create (or update) calls.
 - `AskUserQuestion` once, at step 3.

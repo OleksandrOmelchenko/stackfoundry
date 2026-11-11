@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from stackfoundry import (backlog, block, change_targets, checks, clients, config, extensions, guard,  # noqa: E402
                           manifest, pack, plumbing, product, rulebooks, select_tests, sideeffects, sizes, survey,
-                          target_profile, tracker, volatile)
+                          schedule, target_profile, tracker, volatile)
 from stackfoundry.gitutil import GitError  # noqa: E402
 from stackfoundry.profile import ProfileError  # noqa: E402
 
@@ -157,6 +157,14 @@ def build() -> argparse.ArgumentParser:
     rtd.add_argument("--diff", action="store_true", help="show what --write would change, with the size; writes nothing")
     rt.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/)")
     rt.set_defaults(func=target_profile.main_render)
+
+    sc = sub.add_parser("schedule", help="(read-only) the permission rules a scheduled, unattended run of each skill "
+                                         "needs, with a reason per rule")
+    sc.add_argument("action", choices=["rules"])
+    sc.add_argument("skills", nargs="*", help=f"default: every schedulable skill ({', '.join(schedule.SKILLS)})")
+    sc.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/)")
+    sc.add_argument("--json", action="store_true")
+    sc.set_defaults(func=schedule.main)
 
     gt = sub.add_parser("gate", help="the proof of each target's gate and suite commands: record writes "
                                      ".stackfoundry/gates.json; list is read-only")
