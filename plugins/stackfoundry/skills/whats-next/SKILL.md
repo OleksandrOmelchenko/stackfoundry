@@ -116,7 +116,7 @@ source, no item.
 6. **Direction**: the domain's trends that fit, and the stack's latest radar items that bear on them (link the
    radar report).
 7. **Already planned**, **Not reached** (sources, areas, `needsResearch`) and **Assumptions**, even when empty.
-   In `--report` mode also **Side effects**.
+   In `--report` mode also **Denied** (`reference/unattended.md`) and **Side effects**.
 
 ## 7. Act (interactive only)
 

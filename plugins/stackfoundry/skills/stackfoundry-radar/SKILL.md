@@ -89,7 +89,7 @@ the machine's date when the zone database is missing, said in the report). Same-
 5. **Schedule**: the `schedule check` result, per scheduled skill.
 6. **Steps**, in order: update the plugin → `/stackfoundry:upgrade` → `/stackfoundry:sync`, only the ones that
    apply, each with its reason.
-7. **Not reached** and **Side effects**, even when empty.
+7. **Not reached**, **Denied** (`reference/unattended.md`) and **Side effects**, even when empty.
 
 Close in at most three lines: the report path and the steps that apply.
 

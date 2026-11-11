@@ -78,7 +78,7 @@ the same day overwrites that day's file. It is a snapshot (`.stackfoundry/rules/
    partners. Patches and minors grouped per ecosystem; each major on its own row.
 3. **Deferred upgrades**: row · held / unblocked · evidence.
 4. **Formats**: check-formats' Pass 1 table and Pass 2 list ("Pass 2: source-verified"), each entry routed.
-5. **Not reached** and **Side effects**, even when empty.
+5. **Not reached**, **Denied** (`reference/unattended.md`) and **Side effects**, even when empty.
 6. **Actions**, grouped by route in the order `bump`, `migrate`, `defer`, `decide` (by deadline), `watch`,
    `machine`. Under `bump`, the `/stackfoundry:bump-all <ecosystem-ids>` line. End with
    `/stackfoundry:act-on-updates`, which acts on the whole list.

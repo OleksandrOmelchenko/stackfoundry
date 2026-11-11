@@ -70,7 +70,8 @@ For scheduled or unattended runs. Asks nothing, installs nothing, edits no doc, 
 `<docsRoot>/reports/<date>-docs-reconcile.md`, dated in `targets.json` → `timezone`, holding the merged
 "would fix" and flagged lists. Every agent gets `mode: report` and `concurrency: read-only, do not edit`. Follow the
 unattended contract ([`reference/unattended.md`](${CLAUDE_PLUGIN_ROOT}/reference/unattended.md)): `stackfoundry side-effects start` first, `end --allow
-<the report's path>` last, and every change it lists goes in the report as a side effect.
+<the report's path>` last, and every change it lists goes in the report as a side effect. Every call the
+permissions refused goes under **Denied** (`reference/unattended.md`).
 
 ## Boundaries
 

@@ -95,7 +95,7 @@ re-synced.
    it means here (file or rule it touches) · route.
 3. **Claude Code**: feature · release · relevance · route.
 4. **Skipped by decision**: items matched in `decisions.md`, with the row.
-5. **Not reached** and **Side effects**, even when empty.
+5. **Not reached**, **Denied** (`reference/unattended.md`) and **Side effects**, even when empty.
 6. **Actions** grouped by route; end with `/stackfoundry:act-on-radar`.
 
 Close in at most five lines: report path, stale packs, advisories, top items, anything not reached.

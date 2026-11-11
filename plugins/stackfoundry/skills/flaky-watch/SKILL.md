@@ -72,7 +72,8 @@ re-synced.
    runs · first failure line · suspected category · route `/stackfoundry:fix-tests <target> --flaky <test>`.
 3. **Consistently failing**: target · suite · test · first failure line · route `/stackfoundry:fix-tests <target>`.
 4. **Runs**: per suite, each run's seed, exit code and completed / errored.
-5. **Skipped** (preconditions not met, no shuffle command) and **Side effects**, even when empty.
+5. **Skipped** (preconditions not met, no shuffle command), **Denied** (`reference/unattended.md`) and **Side
+   effects**, even when empty.
 
 Close in at most four lines: the report path, flaky counts per target, anything skipped.
 

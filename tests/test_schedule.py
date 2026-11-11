@@ -197,5 +197,31 @@ class WiringTests(unittest.TestCase):
                 self.assertIn("stackfoundry schedule check", (PLUGIN / rel).read_text(encoding="utf-8"))
 
 
+class DeniedTests(unittest.TestCase):
+    def test_every_unattended_report_has_a_denied_section(self):
+        from tests._support import PLUGIN
+        for skill in ("tech-radar", "stackfoundry-radar", "check-updates", "flaky-watch", "docs-reconciler",
+                      "whats-next"):
+            with self.subTest(skill=skill):
+                self.assertIn("**Denied**", (PLUGIN / f"skills/{skill}/SKILL.md").read_text(encoding="utf-8"))
+        self.assertIn("**`permission`**", (PLUGIN / "skills/act-on-radar/SKILL.md").read_text(encoding="utf-8"))
+
+    @unittest.skipUnless(HAS_GIT, "git not available")
+    def test_an_added_rule_is_owned_and_survives_a_rewrite(self):
+        with TempRepo() as root:
+            git(root, "init", "-q")
+            targets_json(root, {"targets": [{"name": "api", "paths": ["src/**"]}]})
+            schedule.write(root, ["stackfoundry-radar"], add=["Bash(dotnet --info *)"])
+            schedule.rewrite(root)
+            allow = json.loads((root / ".claude/settings.local.json").read_text(encoding="utf-8"))["permissions"]["allow"]
+            self.assertIn("Bash(dotnet --info *)", allow)
+            schedule.write(root, [])  # unscheduling everything: the added rule is stackfoundry's too, so it goes
+            allow = json.loads((root / ".claude/settings.local.json").read_text(encoding="utf-8"))["permissions"]["allow"]
+            self.assertEqual(allow, ["Bash(dotnet --info *)"])  # extras persist until removed explicitly
+            schedule.write(root, [], remove=["Bash(dotnet --info *)"])
+            allow = json.loads((root / ".claude/settings.local.json").read_text(encoding="utf-8"))["permissions"]["allow"]
+            self.assertEqual(allow, [])
+
+
 if __name__ == "__main__":
     unittest.main()

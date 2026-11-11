@@ -136,7 +136,7 @@ def main(args) -> int:
     if getattr(args, "write", False):
         if not args.skills:
             raise ValueError("--write needs the skills that are scheduled (the rules of the others are removed)")
-        r = write(root, args.skills, args.to, args.add)
+        r = write(root, args.skills, args.to, args.add, args.remove)
         print(f"{r['file']}: {len(r['added'])} added, {len(r['removed'])} removed")
         print("".join(f"  + {rule}\n" for rule in r["added"]) + "".join(f"  - {rule}\n" for rule in r["removed"]), end="")
         if args.to == "project":
@@ -185,14 +185,15 @@ def load_state(root: Path) -> dict:
     return data if isinstance(data, dict) else {}
 
 
-def write(root: Path, skills: list[str], to: str = "local", add: list[str] | None = None) -> dict:
+def write(root: Path, skills: list[str], to: str = "local", add: list[str] | None = None,
+          remove: list[str] | None = None) -> dict:
     """Merge the skills' rules (plus `add`) into the destination's `permissions.allow`, replacing what stackfoundry
     owned there before. Returns {"file", "added", "removed"}."""
     if to not in SETTINGS:
         raise ValueError(f"--to must be one of {', '.join(SETTINGS)}")
     state = load_state(root)
     mine = state.get(to) if isinstance(state.get(to), dict) else {}
-    extra = list(dict.fromkeys([*(mine.get("extra") or []), *(add or [])]))
+    extra = [r for r in dict.fromkeys([*(mine.get("extra") or []), *(add or [])]) if r not in (remove or [])]
     needed = list(dict.fromkeys([r["rule"] for s in skills for r in rules(root, s)] + extra))
     path = root / SETTINGS[to]
     raw = path.read_bytes() if path.is_file() else b""
