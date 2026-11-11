@@ -164,7 +164,9 @@ def build() -> argparse.ArgumentParser:
     m.add_argument("files", nargs="*")
     m.add_argument("--template", help="plugin-relative template path; 'research' for a pack and its rulebook; "
                                       "'profile' for profile facts (targets.json, ecosystems.json, guards.json…)")
-    m.add_argument("--kind", choices=["generated", "materialized"], default="generated")
+    m.add_argument("--kind", choices=["generated", "materialized", "merged"], default="generated",
+                   help="merged: the file holds the team's content too (merged by hand or kept by choice); never "
+                        "replaced, always asked about")
     m.add_argument("--root", default=".")
     m.add_argument("--json", action="store_true")
     m.set_defaults(func=manifest.main)

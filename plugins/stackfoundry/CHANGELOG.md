@@ -23,6 +23,14 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   once it passes 8 KiB (`block.py` `BLOCK_BUDGET`). A repo with dozens of packs had a 40 KB table, past Codex's
   32 KiB. `size-check` warns when a block alone passes the budget.
 
+### Fixed
+
+- **`upgrade` no longer overwrites a hand-merged file without asking.** A file merged by hand or kept by choice was
+  re-recorded with its own hash, so the next `manifest diff` saw it as untouched and `upgrade` replaced it. Such a
+  file is now recorded with `--kind merged`. `manifest diff` always routes it to a three-way merge, and to a
+  merge by hand after a re-research. init, sync, upgrade and research-stack record it that way. A file recorded
+  before this release as plain `generated` needs `manifest record … --kind merged` once.
+
 ## [0.3.0] - 2026-11-11
 
 ### Security

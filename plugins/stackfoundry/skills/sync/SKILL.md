@@ -61,7 +61,8 @@ ambiguous app model or new target's exposure and stakes).
   copies with `render-rule --write`, its instruction-file block with `render-block --write` (which also writes or removes `.stackfoundry/rulebooks.md`), code-writer skills,
   materialized agents with `render-agent --write`, which refuses an agent setting a host-privileged key: show it and
   ask); for one removed, list its generated files (`stackfoundry manifest list`) and ask before deleting any.
-- `stackfoundry manifest record` for every generated file written.
+- `stackfoundry manifest record` for every generated file written; one merged by hand into the team's file gets
+  `--kind merged`.
 - `stackfoundry size-check`: every generated file against the assistants' size limits; an error (a hard limit)
   is fixed before reporting, and each warning goes in the report.
 

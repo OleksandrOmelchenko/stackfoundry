@@ -65,8 +65,10 @@ new · keep mine · merge by hand (you produce the merged text and show it befor
   assistant's copy with `render-rule`; never fill their placeholders by hand.
 - Schema migration: rewrite the JSON to the new shape, keeping every value; validate with the CLI's checks
   (`stackfoundry change-targets --files <any>` loads and checks `targets.json`).
-- `stackfoundry manifest record <files> --template <template>` for every file written or kept by choice, so the
-  manifest's version and hash move forward.
+- `stackfoundry manifest record <files> --template <template>` for every file written from the template (take new,
+  or an untouched file replaced), and with `--kind merged` added for every file kept by choice or merged by hand.
+  The version and hash move forward either way; `merged` makes the next upgrade ask again instead of replacing
+  the team's content.
 - Each instruction file's block (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`) is regenerated between its markers only,
   with `stackfoundry render-block --write`; text outside the markers is never touched. It also writes or removes
   `.stackfoundry/rulebooks.md`: record it when written, and `manifest forget` it when removed.

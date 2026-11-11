@@ -3,7 +3,11 @@
 `.stackfoundry/manifest.lock.json`:
     {"schemaVersion": 1, "pluginVersion": "0.1.0",
      "files": {"<repo-relative path>": {"template": "<plugin path | research | profile>", "templateVersion": "1",
-                                        "sha256": "<hex>", "kind": "generated|materialized"}}}
+                                        "sha256": "<hex>", "kind": "generated|materialized|merged"}}}
+
+`merged` is a generated file that holds the team's own content too: one merged by hand, or kept by choice over a new
+version. Its recorded hash is of that content, so it reads `untouched`; it is never replaced on that account, and a
+newer template (or a re-research) always comes back as a merge to ask about.
 
 `record` and `forget` write the manifest (the only writing actions here). `diff` and `list` are read-only.
 Template versions come from a `templateVersion:` line in the template's frontmatter (default "1"). Two template ids
@@ -102,13 +106,16 @@ def diff(root: Path) -> list[dict]:
         current = template_version(entry.get("template", ""))
         outdated = entry.get("kind") != "materialized" and current not in (*NO_TEMPLATE, "missing") \
             and current != entry.get("templateVersion")
+        merged = entry.get("kind") == "merged"
         action = (
             "merge via extensions merge (materialized)" if entry.get("kind") == "materialized"
             else "leave deleted" if state == "deleted"
+            else "re-research via research-stack, then merge by hand (merged)" if merged
+            and entry.get("template") == "research"
             else "re-research via research-stack" if entry.get("template") == "research"
             else "none (profile fact; sync keeps it current)" if entry.get("template") == "profile"
             else "none" if not outdated
-            else "replace" if state == "untouched"
+            else "replace" if state == "untouched" and not merged
             else "three-way merge, ask"
         )
         out.append({"file": rel, "state": state, "kind": entry.get("kind"), "template": entry.get("template"),

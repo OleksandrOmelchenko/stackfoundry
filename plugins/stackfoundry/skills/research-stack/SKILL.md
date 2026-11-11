@@ -60,11 +60,12 @@ deprecations now in use, changed guidance) and keeps every `repoConvention` the 
 - The rulebook: `stackfoundry pack render <pack.json> --out .stackfoundry/rules/<pack-id>.md`, then each assistant's
   copy: `stackfoundry render-rule .stackfoundry/rules/<pack-id>.md --client <assistant> --write` for every entry of
   `stackfoundry outputs` → rules. Check each file's state first with
-  `stackfoundry manifest diff --json`: **edited** by the team → show the regenerated text beside the current one and
-  ask (take new · keep mine · merge by hand); untouched or new → write it.
+  `stackfoundry manifest diff --json`: **edited** by the team, or recorded as `merged` → show the regenerated text
+  beside the current one and ask (take new · keep mine · merge by hand); untouched or new → write it.
 - New pack: add it to the targets' `packs`, regenerate each instruction file's block (`stackfoundry render-block
   --write`), and regenerate the code-writer skill of each app model it changes (same edited-file rule).
-- `stackfoundry manifest record <pack.json> <rulebook> <its copies> --template research`.
+- `stackfoundry manifest record <pack.json> <rulebook> <its copies> --template research`, adding `--kind merged`
+  for a file kept or merged by hand.
 - `stackfoundry size-check`: a rulebook past a limit goes back to the researcher to tighten, never truncated.
 
 ## 5. Report

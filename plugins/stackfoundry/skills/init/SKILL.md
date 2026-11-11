@@ -154,7 +154,8 @@ reads. List every file to be written, marking each **new** or **merge** (an exis
   `stackfoundry product check
   .stackfoundry/product.json` right after `product.json`, and `stackfoundry verify-plumbing .` right after the
   code-writer skills (description caps).
-- Record every file: `stackfoundry manifest record <files> --template <id from the table>`.
+- Record every file: `stackfoundry manifest record <files> --template <id from the table>`. A file written as
+  **merge** into one the team already had gets `--kind merged`, so a later upgrade never replaces it unasked.
 
 ## 5. Prove
 
