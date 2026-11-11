@@ -17,7 +17,7 @@ argument-hint: "[path | diff | commit <sha> | all] [harsh]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Good comments record **why**: a trap, a race, a spec clause, a bug a previous shape caused. They are what keeps code
 maintainable, and a careless sweep destroys exactly them. So the default mode is **conservative**: the burden of

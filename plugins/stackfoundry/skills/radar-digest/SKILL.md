@@ -17,7 +17,7 @@ argument-hint: "[N reports] [--file]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Each radar and dependency report is a snapshot. Read one at a time, they hide the pattern: the advisory that has sat
 in `watch` for months, the major deferred four times, the tool suggested every run and never decided. This skill

@@ -17,7 +17,7 @@ argument-hint: "[<target>] [diff [--base <ref>] | <area path>] [--into <report>]
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Fans `bug-hunter` agents over one target, one per bug category, has a second skeptic try to refute every serious
 finding, and writes the survivors to a bug report whose findings are a tracker. Read-only on code: it reports, it

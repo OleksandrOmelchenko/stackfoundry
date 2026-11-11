@@ -17,7 +17,7 @@ argument-hint: "[plan or spec slug]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 `/stackfoundry:docs-reconciler` *detects* a plan that looks built and deliberately stops: it never deletes a plan.
 `/stackfoundry:implement-plan` retires a plan, but only one it just built. A plan built outside that flow (ad hoc,

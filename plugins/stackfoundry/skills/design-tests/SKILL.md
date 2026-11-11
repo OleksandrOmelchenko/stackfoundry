@@ -17,7 +17,7 @@ argument-hint: "<target> [<area> | diff [--base <ref>] | --report <bug report> [
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Produces a **test design**: the behaviours worth pinning, before any test exists, persisted as a living tracker that
 `write-tests`, `review-tests` and `fix-tests` keep current. It never writes a test or product code, and never

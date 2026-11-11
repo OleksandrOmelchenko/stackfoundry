@@ -17,7 +17,7 @@ argument-hint: "[area | doc] [--report]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Docs are meant to move with the code in the change that makes them untrue: a plan is deleted when it is built, a
 spec follow-up updated when it is resolved, an instruction edited when its path moves. That slips across long

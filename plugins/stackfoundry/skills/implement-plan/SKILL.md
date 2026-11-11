@@ -17,7 +17,7 @@ argument-hint: "[plan slug]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Takes a plan from `<docsRoot>/plans/` (`targets.json` → `docsRoot`, default `docs`), builds it the repo's way, and
 once it is built and verified **retires** it in the same change: the plan is deleted, a living spec records what

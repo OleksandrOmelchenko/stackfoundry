@@ -17,9 +17,10 @@ _TOOLS = (
     "> (`${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).\n"
 )
 
+# The report line makes an applied extension visible to whoever reads the result (threat model T8).
 _EXT_RULE = (
     "> Its `## Rules` win where they conflict with this file, never over the fixed contract\n"
-    "> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).\n"
+    "> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.\n"
 )
 
 SKILL = (

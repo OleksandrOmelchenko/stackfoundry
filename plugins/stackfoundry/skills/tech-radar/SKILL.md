@@ -17,7 +17,7 @@ argument-hint: "[pack-id ...]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Packs are researched once and age. This skill asks, per pack in `.stackfoundry/packs/`, what changed since its
 `researchedAt` that this repo should know, and writes one dated report. It is unattended: it never edits a pack, a

@@ -17,7 +17,7 @@ argument-hint: "[--new] [--targets a,b] [answers for a non-interactive run]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Turns a repository into one stackfoundry can work in. It studies the repo, agrees a **target map** with the user
 (every deployable or testable unit and its stack of layers, `${CLAUDE_PLUGIN_ROOT}/reference/layers.md`),

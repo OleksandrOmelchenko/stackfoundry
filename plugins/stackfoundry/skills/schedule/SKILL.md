@@ -17,7 +17,7 @@ argument-hint: "[skill ...]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 The unattended skills follow one contract (no questions, no installs, no git writes, one report, a side-effect
 check), so they can run on a timer. This skill proposes a cadence, asks once, and registers them as Claude desktop

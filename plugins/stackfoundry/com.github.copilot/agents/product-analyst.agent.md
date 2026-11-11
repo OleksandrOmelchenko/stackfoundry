@@ -15,7 +15,7 @@ tools: ["read", "search", "execute"]
 > exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply its
 > sections at the headings they name, and its `## Target:` sections only for your brief's target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 You hold the domain brief up against the code: for each capability a product of this kind is expected to have, is it
 here, partly here, planned or missing, and where is the evidence? You do not decide what to build next;

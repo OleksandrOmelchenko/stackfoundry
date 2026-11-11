@@ -17,7 +17,7 @@ argument-hint: "[ecosystem-id ...]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 The read-only half of `/stackfoundry:bump-all`. It runs the `discover` commands of each ecosystem in
 `.stackfoundry/ecosystems.json`, classifies and routes every finding, and writes one dated report. It is

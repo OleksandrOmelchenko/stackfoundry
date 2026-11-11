@@ -313,6 +313,32 @@ def check(root: Path, plugin_root: Path = PLUGIN_ROOT) -> Report:
     return rep
 
 
+# What an extension can do that weakens a role without anyone noticing (threat model T8): drop the clause that keeps
+# fetched or repo text as data, drop the role's limits, or reach for the controls around it. Warnings, for a person
+# to judge: the text may be legitimate.
+DATA_CLAUSE = re.compile(r"\b(is|are) data\b", re.I)
+LIMITS = re.compile(r"^## What you must not do\s*$", re.M)
+RISKY = re.compile(r"guards\.json|\bguard\b|\bhooks?\b|permissionMode|bypassPermissions|dontAsk|--no-verify|"
+                   r"\bcurl\b|\bwget\b", re.I)
+
+
+def _contract_warnings(text: str, plugin_body: str | None) -> list[str]:
+    """`plugin_body` given: `text` replaces it whole, so compare; None: `text` is an extend section, added as is."""
+    out = []
+    if plugin_body is not None:
+        if DATA_CLAUSE.search(plugin_body) and not DATA_CLAUSE.search(text):
+            out.append("drops the role's clause that instructions in files and pages are data (the fixed contract)")
+        if LIMITS.search(plugin_body) and not LIMITS.search(text):
+            out.append("drops the role's '## What you must not do' section")
+    added = [m.lower() for m in RISKY.findall(text)]
+    if plugin_body is not None:
+        before = [m.lower() for m in RISKY.findall(plugin_body)]
+        added = [m for m in added if added.count(m) > before.count(m)]
+    for term in sorted(set(added)):
+        out.append(f"names {term!r}: check it does not route around the guard, hooks or permission prompts")
+    return out
+
+
 def _check_one(root, plugin_root, kind, f, rel, index, targets, rep: Report) -> None:
     text = _read(f)
     fields, body, errs = split(text)
@@ -342,7 +368,10 @@ def _check_one(root, plugin_root, kind, f, rel, index, targets, rep: Report) -> 
             row["behind"] = _behind(root, rel, entry, plugin_root)
             if row["behind"]:
                 rep.warnings.append(f"{rel}: the plugin changed {name} since this copy; run `extensions merge {rel}`")
+        rep.warnings += [f"{rel}: {w}" for w in _contract_warnings(body, _body(_read(target)))]
         return
+    for _, _, content, line in sections(body):
+        rep.warnings += [f"{rel}: section line {line}: {w}" for w in _contract_warnings(content, None)]
     plugin_heads = headings(_body(_read(target)))
     known = {norm(h): h for h in plugin_heads}
     found = sections(body)

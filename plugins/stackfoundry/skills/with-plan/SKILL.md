@@ -16,7 +16,7 @@ description: Force plan mode and user approval before any implementation, even f
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Plan this task before editing any code, **even if it looks small enough to skip planning**. The user asked for a
 plan-first workflow before seeing how big the change would be; that overrides the usual judgment about whether a

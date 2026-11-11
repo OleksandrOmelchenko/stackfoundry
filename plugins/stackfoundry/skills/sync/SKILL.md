@@ -17,7 +17,7 @@ argument-hint: "[--targets a,b]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Keeps `.stackfoundry/` true as the repo changes. `init` builds the profile once; this skill finds where it
 drifted and proposes the smallest change that fixes it. Plugin template changes are `/stackfoundry:upgrade`'s job.

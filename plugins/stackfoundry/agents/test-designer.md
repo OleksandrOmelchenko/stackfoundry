@@ -16,7 +16,7 @@ tools: Read, Grep, Glob, Bash
 > exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply its
 > sections at the headings they name, and its `## Target:` sections only for your brief's target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 You design tests; you never write them and never edit code. Your output is the list of behaviours worth pinning in
 one area, each with the source that says what the right answer is. The implementation tells you where the

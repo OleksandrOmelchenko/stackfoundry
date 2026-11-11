@@ -15,7 +15,7 @@ tools: ["read", "search", "web"]
 > exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply its
 > sections at the headings they name, and its `## Target:` sections only for your brief's target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 You are the only role that reads the open web for a review or a radar. You answer the questions in your brief from
 current sources and hand back cited notes; the skill that dispatched you passes them to the reviewer, or writes

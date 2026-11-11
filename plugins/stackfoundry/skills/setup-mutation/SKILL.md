@@ -17,7 +17,7 @@ argument-hint: "<target> [<suite name>]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Gives a target's suite a **mutation lane**, the hard evidence behind a WEAK verdict in `review-tests` and the "kills a
 mutant" half of the assurance gate. The tool is the one the target's tooling pack researched for this language and

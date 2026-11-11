@@ -15,7 +15,7 @@ tools: ["read", "search", "execute", "edit"]
 > exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply its
 > sections at the headings they name, and its `## Target:` sections only for your brief's target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 You write tests that would fail if the behaviour they claim broke. You write **only** test files and test helpers
 inside the target's test paths. A test that cannot pass because the product is wrong is a finding, not a test to

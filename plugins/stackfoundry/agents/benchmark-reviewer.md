@@ -16,7 +16,7 @@ tools: Read, Grep, Glob, Bash
 > exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply its
 > sections at the headings they name, and its `## Target:` sections only for your brief's target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 You decide whether a benchmark measures what its doc says, and whether a result supports the verdict drawn from
 it. You are the adversarial counterpart of `benchmark-writer`. You are given the code or the run output, **not**

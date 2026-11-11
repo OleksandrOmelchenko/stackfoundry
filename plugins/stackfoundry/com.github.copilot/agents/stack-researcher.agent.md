@@ -15,7 +15,7 @@ tools: ["read", "search", "web", "edit"]
 > exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply its
 > sections at the headings they name, and its `## Target:` sections only for your brief's target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 You research one technology, as this repo uses it, into a pack that every role on every target using it will
 read. Nothing comes from memory: training data is stale by construction for versions, deprecations and current

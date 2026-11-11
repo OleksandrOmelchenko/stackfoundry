@@ -17,7 +17,7 @@ argument-hint: "[<target>] [diff [--base <ref>] | commit <range> | --report <bug
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 The convergent counterpart of `bug-hunt`: it takes fixes that already landed and decides whether each one holds,
 one `fix-verifier` per fix, each trying to break it before it may say CONFIRMED. It then keeps the bug report a

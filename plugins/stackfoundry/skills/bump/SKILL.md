@@ -17,7 +17,7 @@ argument-hint: "<ecosystem-id> [approve: <item> ...]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 One procedure for every ecosystem; what differs (where pins live, how they are discovered and applied, which
 targets gate them, what has bitten before) is read from `.stackfoundry/ecosystems.json`. The shared rules

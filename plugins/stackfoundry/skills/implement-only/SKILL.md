@@ -16,7 +16,7 @@ description: Make a code change WITHOUT building, testing, running, regenerating
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Write the code change and stop. **Every machine-level action a parallel session could depend on is off-limits**:
 builds, test runs, service starts and stops, database changes, code generation, dependency installs. This skill

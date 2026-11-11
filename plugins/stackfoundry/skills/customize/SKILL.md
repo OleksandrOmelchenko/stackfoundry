@@ -17,7 +17,7 @@ argument-hint: "[skill or agent] [the change in your words]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 A team wants a plugin skill or agent to work differently in its repo. Editing the installed plugin is lost on the next
 update, and a same-named copy in the repo's skills folder does not replace a plugin skill. This skill writes the change

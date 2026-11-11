@@ -17,7 +17,7 @@ argument-hint: "[branch [--base <ref>] | commit <range>] [--skip tests|hunt|docs
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 The loop that turns "it builds and its own tests pass" into "tested, hunted, fixed, verified and documented". Every
 step is an existing skill; this one fixes their order, what runs in parallel and when to stop. It never commits.

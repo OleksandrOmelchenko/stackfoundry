@@ -17,7 +17,7 @@ argument-hint: "[<target> ...] [--affected | --full] [--base <ref>] [--files a,b
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Plans with `stackfoundry select-tests`, runs what it selects, and reports what the run did **not** cover. The
 selection rules live in the CLI and the `tests` entries of `.stackfoundry/targets.json`: quote the plan,

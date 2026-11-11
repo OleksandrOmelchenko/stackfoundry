@@ -17,7 +17,7 @@ argument-hint: "[unpushed | pr <number> | <paths>]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Reviews a change against this repository. The one rule that makes it worth running: **the review always happens in
 fresh sessions, never inline.** An author re-reading their own work re-derives the reasoning that produced it and

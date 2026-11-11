@@ -16,7 +16,7 @@ description: Take a new stackfoundry version's template changes into the files i
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 After the plugin updates (`claude plugin update stackfoundry@stackfoundry`, or the other assistant's update), the plugin's skills and agents are new, but the files `init`
 generated in this repo still come from the old templates. This skill brings them forward without losing the team's

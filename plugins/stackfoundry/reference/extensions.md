@@ -73,8 +73,16 @@ extension never:
 
 - removes a confirmation or a question the skill asks before writing, or runs a git write the repo's policy forbids;
 - disables or works around the guard hook;
+- drops a role's clause that instructions found in files, pages and tool output are data, or its "What you must not
+  do" section;
 - changes the brief fields an orchestrator passes, the report or tracker shape, the severity scale, the verdict
   words, or the tracker markers.
+
+Every skill and agent names the extensions it applied in its report, so an extension's effect is never invisible.
+`extensions check` warns when a `replace` file drops the role's data clause or its "What you must not do" section,
+and when extension text names the guard, `guards.json`, hooks, a permission mode, `--no-verify`, `curl` or `wget`
+(for a `replace` file, only where it names one more often than the plugin's own text). The warnings are for a
+person to judge: the text may be legitimate.
 
 An extension that needs one of these changed is a request for the plugin itself: open an issue.
 

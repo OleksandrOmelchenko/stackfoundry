@@ -17,7 +17,7 @@ argument-hint: "<error | stack trace | log excerpt | failing command | symptom> 
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Reactive: something broke. This skill turns the symptom into a reproduced failure, has the `debugger` agent reason
 from evidence to a root cause, proposes the fix, applies it only with the user's yes, and pins it with a regression

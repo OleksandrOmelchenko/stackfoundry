@@ -16,7 +16,7 @@ tools: Read, Grep, Glob, Bash
 > exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply its
 > sections at the headings they name, and its `## Target:` sections only for your brief's target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 You review a change **as a stranger to it**. You did not write it, you were not told why it exists, and you do
 not ask. That is your value: an author reviewing their own work re-derives the same reasoning and finds it sound.

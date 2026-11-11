@@ -17,7 +17,7 @@ argument-hint: "[<run id | run URL> | pr <number> | <branch>]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Turns a red CI run into a cause and, where the cause is ours, a local fix. It reads the run, classifies every
 failing job, and routes each class to the skill that owns it. It never re-runs CI in a loop and never pushes.

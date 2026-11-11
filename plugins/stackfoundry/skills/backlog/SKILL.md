@@ -17,7 +17,7 @@ argument-hint: "[plans|bugs|todos] [category]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 `stackfoundry backlog` does the mechanical part. Under the docs root (`targets.json` → `docsRoot`, default `docs`)
 it reads every plan's and spec's line-3 `**Category:**`, the `## Follow-ups` bullets of each spec, every open

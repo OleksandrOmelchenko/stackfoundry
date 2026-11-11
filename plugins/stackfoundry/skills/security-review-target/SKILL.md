@@ -17,7 +17,7 @@ argument-hint: "<target> [<area path> | diff [--base <ref>]]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Reviews one target the way an attacker who can reach it would look at it: `security-reviewer` agents in review mode,
 one per trust boundary or security category, plus two mechanical checks the orchestrator runs itself (secrets in the

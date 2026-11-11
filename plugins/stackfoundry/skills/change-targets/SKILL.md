@@ -17,7 +17,7 @@ argument-hint: "[--base <ref> | --files <a,b> | commit <range>] [--json]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 Which targets and reviewers a change set calls for. The mapping lives in one place, `.stackfoundry/
 targets.json` (`generated`, `ignored`, ordered `rules`, each target's `paths` and `testPaths`, `specialists`), and

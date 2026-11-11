@@ -17,7 +17,7 @@ argument-hint: "[--report-only] [pack-id ...]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 A version bump keeps a library current; it says nothing about whether the project's **shape** is current: a legacy
 solution or project format, a superseded test runner, an old lint config format, a framework's older template or

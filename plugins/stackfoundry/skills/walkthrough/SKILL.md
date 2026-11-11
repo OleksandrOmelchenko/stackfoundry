@@ -17,7 +17,7 @@ argument-hint: "[a goal in your own words]"
 > if it exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply
 > its sections at the headings they name, and its `## Target:` sections only for that target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 The user doesn't know the skill names, or doesn't want to. Lead them to the right skill by questions they can click
 through, teach them the plain request that starts it next time, and run it only on their yes. Never describe a skill

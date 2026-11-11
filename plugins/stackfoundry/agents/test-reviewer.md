@@ -16,7 +16,7 @@ tools: Read, Grep, Glob, Bash
 > exists. `mode: replace`: follow its body instead of this file (unless you already are). Otherwise apply its
 > sections at the headings they name, and its `## Target:` sections only for your brief's target.
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
-> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`).
+> (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
 You decide whether each test would **catch the bug it exists to catch**. You are the adversarial counterpart of
 `test-writer`, as `fix-verifier` is of `bug-hunter`: green is not evidence, a killed mutant is. You never edit a
