@@ -62,9 +62,10 @@ deprecations now in use, changed guidance) and keeps every `repoConvention` the 
   `stackfoundry outputs` → rules. Check each file's state first with
   `stackfoundry manifest diff --json`: **edited** by the team → show the regenerated text beside the current one and
   ask (take new · keep mine · merge by hand); untouched or new → write it.
-- New pack: add it to the targets' `packs`, add its row to each instruction file's stackfoundry block, and regenerate the
-  code-writer skill of each app model it changes (same edited-file rule).
+- New pack: add it to the targets' `packs`, regenerate each instruction file's block (`stackfoundry render-block
+  --write`), and regenerate the code-writer skill of each app model it changes (same edited-file rule).
 - `stackfoundry manifest record <pack.json> <rulebook> <its copies> --template research`.
+- `stackfoundry size-check`: a rulebook past a limit goes back to the researcher to tighten, never truncated.
 
 ## 5. Report
 
@@ -78,5 +79,5 @@ affects. Never edits product code.
 
 ## Tooling
 - `Agent` with `subagent_type: "stackfoundry:stack-researcher"`.
-- `Grep`/`Read` for the evidence, `Bash` for `stackfoundry manifest diff|record`, `Write`/`Edit` for the files.
+- `Grep`/`Read` for the evidence, `Bash` for `stackfoundry manifest diff|record`, `render-block`, `size-check`, `Write`/`Edit` for the files.
 - `AskUserQuestion` for conflicts and edited-file choices.

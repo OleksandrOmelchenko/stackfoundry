@@ -88,6 +88,22 @@ Where an assistant has no path-scoped rules (Codex, Gemini), stackfoundry writes
 `.stackfoundry/rules/<id>.md` and lists it in the instruction-file block with the globs it covers: read it before
 editing a matching file.
 
+## Size limits
+
+What each host advises or enforces on what it loads. `scripts/stackfoundry/clients.py` `LIMITS` holds the numbers, and
+`stackfoundry size-check` applies them to a repo's generated files: past a hard limit is an error, past advice a
+warning, and every file's lines, bytes and estimated tokens are listed.
+
+| Host | What | Limit | Kind | Source |
+|---|---|---|---|---|
+| Claude Code | a `CLAUDE.md` | 200 lines | advice | [cc-memory] |
+| Cursor | a rule | 500 lines | advice | [cursor-rules] |
+| Every assistant (Agent Skills) | a `SKILL.md` | 500 lines, about 5000 tokens | advice | [skills-spec] |
+| Codex | the `AGENTS.md` files on a path, combined | 32 KiB | stops reading | [codex-agents-md] |
+
+The plugin's own listing (every skill and agent description, loaded each session) has a budget too:
+`scripts/stackfoundry/plumbing.py` `LISTING_CAP`, enforced by `verify-plumbing` in plugin mode.
+
 ## Sources (accessed 2026-11-09)
 
 - [claude-code] Claude Code plugin manifest reference: https://code.claude.com/docs/en/plugins-reference
@@ -100,3 +116,8 @@ editing a matching file.
 - [copilot] Copilot CLI plugin reference: https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference
 - [cursor] Cursor plugins reference and skills: https://cursor.com/docs/reference/plugins, https://cursor.com/docs/skills
 - [gemini] Gemini CLI extension reference: https://geminicli.com/docs/extensions/reference/
+- [cc-memory] Claude Code memory (CLAUDE.md size advice): https://code.claude.com/docs/en/memory
+- [cursor-rules] Cursor rules (rule size advice): https://cursor.com/docs/context/rules
+- [skills-spec] Agent Skills specification (SKILL.md size advice): https://agentskills.io/specification
+- [codex-agents-md] Codex AGENTS.md (combined size limit): https://learn.chatgpt.com/docs/agent-configuration/agents-md
+- [cursor-hooks] Cursor hooks (where plugin hooks run): https://cursor.com/docs/agent/hooks

@@ -41,6 +41,14 @@ RULE_FORMATS = {"claude-code": (".claude/rules", ".md"), "copilot": (".github/in
 SIBLING_LINK = re.compile(r"\]\(([a-z0-9][a-z0-9-]*)\.md(#[^)\s]*)?\)")  # a link to a rulebook in the same folder
 INSTRUCTION_FILES = {"claude-code": "CLAUDE.md", "codex": "AGENTS.md", "copilot": "AGENTS.md", "cursor": "AGENTS.md",
                      "gemini": "GEMINI.md"}
+# What each host advises or enforces on the size of what it loads (sources: reference/clients.md, "Size limits").
+# kind -> client ("*" = every client) -> [(unit, value, hard)]. Units: lines, bytes, tokens (estimated as bytes/4).
+# A hard limit is where the host stops reading; a soft one is its advice. `stackfoundry size-check` applies them.
+LIMITS = {
+    "instructions": {"claude-code": [("lines", 200, False)], "codex": [("bytes", 32 * 1024, True)]},
+    "rule": {"cursor": [("lines", 500, False)]},
+    "skill": {"*": [("lines", 500, False), ("tokens", 5000, False)]},
+}
 AGENT_FORMATS = {"claude-code": (".claude/agents", ".md"), "codex": (".codex/agents", ".toml"),
                  "copilot": (".github/agents", ".agent.md"), "cursor": (".cursor/agents", ".md"),
                  "gemini": (".gemini/agents", ".md")}

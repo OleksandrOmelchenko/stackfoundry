@@ -66,4 +66,6 @@ researched; `act-on-radar` routes stale packs to `research-stack`.
 ## Output size
 
 A pack is read by every role on every target that uses it, so it stays tight: the rules that change decisions, not
-everything that is true. The rulebook generated from it should be readable in a few minutes.
+everything that is true. The rulebook generated from it should be readable in a few minutes. `stackfoundry pack
+check` warns when it would render past the line advice for a path-scoped rule, and `stackfoundry size-check` measures
+every copy against each assistant's limits (`reference/clients.md`, *Size limits*).

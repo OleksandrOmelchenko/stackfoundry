@@ -159,6 +159,8 @@ marking each **new** or **merge** (an existing file of the same name), and ask o
   matches a file), and, when the session is Claude Code, `/stackfoundry:skill-agent-verifier` for the load probe:
   every generated rulebook loads when a matching file is read.
 - `stackfoundry change-targets --all`: no **Shadowed** section, and every **Unmapped** file is deliberate.
+- `stackfoundry size-check`: every generated file against the assistants' size limits; an error (a hard limit)
+  is fixed before reporting, and each warning goes in the report.
 - `stackfoundry guard --check`, then a probe: write a sample event to a file with the `Write` tool, then run
   `stackfoundry guard < <file>` with `CLAUDE_PROJECT_DIR` set. Never put the event in the command line (a heredoc or
   an `echo`): the live guard reads the whole command and refuses the probe itself. With `generated` globs, an `Edit` of a matching file must be denied; with none, a
@@ -186,7 +188,7 @@ what is ready to commit.
 - `Agent` with `subagent_type: "stackfoundry:surveyor"`, then `"stackfoundry:stack-researcher"` (one per pack, one
   message).
 - `AskUserQuestion` for the interview rounds and the one write confirmation.
-- `Bash` for `stackfoundry survey|config|outputs|pack|product|render-rule|render-rulebook|render-block|manifest|extensions|verify-plumbing|globs-check|change-targets|guard` and the gate
+- `Bash` for `stackfoundry survey|config|outputs|pack|product|render-rule|render-rulebook|render-block|manifest|extensions|verify-plumbing|globs-check|size-check|change-targets|guard` and the gate
   commands (`run_in_background` for long suites). `Read`/`Write`/`Edit` for the files.
 - `Skill` → `stackfoundry:skill-agent-verifier` for the load probe.
 - Non-interactive runs: `.claude/` is a protected path, and neither `acceptEdits` nor an allow rule covers it.

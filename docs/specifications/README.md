@@ -17,3 +17,4 @@ Living specs of built or in-flight features. A spec is the first **oracle** for 
 
 | Spec | Category | Status |
 |---|---|---|
+| [Context budgets per assistant](context-budgets.md) | cli | built |

@@ -62,12 +62,14 @@ ambiguous app model or new target's exposure and stakes).
   materialized agents with `render-agent --write`, which refuses an agent setting a host-privileged key: show it and
   ask); for one removed, list its generated files (`stackfoundry manifest list`) and ask before deleting any.
 - `stackfoundry manifest record` for every generated file written.
+- `stackfoundry size-check`: every generated file against the assistants' size limits; an error (a hard limit)
+  is fixed before reporting, and each warning goes in the report.
 
 ## 4. Report
 
 What changed, what was declined, gates proven, packs still stale. Do not commit.
 
 ## Tooling
-- `Bash` for `stackfoundry survey|config|outputs|render-rule|render-agent|render-block|manifest|change-targets` and gates; `Read`/`Edit`/`Write` for the profile.
+- `Bash` for `stackfoundry survey|config|outputs|render-rule|render-agent|render-block|manifest|size-check|change-targets` and gates; `Read`/`Edit`/`Write` for the profile.
 - `Agent` with `subagent_type: "stackfoundry:surveyor"` when the drift is large enough to need a fresh target map.
 - `Skill` → `stackfoundry:research-stack` per pack; `AskUserQuestion` once.

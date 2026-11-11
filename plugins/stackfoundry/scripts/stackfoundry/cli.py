@@ -16,8 +16,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from stackfoundry import (backlog, block, change_targets, checks, clients, config, extensions, guard,  # noqa: E402
-                          manifest, pack, plumbing, product, rulebooks, select_tests, sideeffects, survey, tracker,
-                          volatile)
+                          manifest, pack, plumbing, product, rulebooks, select_tests, sideeffects, sizes, survey,
+                          tracker, volatile)
 from stackfoundry.gitutil import GitError  # noqa: E402
 from stackfoundry.profile import ProfileError  # noqa: E402
 
@@ -91,6 +91,12 @@ def build() -> argparse.ArgumentParser:
     mc.add_argument("report")
     mc.add_argument("--json", action="store_true")
     mc.set_defaults(func=checks.main_mutation)
+
+    sz = sub.add_parser("size-check", help="(read-only) sizes of the generated instruction files, rulebooks, skills and "
+                                           "agents against each assistant's limits; exit 1 past a hard limit")
+    sz.add_argument("--root")
+    sz.add_argument("--json", action="store_true")
+    sz.set_defaults(func=sizes.main)
 
     td = sub.add_parser("today", help="(read-only) today's date (YYYY-MM-DD) in targets.json's timezone, for report names")
     td.add_argument("--root")

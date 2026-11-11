@@ -93,12 +93,12 @@ rewritten by an upgrade; this step makes sure they still fit the new plugin.
 
 ## 5. Verify and report
 
-`stackfoundry verify-plumbing .`, then `/stackfoundry:skill-agent-verifier`. Report: replaced, merged, kept, skipped,
+`stackfoundry verify-plumbing .` and `stackfoundry size-check`, then `/stackfoundry:skill-agent-verifier`. Report: replaced, merged, kept, skipped,
 the extensions re-anchored or merged, and anything the changelog says needs a manual step. Do not commit.
 
 ## Tooling
 - `Bash` for `stackfoundry manifest diff|record`, `extensions check|list|merge`, `render-agent`, `render-rulebook`,
-  `render-block`, `verify-plumbing`, `change-targets`.
+  `render-block`, `verify-plumbing`, `size-check`, `change-targets`.
 - `Read` the templates through `${CLAUDE_PLUGIN_ROOT}/reference/templates/`, `rulebooks/` and `trackers/`;
   `Write`/`Edit` the files.
 - `AskUserQuestion` once (one question per edited file, four per call).

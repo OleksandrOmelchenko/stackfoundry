@@ -21,10 +21,12 @@ import tempfile
 from pathlib import Path
 
 from .cited import DATE, check_cited, check_inline, check_plain_text, check_sources, strings
-from .clients import _yaml_plain_or_quoted, _yaml_str
+from .clients import LIMITS, _yaml_plain_or_quoted, _yaml_str
 from .profile import find_root
 
 LAYERS = ("language", "app-model", "capability", "tooling")
+# The strictest cited line advice for a path-scoped rule copy (clients.LIMITS["rule"]).
+RULE_LINES = min(v for lims in LIMITS["rule"].values() for unit, v, _ in lims if unit == "lines")
 ID = re.compile(r"^(language|app-model|capability|tooling)-[a-z0-9-]+$")
 CITED_SECTIONS = {"rules": ("rule", "why"), "bugCategories": ("name", "lookFor", "failure"), "wiring": (),
                   "performance": (), "security": ()}
@@ -82,6 +84,10 @@ def check(pack: dict) -> tuple[list[str], list[str]]:
             warnings.append(f"no {section} section")
     if not pack.get("rulebookPaths"):
         warnings.append("no rulebookPaths: the rulebook will load in no session")
+    lines = len(render(pack).splitlines()) if not errors else 0
+    if lines > RULE_LINES:
+        warnings.append(f"renders to {lines} lines, past the {RULE_LINES} a path-scoped rule is advised to stay under "
+                        "(reference/clients.md, Size limits): keep the rules that change decisions")
     return errors, warnings
 
 

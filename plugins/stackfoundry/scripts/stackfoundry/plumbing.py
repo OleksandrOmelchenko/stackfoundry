@@ -17,6 +17,10 @@ MATERIALIZED = Path(".stackfoundry") / "agents"
 
 SKILL_CAP = 250
 AGENT_CAP = 300
+# Every skill and agent description is loaded into each session's listing, whatever the task: the plugin's always-on
+# cost. The cap is the size when it was set plus about 15% headroom, so the next additions show their cost; raising it
+# is a decision, recorded here with its reason (docs/specifications/context-budgets.md).
+LISTING_CAP = 22000
 # The skill frontmatter reference (https://code.claude.com/docs/en/skills), plus `version`, which older skills carry.
 SKILL_KEYS = {"name", "description", "when_to_use", "argument-hint", "arguments", "disable-model-invocation",
               "user-invocable", "allowed-tools", "disallowed-tools", "model", "effort", "context", "agent", "background",
@@ -102,6 +106,7 @@ def check(base: Path) -> Report:
     skill_names: set[str] = set()
     agent_names: set[str] = set()
     bodies: list[tuple[Path, str]] = []
+    listing = 0
 
     if skills_dir.is_dir():
         for d in sorted(p for p in skills_dir.iterdir() if p.is_dir()):
@@ -128,6 +133,7 @@ def check(base: Path) -> Report:
                 rep.error(f, "description is missing")
             elif len(desc) > SKILL_CAP:
                 rep.error(f, f"description is {len(desc)} characters (cap {SKILL_CAP})")
+            listing += len(desc) if isinstance(desc, str) else 0
             if isinstance(desc, str) and re.search(r"[<>]", desc):
                 rep.warn(f, "description has < or >, which the skill list shows as HTML entities; use [brackets]")
             for key in fields:
@@ -168,6 +174,7 @@ def check(base: Path) -> Report:
                 rep.error(f, "description is missing")
             elif len(desc) > AGENT_CAP:
                 rep.error(f, f"description is {len(desc)} characters (cap {AGENT_CAP})")
+            listing += len(desc) if isinstance(desc, str) else 0
             for key in fields:
                 if key in IGNORED_IN_PLUGIN_AGENTS and plugin_mode:
                     rep.warn(f, f"{key!r} is ignored in a plugin agent (put hooks and MCP servers at plugin level)")
@@ -232,6 +239,10 @@ def check(base: Path) -> Report:
             rep.errors.append(f"extension {e}")
         for w in ext.warnings:
             rep.warnings.append(f"extension {w}")
+    if plugin_mode and listing > LISTING_CAP:
+        rep.error(base, f"skill and agent descriptions total {listing} characters, over the listing budget "
+                        f"{LISTING_CAP} every session pays: shorten descriptions, or raise LISTING_CAP with the reason")
+    rep.listing = listing  # type: ignore[attr-defined]
     rep.skills = sorted(skill_names)  # type: ignore[attr-defined]
     rep.agents = sorted(agent_names)  # type: ignore[attr-defined]
     return rep
@@ -265,6 +276,7 @@ def main(args) -> int:
             print(f"error: {e}")
         for w in rep.warnings:
             print(f"warning: {w}")
+        listing = f", listing {rep.listing}/{LISTING_CAP} characters" if is_plugin_root(Path(args.dir)) else ""
         print(f"verify-plumbing: {len(rep.skills)} skill(s), {len(rep.agents)} agent(s), "
-              f"{len(rep.errors)} error(s), {len(rep.warnings)} warning(s)")
+              f"{len(rep.errors)} error(s), {len(rep.warnings)} warning(s){listing}")
     return 1 if rep.errors else 0
