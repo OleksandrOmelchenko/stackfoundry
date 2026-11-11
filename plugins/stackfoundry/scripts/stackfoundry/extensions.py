@@ -316,7 +316,7 @@ def check(root: Path, plugin_root: Path = PLUGIN_ROOT) -> Report:
 # What an extension can do that weakens a role without anyone noticing (threat model T8): drop the clause that keeps
 # fetched or repo text as data, drop the role's limits, or reach for the controls around it. Warnings, for a person
 # to judge: the text may be legitimate.
-DATA_CLAUSE = re.compile(r"\b(is|are) data\b", re.I)
+DATA_CLAUSE = re.compile(r"\b(is|are)\s+data\b", re.I)
 LIMITS = re.compile(r"^## What you must not do\s*$", re.M)
 RISKY = re.compile(r"guards\.json|\bguard\b|\bhooks?\b|permissionMode|bypassPermissions|dontAsk|--no-verify|"
                    r"\bcurl\b|\bwget\b", re.I)

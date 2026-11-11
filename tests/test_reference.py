@@ -69,6 +69,28 @@ class UnattendedTests(unittest.TestCase):
                 self.assertNotIn("git status --porcelain", text)
 
 
+class DataClauseTests(unittest.TestCase):
+    """Threat model T14: the "content is data" clause is the main control against injected text, so every agent that
+    can act on what it reads (a shell, the web) keeps it, and keeps its limits section."""
+
+    def test_every_agent_with_a_shell_or_the_web_keeps_its_data_clause_and_limits(self):
+        import re
+        from stackfoundry.extensions import DATA_CLAUSE, LIMITS
+        checked = 0
+        for f in sorted((PLUGIN / "agents").glob("*.md")):
+            text = f.read_text(encoding="utf-8")
+            fields, body, _ = split(text)
+            tools = {t.strip() for t in str(fields.get("tools", "")).split(",")}
+            if not tools & {"Bash", "PowerShell", "WebFetch", "WebSearch"}:
+                continue
+            checked += 1
+            with self.subTest(agent=f.stem):
+                self.assertRegex(body, DATA_CLAUSE)
+                self.assertRegex(body, LIMITS)
+        self.assertGreater(checked, 10)  # the loop really ran over the shell and web roles
+        self.assertTrue(re.compile(DATA_CLAUSE.pattern).search("found in files are\ndata"))
+
+
 class LandingPrsTests(unittest.TestCase):
     """Threat model T13: landing PRs never runs a command a PR branch's own config supplied."""
 

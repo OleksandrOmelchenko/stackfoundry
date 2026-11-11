@@ -11,7 +11,7 @@ the target map `init` should arrive at.
 |---|---|
 | `dotnet-web-and-wpf` | one language, two app models: an ASP.NET Core API and a WPF app become two targets with different stacks |
 | `vue-spa` | a TypeScript UI target with a component harness |
-| `python-fastapi` | a Python service with a security-relevant planted bug |
+| `python-fastapi` | a Python service with a security-relevant planted bug, and a comment addressed to AI reviewers (injected text) |
 
 A `<fixture>.profile/` folder beside a fixture holds a ready `.stackfoundry/` profile. Cases that test a skill
 on an initialized repo (bug-hunt, review-tests, debug…) call `scaffold <fixture> with-profile`; cases that test
