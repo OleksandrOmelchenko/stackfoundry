@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "stackfoundry gate proof (.stackfoundry/gates.json)",
+  "description": "Written only by `stackfoundry gate record`. A command missing here is unproven; the status is keyed by the command's text, so an edited command is unproven again.",
+  "type": "object",
+  "required": ["schemaVersion", "targets"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "targets": {
+      "type": "object",
+      "description": "Target name -> command -> status.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {"enum": ["proven", "failed"]}
+      }
+    }
+  }
+}
