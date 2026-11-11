@@ -40,7 +40,7 @@
         "lint": ["sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry",
                  "claude plugin validate --strict .",
                  "claude plugin validate --strict plugins/stackfoundry"],
-        "preconditions": ["Python >= 3.11 on PATH", "the claude CLI on PATH (CI pins @anthropic-ai/claude-code@2.1.307)"]
+        "preconditions": ["Python >= 3.11 on PATH", "the claude CLI on PATH (CI pins @anthropic-ai/claude-code in .github/workflows/ci.yml)"]
       },
       "tests": [
         {"name": "reference-and-manifests", "kind": "unit", "command": "python -m unittest tests.test_reference tests.test_manifests -v",

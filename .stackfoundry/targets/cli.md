@@ -9,13 +9,15 @@ enforcement point and fails open), data integrity (writes `manifest.lock.json` a
 
 ## Stack
 
+<!-- stackfoundry:begin target-stack (rendered by stackfoundry render-target; edit outside the markers) -->
 | Layer | Pack | Rulebook |
 |---|---|---|
-| language | `language-python` | `.stackfoundry/rules/language-python.md` |
-| language | `language-posix-sh` | `.stackfoundry/rules/language-posix-sh.md` |
-| app-model | `app-model-python-cli` | `.stackfoundry/rules/app-model-python-cli.md` |
-| tooling | `tooling-unittest` | `.stackfoundry/rules/tooling-unittest.md` |
-| tooling | `tooling-github-actions` | `.stackfoundry/rules/tooling-github-actions.md` |
+| language | `language-python` | [language-python](../rules/language-python.md) |
+| language | `language-posix-sh` | [language-posix-sh](../rules/language-posix-sh.md) |
+| app-model | `app-model-python-cli` | [app-model-python-cli](../rules/app-model-python-cli.md) |
+| tooling | `tooling-unittest` | [tooling-unittest](../rules/tooling-unittest.md) |
+| tooling | `tooling-github-actions` | [tooling-github-actions](../rules/tooling-github-actions.md) |
+<!-- stackfoundry:end -->
 
 ## Where things are
 
@@ -31,17 +33,29 @@ enforcement point and fails open), data integrity (writes `manifest.lock.json` a
 
 ## Gate
 
+<!-- stackfoundry:begin target-gate (rendered by stackfoundry render-target; edit outside the markers) -->
 ```sh
 python -m unittest discover -s tests -t . -v
 sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry
 ```
 
-Preconditions: Python >= 3.11 on PATH as `python3`, `python` or `py -3`; git on PATH (git-dependent tests skip
-without it via `tests/_support.py` `HAS_GIT`; tests that need `sh` skip without it).
-Shuffled run (assurance gate): none yet (stdlib `unittest` has no shuffle; open question in
-`.stackfoundry/rules/tooling-unittest.md`). Coverage: none yet. Mutation lane: none yet: /stackfoundry:setup-mutation.
+Status:
+- `python -m unittest discover -s tests -t . -v`: proven
+- `sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry`: proven
+
+Preconditions: Python >= 3.11 on PATH as python3, python or py -3; git on PATH (git-dependent tests skip without it:
+tests/_support.py HAS_GIT).
+
+Suites:
+- unittest (unit): `python -m unittest discover -s tests -t . -v` (proven); shuffled run: none recorded; coverage:
+  none recorded; mutation: none yet (/stackfoundry:setup-mutation).
 
 Local URL for live repros: not served locally.
+<!-- stackfoundry:end -->
+
+Stdlib `unittest` has no shuffle option, so no shuffled run is recorded (an open question in
+`.stackfoundry/rules/tooling-unittest.md`). The `tests.<test_module>` command is the pattern for an affected
+run, not a command to prove.
 
 ## Oracle sources
 

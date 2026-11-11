@@ -98,6 +98,12 @@
       "sha256": "a2f344542f382bc6f38b73114460547e39739cb51ce65a32a7c1e8d86a3abadf",
       "kind": "generated"
     },
+    ".stackfoundry/gates.json": {
+      "template": "profile",
+      "templateVersion": "profile",
+      "sha256": "404149d05a93d1e75e16804dfb0f2f645d6daac748ec7386ecf8777536766581",
+      "kind": "generated"
+    },
     ".stackfoundry/guards.json": {
       "template": "profile",
       "templateVersion": "profile",
@@ -233,19 +239,19 @@
     ".stackfoundry/targets.json": {
       "template": "profile",
       "templateVersion": "profile",
-      "sha256": "6e5b323bd9ee03e01217c613841434f5f8c9309da1cf5987bfe112b7c8cb74eb",
+      "sha256": "ccca3123dd64534baca2fb11c25e4cb057187454580eda2e4d9f116726f0a40d",
       "kind": "generated"
     },
     ".stackfoundry/targets/cli.md": {
       "template": "reference/templates/target.md",
-      "templateVersion": "1",
-      "sha256": "6313360c2eb1698acbbd8b8f2d1496f48b3378c840003101cb6fdde47bfb9587",
+      "templateVersion": "3",
+      "sha256": "a1a19c8f6fb097d17b4aef16d43d44bd14e2583eb3afed7d88a0f5573ae85ddf",
       "kind": "generated"
     },
     ".stackfoundry/targets/plugin.md": {
       "template": "reference/templates/target.md",
-      "templateVersion": "1",
-      "sha256": "60e34d45285ae9a2bed38898cef243102e0d8221ea3df6b5cf4e70ece0fceab5",
+      "templateVersion": "3",
+      "sha256": "7cdf933574b2e420eb1e3800d137870c54cf109c5547377f01f7d16df8f9d186",
       "kind": "generated"
     },
     "docs/bug-reports/README.md": {

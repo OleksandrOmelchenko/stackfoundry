@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "targets": {
+    "cli": {
+      "python -m unittest discover -s tests -t . -v": "proven",
+      "sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry": "proven"
+    },
+    "plugin": {
+      "claude plugin validate --strict .": "proven",
+      "claude plugin validate --strict plugins/stackfoundry": "proven",
+      "python -m unittest discover -s tests -t . -v": "proven",
+      "python -m unittest tests.test_reference tests.test_manifests -v": "proven",
+      "sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry": "proven"
+    }
+  }
+}

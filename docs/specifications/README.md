@@ -19,3 +19,4 @@ Living specs of built or in-flight features. A spec is the first **oracle** for 
 |---|---|---|
 | [Antigravity CLI channel](antigravity-channel.md) | plugin | built |
 | [Context budgets per assistant](context-budgets.md) | cli | built |
+| [Target profiles' rendered sections](target-profile-renderer.md) | cli | built |

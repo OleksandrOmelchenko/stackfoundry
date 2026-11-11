@@ -10,12 +10,14 @@ rulebooks, trackers and code into users' repos).
 
 ## Stack
 
+<!-- stackfoundry:begin target-stack (rendered by stackfoundry render-target; edit outside the markers) -->
 | Layer | Pack | Rulebook |
 |---|---|---|
-| app-model | `app-model-claude-code-plugin` | `.stackfoundry/rules/app-model-claude-code-plugin.md` |
-| capability | `capability-claude-code-marketplace` | `.stackfoundry/rules/capability-claude-code-marketplace.md` |
-| tooling | `tooling-claude-plugin-eval` | `.stackfoundry/rules/tooling-claude-plugin-eval.md` |
-| tooling | `tooling-unittest` | `.stackfoundry/rules/tooling-unittest.md` |
+| app-model | `app-model-claude-code-plugin` | [app-model-claude-code-plugin](../rules/app-model-claude-code-plugin.md) |
+| capability | `capability-claude-code-marketplace` | [capability-claude-code-marketplace](../rules/capability-claude-code-marketplace.md) |
+| tooling | `tooling-claude-plugin-eval` | [tooling-claude-plugin-eval](../rules/tooling-claude-plugin-eval.md) |
+| tooling | `tooling-unittest` | [tooling-unittest](../rules/tooling-unittest.md) |
+<!-- stackfoundry:end -->
 
 ## Where things are
 
@@ -31,6 +33,7 @@ rulebooks, trackers and code into users' repos).
 
 ## Gate
 
+<!-- stackfoundry:begin target-gate (rendered by stackfoundry render-target; edit outside the markers) -->
 ```sh
 python -m unittest discover -s tests -t . -v
 sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry
@@ -38,13 +41,29 @@ claude plugin validate --strict .
 claude plugin validate --strict plugins/stackfoundry
 ```
 
-Preconditions: Python >= 3.11 on PATH; the `claude` CLI on PATH (CI pins `@anthropic-ai/claude-code` in
-`.github/workflows/ci.yml`). Evals are a test suite, not a gate: `cd plugins/stackfoundry && claude plugin eval .
---scaffold --runs 1 --no-publish --tag read-only` spends real tokens and needs an OS sandbox for Bash cases (none on
-native Windows), so ask first (guarded).
-Shuffled run (assurance gate): none yet. Coverage: none yet. Mutation lane: none yet: /stackfoundry:setup-mutation.
+Status:
+- `python -m unittest discover -s tests -t . -v`: proven
+- `sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry`: proven
+- `claude plugin validate --strict .`: proven
+- `claude plugin validate --strict plugins/stackfoundry`: proven
+
+Preconditions: Python >= 3.11 on PATH; the claude CLI on PATH (CI pins @anthropic-ai/claude-code in
+.github/workflows/ci.yml).
+
+Suites:
+- reference-and-manifests (unit): `python -m unittest tests.test_reference tests.test_manifests -v` (proven);
+  shuffled run: none recorded; coverage: none recorded; mutation: none yet (/stackfoundry:setup-mutation).
+- plumbing (contract): `sh plugins/stackfoundry/scripts/stackfoundry.sh verify-plumbing plugins/stackfoundry`
+  (proven); shuffled run: none recorded; coverage: none recorded; mutation: none yet (/stackfoundry:setup-mutation).
+- evals (e2e): `cd plugins/stackfoundry && claude plugin eval . --scaffold --runs 1 --no-publish --tag read-only`
+  (unproven); shuffled run: none recorded; coverage: none recorded; mutation: none yet
+  (/stackfoundry:setup-mutation).
 
 Local URL for live repros: not served locally.
+<!-- stackfoundry:end -->
+
+The evals suite is not a gate: it spends real tokens and needs an OS sandbox for Bash cases (none on native
+Windows), so it is ask-guarded and stays unproven until someone runs it on purpose.
 
 ## Oracle sources
 
