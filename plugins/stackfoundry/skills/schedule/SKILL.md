@@ -90,6 +90,8 @@ approves every tool.
      later rewrite replaces only those. `--to project` (the committed `.claude/settings.json`, which every teammate
      and session inherits) only when the user asks for it;
    - the trade-off: those local rules also apply to every other session in this clone;
+   - `stackfoundry schedule check` afterwards: every approved skill must come back ok, and what is still missing is
+     shown, never left for the first run to discover;
    - a command those rules don't allow stalls or is denied.
 5. **No scheduling tools in this session**: print, per approved task, the exact title, schedule and prompt to enter
    in the desktop app's scheduled-tasks screen, and show the alternatives below.

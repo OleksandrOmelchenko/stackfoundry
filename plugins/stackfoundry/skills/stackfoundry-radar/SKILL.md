@@ -68,8 +68,11 @@ Ask nothing, install nothing, never write git, write exactly one file (the repor
    tier, changes its plugin, hook or rule format, or moves its users to a successor. Cite each one. A notice that
    leaves this repo's users without a working install goes first under **Steps**, with the channel change it calls
    for (`/stackfoundry:plan-feature`, naming the assistant and the source).
-7. A fetch that fails is **not reached** with its reason; never infer a version from memory.
-8. Write the report, then run `stackfoundry side-effects end --allow <the report's path>`; every change it lists goes
+7. **Scheduled runs**: `stackfoundry schedule check` (read-only). Each scheduled skill whose run would be denied,
+   with the missing or denied rules; a launcher rule naming another plugin folder (stale, fixed by
+   `stackfoundry schedule rules --rewrite`); a rule allowed only through a broad one.
+8. A fetch that fails is **not reached** with its reason; never infer a version from memory.
+9. Write the report, then run `stackfoundry side-effects end --allow <the report's path>`; every change it lists goes
    under **Side effects**, left as it is.
 
 ## Report
@@ -83,9 +86,10 @@ the machine's date when the zone database is missing, said in the report). Same-
    current. Then **extensions that need attention**: file · what it changes · orphaned anchor or behind.
 4. **Claude Code features** worth knowing, each with its version and link; then **assistant notices**: per
    assistant in `clients`, retirements, format changes and successors, each with its source.
-5. **Steps**, in order: update the plugin → `/stackfoundry:upgrade` → `/stackfoundry:sync`, only the ones that
+5. **Schedule**: the `schedule check` result, per scheduled skill.
+6. **Steps**, in order: update the plugin → `/stackfoundry:upgrade` → `/stackfoundry:sync`, only the ones that
    apply, each with its reason.
-6. **Not reached** and **Side effects**, even when empty.
+7. **Not reached** and **Side effects**, even when empty.
 
 Close in at most three lines: the report path and the steps that apply.
 

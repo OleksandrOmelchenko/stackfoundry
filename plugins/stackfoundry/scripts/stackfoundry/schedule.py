@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -87,6 +88,8 @@ def rules(root: Path, skill: str) -> list[dict]:
             if eco.get("kind") == "formats":
                 continue  # its discover entry names a skill pass (check-formats), not a command
             for cmd in eco.get("discover", []) or []:
+                if re.search(r"<[^>]+>", cmd):
+                    continue  # a pattern with a placeholder (`repos/<owner>/<action>`): the run fills it, no rule can
                 out.append({"rule": f"Bash({cmd} *)" if not cmd.endswith("*") else f"Bash({cmd})",
                             "reason": f"ecosystem {eco.get('id', '?')}: discover"})
     if "suites" in reads:
@@ -113,6 +116,19 @@ def rules(root: Path, skill: str) -> list[dict]:
 
 def main(args) -> int:
     root = Path(args.root).resolve() if args.root else find_root(Path.cwd())
+    if args.action == "check":
+        result = check(root, args.skills or None)
+        if args.json:
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+            return 0 if result["ok"] else 1
+        for skill, r in result["skills"].items():
+            state = "ok" if not (r["missing"] or r["denied"]) else "would be denied"
+            print(f"{skill}: {state}")
+            print("".join(f"  missing: {x}\n" for x in r["missing"]) + "".join(f"  denied: {x}\n" for x in r["denied"])
+                  + "".join(f"  broad: {x['rule']} is allowed only through {x['by']}\n" for x in r["broad"]), end="")
+        print("".join(f"stale: {x} (another plugin folder; `stackfoundry schedule rules --rewrite`)\n"
+                      for x in result["stale"]), end="")
+        return 0 if result["ok"] else 1
     if getattr(args, "rewrite", False):
         for r in rewrite(root):
             print(f"{r['file']}: {len(r['added'])} added, {len(r['removed'])} removed")
@@ -202,3 +218,69 @@ def rewrite(root: Path) -> list[dict]:
     launcher path moves, after a sync the packs' hosts may."""
     return [write(root, entry.get("skills") or [], to) for to, entry in load_state(root).items()
             if to in SETTINGS and isinstance(entry, dict)]
+
+
+# --- checking: what a scheduled run will actually be allowed ---------------------------------------------------------
+#
+# Claude Code merges the allow and deny lists of the user's, the project's and the local settings. A rule stackfoundry
+# needs is fine when one of them allows it exactly, or through a broader rule (flagged, since that broader rule lets
+# far more through for every session). A launcher rule naming another plugin folder is stale: it matches nothing the
+# skills run after an update.
+
+BROAD = {"Bash", "Bash(*)", "WebFetch", "Edit", "Edit(**)", "Write", "Write(**)"}
+LAUNCHER = re.compile(r'^Bash\(sh "(?P<path>[^"]*/scripts/stackfoundry\.sh)" \*\)$')
+
+
+def _lists(root: Path, user: Path | None) -> tuple[list[str], list[str]]:
+    allow: list[str] = []
+    deny: list[str] = []
+    for path in (user if user is not None else Path.home() / ".claude" / "settings.json",
+                 root / SETTINGS["project"], root / SETTINGS["local"]):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8-sig"))
+        except (OSError, ValueError):
+            continue
+        perms = data.get("permissions") if isinstance(data, dict) else None
+        if isinstance(perms, dict):
+            allow += [r for r in perms.get("allow") or [] if isinstance(r, str)]
+            deny += [r for r in perms.get("deny") or [] if isinstance(r, str)]
+    return allow, deny
+
+
+def _covered_by(needed: str, allow: list[str]) -> str | None:
+    """The allow rule that covers `needed`: itself, or a broader rule of the same tool."""
+    if needed in allow:
+        return needed
+    tool = needed.split("(", 1)[0]
+    for rule in allow:
+        if rule in (tool, f"{tool}(*)") or (tool in ("Edit", "Write") and rule in ("Edit(**)", "Write(**)")):
+            return rule
+        if tool == "Bash" and rule.startswith("Bash(") and needed.startswith("Bash("):
+            prefix = rule[5:-1].removesuffix(":*").removesuffix(" *").removesuffix("*")
+            if prefix and needed[5:-1].startswith(prefix):
+                return rule
+    return None
+
+
+def check(root: Path, skills: list[str] | None = None, user: Path | None = None) -> dict:
+    """Per skill: missing, denied and broadly covered rules; plus stale launcher rules anywhere."""
+    if not skills:
+        recorded = [s for entry in load_state(root).values() if isinstance(entry, dict) for s in entry.get("skills") or []]
+        skills = list(dict.fromkeys(recorded)) or list(SKILLS)
+    allow, deny = _lists(root, user)
+    current = f'Bash(sh "{launcher()}" *)'
+    out = {"skills": {}, "stale": [r for r in allow if LAUNCHER.match(r) and r != current]}
+    for skill in skills:
+        missing, broad, denied = [], [], []
+        for r in rules(root, skill):
+            if r["rule"] in deny:
+                denied.append(r["rule"])
+                continue
+            by = _covered_by(r["rule"], allow)
+            if by is None:
+                missing.append(r["rule"])
+            elif by != r["rule"]:
+                broad.append({"rule": r["rule"], "by": by})
+        out["skills"][skill] = {"missing": missing, "denied": denied, "broad": broad}
+    out["ok"] = not any(v["missing"] or v["denied"] for v in out["skills"].values())
+    return out

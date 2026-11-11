@@ -98,7 +98,8 @@ rewritten by an upgrade; this step makes sure they still fit the new plugin.
 ## 5. Verify and report
 
 `stackfoundry schedule rules --rewrite` (the scheduled runs' allow rules name the plugin's folder, which moved;
-it changes only rules stackfoundry wrote, and does nothing where none were), then `stackfoundry verify-plumbing .`
+it changes only rules stackfoundry wrote, and does nothing where none were) and `stackfoundry schedule check`
+(what a scheduled run would still be denied goes in the report), then `stackfoundry verify-plumbing .`
 and `stackfoundry size-check`, then `/stackfoundry:skill-agent-verifier`. Report: replaced, merged, kept, skipped,
 the extensions re-anchored or merged, and anything the changelog says needs a manual step. Do not commit.
 

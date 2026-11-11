@@ -160,7 +160,7 @@ def build() -> argparse.ArgumentParser:
 
     sc = sub.add_parser("schedule", help="the permission rules a scheduled, unattended run of each skill needs, with "
                                          "a reason per rule; read-only unless --write or --rewrite")
-    sc.add_argument("action", choices=["rules"])
+    sc.add_argument("action", choices=["rules", "check"], help="rules: the list (and --write); check: compare it with the settings in force, read-only, exit 1 when a run would be denied")
     scw = sc.add_mutually_exclusive_group()
     scw.add_argument("--write", action="store_true", help="merge the named skills' rules into the settings file, "
                                                           "replacing the rules stackfoundry owned there")

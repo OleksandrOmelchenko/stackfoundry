@@ -132,5 +132,70 @@ class WriteTests(unittest.TestCase):
         self.assertEqual(run_cli(["schedule", "rules", "--write", "--root", str(self.root)]).returncode, 2)
 
 
+class CheckTests(unittest.TestCase):
+    """`schedule check` compares what each skill needs with the user, project and local allow and deny lists."""
+
+    def setUp(self):
+        self.repo = TempRepo()
+        self.root = self.repo.__enter__()
+        self.addCleanup(self.repo.__exit__, None, None, None)
+        targets_json(self.root, {"targets": [{"name": "api", "paths": ["src/**"]}]})
+        self.user = self.root / "user-settings.json"  # never the real ~/.claude/settings.json
+        self.env = mock.patch.dict(os.environ, {"CLAUDE_PLUGIN_ROOT": "C:/plugins/stackfoundry/0.4.0"})
+        self.env.start()
+        self.addCleanup(self.env.stop)
+
+    def settings(self, rel, allow, deny=()):
+        write(self.root, {rel: json.dumps({"permissions": {"allow": list(allow), "deny": list(deny)}})})
+
+    def needed(self):
+        return [r["rule"] for r in schedule.rules(self.root, "stackfoundry-radar")]
+
+    def test_every_needed_rule_present_is_ok(self):
+        self.settings(".claude/settings.local.json", self.needed())
+        result = schedule.check(self.root, ["stackfoundry-radar"], self.user)
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["skills"]["stackfoundry-radar"], {"missing": [], "denied": [], "broad": []})
+
+    def test_a_missing_rule_and_a_denied_one_fail(self):
+        needed = self.needed()
+        self.settings(".claude/settings.json", needed[:-2], deny=[needed[-1]])
+        r = schedule.check(self.root, ["stackfoundry-radar"], self.user)
+        self.assertFalse(r["ok"])
+        self.assertEqual(r["skills"]["stackfoundry-radar"]["missing"], [needed[-2]])
+        self.assertEqual(r["skills"]["stackfoundry-radar"]["denied"], [needed[-1]])
+
+    def test_a_broad_rule_covers_but_is_flagged_and_a_user_rule_counts(self):
+        needed = [n for n in self.needed() if not n.startswith("WebFetch")]
+        self.settings(".claude/settings.local.json", needed)
+        write(self.root, {"user-settings.json": json.dumps({"permissions": {"allow": ["WebFetch"]}})})
+        r = schedule.check(self.root, ["stackfoundry-radar"], self.user)
+        self.assertTrue(r["ok"])
+        self.assertEqual({b["by"] for b in r["skills"]["stackfoundry-radar"]["broad"]}, {"WebFetch"})
+
+    def test_a_launcher_rule_naming_another_plugin_folder_is_stale(self):
+        old = 'Bash(sh "C:/plugins/stackfoundry/0.3.0/scripts/stackfoundry.sh" *)'
+        self.settings(".claude/settings.local.json", [old, *self.needed()])
+        r = schedule.check(self.root, ["stackfoundry-radar"], self.user)
+        self.assertEqual(r["stale"], [old])
+
+    def test_the_cli_exits_1_when_a_run_would_be_denied_and_writes_nothing(self):
+        before = sorted(p.name for p in self.root.rglob("*"))
+        proc = run_cli(["schedule", "check", "stackfoundry-radar", "--root", str(self.root)],
+                       env={"CLAUDE_PLUGIN_ROOT": "C:/plugins/stackfoundry/0.4.0", "USERPROFILE": str(self.root),
+                            "HOME": str(self.root)})
+        self.assertEqual(proc.returncode, 1, proc.stderr)
+        self.assertIn("stackfoundry-radar: would be denied", proc.stdout)
+        self.assertEqual(sorted(p.name for p in self.root.rglob("*")), before)
+
+
+class WiringTests(unittest.TestCase):
+    def test_radar_upgrade_and_schedule_run_the_check(self):
+        from tests._support import PLUGIN
+        for rel in ("skills/stackfoundry-radar/SKILL.md", "skills/upgrade/SKILL.md", "skills/schedule/SKILL.md"):
+            with self.subTest(skill=rel):
+                self.assertIn("stackfoundry schedule check", (PLUGIN / rel).read_text(encoding="utf-8"))
+
+
 if __name__ == "__main__":
     unittest.main()
