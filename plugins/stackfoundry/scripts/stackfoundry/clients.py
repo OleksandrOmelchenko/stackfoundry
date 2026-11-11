@@ -18,7 +18,7 @@ from pathlib import Path
 from .frontmatter import split
 from .profile import PROFILE_DIR, find_root
 
-CLIENTS = ("claude-code", "codex", "copilot", "cursor", "gemini")
+CLIENTS = ("claude-code", "codex", "copilot", "cursor", "gemini", "antigravity")
 CANONICAL_RULES = (PROFILE_DIR / "rules").as_posix()
 CANONICAL_AGENTS = (PROFILE_DIR / "agents").as_posix()
 
@@ -33,20 +33,28 @@ GEMINI_TOOLS = {"Read": ["read_file", "read_many_files"], "Grep": ["grep_search"
                 "MultiEdit": ["replace"], "Write": ["write_file"], "NotebookEdit": ["write_file"],
                 "WebSearch": ["google_web_search"], "WebFetch": ["web_fetch"], "AskUserQuestion": ["ask_user"],
                 "TodoWrite": ["write_todos"], "Agent": []}
+# Claude Code tool grant -> Antigravity built-in tools (antigravity.google, build plugins, hooks and SDK tools; see
+# reference/clients.md). An agent always has `send_message`; tools with no documented equivalent map to nothing.
+ANTIGRAVITY_TOOLS = {"Read": ["view_file"], "Grep": ["grep_search"], "Glob": ["find_by_name", "list_dir"],
+                     "Bash": ["run_command"], "PowerShell": ["run_command"],
+                     "Edit": ["replace_file_content", "multi_replace_file_content"],
+                     "MultiEdit": ["multi_replace_file_content"], "Write": ["write_to_file"],
+                     "NotebookEdit": ["write_to_file"], "WebSearch": ["search_web"], "WebFetch": ["read_url_content"]}
 
 # Path-scoped rule formats: folder, file suffix. Codex and Gemini have none; they read the canonical files through
 # the table in their instruction file.
 RULE_FORMATS = {"claude-code": (".claude/rules", ".md"), "copilot": (".github/instructions", ".instructions.md"),
-                "cursor": (".cursor/rules", ".mdc")}
+                "cursor": (".cursor/rules", ".mdc"), "antigravity": (".agents/rules", ".md")}
 SIBLING_LINK = re.compile(r"\]\(([a-z0-9][a-z0-9-]*)\.md(#[^)\s]*)?\)")  # a link to a rulebook in the same folder
 INSTRUCTION_FILES = {"claude-code": "CLAUDE.md", "codex": "AGENTS.md", "copilot": "AGENTS.md", "cursor": "AGENTS.md",
-                     "gemini": "GEMINI.md"}
+                     "gemini": "GEMINI.md", "antigravity": "AGENTS.md"}
 # What each host advises or enforces on the size of what it loads (sources: reference/clients.md, "Size limits").
 # kind -> client ("*" = every client) -> [(unit, value, hard)]. Units: lines, bytes, tokens (estimated as bytes/4).
 # A hard limit is where the host stops reading; a soft one is its advice. `stackfoundry size-check` applies them.
 LIMITS = {
-    "instructions": {"claude-code": [("lines", 200, False)], "codex": [("bytes", 32 * 1024, True)]},
-    "rule": {"cursor": [("lines", 500, False)]},
+    "instructions": {"claude-code": [("lines", 200, False)], "codex": [("bytes", 32 * 1024, True)],
+                     "antigravity": [("bytes", 24_000, True)]},
+    "rule": {"cursor": [("lines", 500, False)], "antigravity": [("bytes", 24_000, True)]},
     "skill": {"*": [("lines", 500, False), ("tokens", 5000, False)]},
 }
 AGENT_FORMATS = {"claude-code": (".claude/agents", ".md"), "codex": (".codex/agents", ".toml"),
@@ -64,7 +72,7 @@ def outputs(clients: list[str]) -> dict:
     skills = []
     if "claude-code" in has:
         skills.append(".claude/skills")          # also read by Copilot and Cursor
-    if has & {"codex", "gemini", "cursor"} or ("copilot" in has and "claude-code" not in has):
+    if has & {"codex", "gemini", "cursor", "antigravity"} or ("copilot" in has and "claude-code" not in has):
         skills.append(".agents/skills")          # the shared Agent Skills folder
     if "copilot" in has and "claude-code" not in has:
         skills.append(".github/skills")          # Copilot's own, while its .agents/skills support is unconfirmed
@@ -121,6 +129,10 @@ def render_rule(text: str, client: str) -> str:
         head = ["---", f"description: {_yaml_str(desc)}", f"applyTo: {_yaml_str(','.join(paths))}"]
     elif client == "cursor":
         head = ["---", f"description: {_yaml_plain_or_quoted(desc)}", f"globs: {','.join(paths)}", "alwaysApply: false"]
+    elif client == "antigravity":
+        # A rule without valid frontmatter is silently dropped; globs is one comma-separated string, quoted so a
+        # leading `*` is not read as a YAML alias (reference/clients.md, [ag-rules]).
+        head = ["---", "trigger: glob", f"globs: {_yaml_str(', '.join(paths))}", f"description: {_yaml_str(desc)}"]
     else:
         raise ValueError(f"{client} has no path-scoped rules; it reads {CANONICAL_RULES}/ through its instruction file")
     # The body is kept byte for byte, so a canonical rulebook already in Claude Code's form renders unchanged. Every
@@ -206,6 +218,17 @@ def render_agent(text: str, client: str) -> str:
                     gtools.append(g)
         return _frontmatter({"name": fields["name"], "description": fields["description"], "kind": "local",
                              "tools": gtools}) + body
+    if client == "antigravity":
+        atools: list[str] = []
+        for t in grant:
+            for a in ANTIGRAVITY_TOOLS.get(t, []):
+                if a not in atools:
+                    atools.append(a)
+        if not atools:
+            # Without `tools` the agent gets every tool: refuse rather than widen the grant.
+            raise ValueError(f"{fields['name']}: no tool in its grant has an Antigravity equivalent "
+                             f"({', '.join(grant) or 'none'})")
+        return _frontmatter({"name": fields["name"], "description": fields["description"], "tools": atools}) + body
     if client == "codex":
         # Codex custom agents: name, description, developer_instructions. A read-only grant becomes a read-only
         # sandbox, since Codex agents have no per-tool grant.
@@ -219,6 +242,8 @@ def render_agent(text: str, client: str) -> str:
 
 
 def agent_path(src: Path, client: str) -> str:
+    if client not in AGENT_FORMATS:
+        raise ValueError(f"{client} documents no project agents folder; its agents come with the plugin")
     folder, suffix = AGENT_FORMATS[client]
     return f"{folder}/{src.name.removesuffix('.md')}{suffix}"
 

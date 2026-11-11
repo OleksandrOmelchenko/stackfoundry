@@ -19,6 +19,8 @@ so a rulebook, an instruction file or the whole listing could grow without anyon
   - Cursor: a rule under 500 lines (advice);
   - every assistant: a `SKILL.md` under 500 lines and about 5000 tokens (advice);
   - Codex: the `AGENTS.md` files on a path, combined, up to 32 KiB (where it stops reading).
+  - Antigravity CLI: a rule file or an instruction file up to 24,000 bytes (truncated past it). Its 20,000-token
+    budget for every always-on file combined is in `reference/clients.md` and not measured per file.
 - **`stackfoundry size-check`** measures, for the assistants in `config.json` `clients`:
   - each instruction file the assistants read, whole, plus the stackfoundry block inside it;
   - every canonical rulebook and each assistant's copy;
@@ -56,7 +58,3 @@ so a rulebook, an instruction file or the whole listing could grow without anyon
 - the pack size warning.
 
 The check passes on this repo's own profile, and the `cli` and `plugin` gates were green.
-
-## Follow-ups (not yet implemented)
-
-- Antigravity CLI's limits, once its format is researched (`docs/plans/antigravity-channel.md`).

@@ -10,7 +10,7 @@
     "clients": {
       "type": "array",
       "description": "The assistants this repo uses. init and sync write each one's files (rulebooks, instruction block, generated skills and agents); the rest are left alone.",
-      "items": {"enum": ["claude-code", "codex", "copilot", "cursor", "gemini"]},
+      "items": {"enum": ["claude-code", "codex", "copilot", "cursor", "gemini", "antigravity"]},
       "minItems": 1,
       "uniqueItems": true,
       "default": ["claude-code"]

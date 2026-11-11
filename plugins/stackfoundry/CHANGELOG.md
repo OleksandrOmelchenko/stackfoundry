@@ -78,6 +78,11 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 - **The guard speaks Antigravity CLI** (`--client antigravity`, or told by a `toolCall` event): it denies writes and
   edits of generated files, asks before git writes, and reads the repo from `workspacePaths`, because Antigravity
   runs plugin hooks from the plugin's own folder.
+- **`antigravity` is a repo client** (`config.json` `clients`). Its rulebooks are written to `.agents/rules/` as
+  glob-triggered rules, its skills to `.agents/skills/`, and its block to `AGENTS.md`, shared with Codex and Copilot.
+  `render-agent --client antigravity` maps an agent's tools, and refuses a grant with no equivalent rather than
+  give it every tool. `size-check` errors when a rule or instruction file passes the 24,000 bytes Antigravity
+  reads.
 - The `web-researcher` agent: it answers a skill's web questions with cited notes, and holds no shell and writes
   nothing.
 - `stackfoundry side-effects start|end`, and `reference/unattended.md`, the one copy of the unattended-run contract.

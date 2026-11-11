@@ -71,7 +71,7 @@ Show one table: target · paths · stack (packs by layer) · exposure · stakes 
 3. Working agreements: the git-write policy (`ask` recommended), the generated folders and how each is
    regenerated, commands that must never run (direct database writes, deploys), the docs root (`docs` unless the
    repo already keeps docs elsewhere), the plan categories (only when `plans/README.md` is created here), the time zone for report dates, and the assistants the
-   team uses (`clients`: claude-code, codex, copilot, cursor, gemini; `${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
+   team uses (`clients`: claude-code, codex, copilot, cursor, gemini, antigravity; `${CLAUDE_PLUGIN_ROOT}/reference/clients.md`).
 4. Roles to enable per target (default: all), and how to treat existing `.claude/` content (keep side by side
    recommended).
 5. The product (the surveyor's `product` draft, with its evidence): confirm or correct the category in plain words,
@@ -118,7 +118,7 @@ marking each **new** or **merge** (an existing file of the same name), and ask o
 | `.stackfoundry/targets/<target>.md` | `reference/templates/target.md` | that template |
 | `.stackfoundry/rules/<pack-id>.md` | `stackfoundry pack render <pack.json> --out <rule>`, never by hand | `research` |
 | `.stackfoundry/rules/testing.md`, `dependency-bumps.md`, `documentation.md` (+ `benchmarking.md` when a benchmark harness exists) | `stackfoundry render-rulebook <name> --write`, after `targets.json` and `ecosystems.json`; never by hand | `reference/rulebooks/<name>.md` |
-| each assistant's copy of every rulebook (`outputs` → rules: `.claude/rules/`, `.github/instructions/`, `.cursor/rules/`) | `stackfoundry render-rule .stackfoundry/rules/<id>.md --client <assistant> --write` | as its canonical rulebook |
+| each assistant's copy of every rulebook (`outputs` → rules: `.claude/rules/`, `.github/instructions/`, `.cursor/rules/`, `.agents/rules/`) | `stackfoundry render-rule .stackfoundry/rules/<id>.md --client <assistant> --write` | as its canonical rulebook |
 | `<app-model>-code-writer/SKILL.md` per app model (bare id: `app-model-wpf` → `wpf`), in each `outputs` → skills folder | `reference/templates/code-writer-skill.md` | that template |
 | under the docs root, only where missing: `bug-reports/README.md`, `test-designs/README.md`, `plans/README.md`, `plans/_template.md`, `plans/deferred-upgrades.md`, `specifications/README.md`, `security/README.md`, and the reports README in `dependency-reports/`, `radar/` (plus `radar/decisions.md`), `performance-reports/` and `reports/` | `reference/trackers/` (strip each template's own frontmatter) | that tracker |
 | the stackfoundry block in each `outputs` → instructions file (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`) | `stackfoundry render-block --write`, after the canonical rulebooks; never by hand | `reference/templates/instructions-block.md` (the block alone is hashed) |

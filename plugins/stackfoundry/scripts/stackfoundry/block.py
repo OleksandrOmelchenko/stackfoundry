@@ -24,7 +24,7 @@ from .rulebooks import NAMES as SHARED
 TEMPLATE = REFERENCE / "templates" / "instructions-block.md"
 RULES = Path(".stackfoundry") / "rules"
 BLOCK = re.compile(r"<!-- stackfoundry:begin.*?<!-- stackfoundry:end -->", re.S)
-NAMES = {"claude-code": "Claude Code", "copilot": "Copilot", "cursor": "Cursor"}
+NAMES = {"claude-code": "Claude Code", "copilot": "Copilot", "cursor": "Cursor", "antigravity": "Antigravity CLI"}
 READ_FIRST = "Before editing a file that matches a rulebook's globs, read that rulebook."
 
 
