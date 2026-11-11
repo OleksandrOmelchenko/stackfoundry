@@ -96,8 +96,11 @@ Where an assistant has no path-scoped rules (Codex, Gemini), stackfoundry writes
 `.stackfoundry/rules/<id>.md` and lists it in the instruction-file block with the globs it covers: read it before
 editing a matching file.
 
-Only a file such an assistant reads gets that table. Where every reader loads path-scoped rules by itself (Claude
-Code, Copilot, Cursor, Antigravity), the block is a short pointer to the profile. An instruction file is loaded
+Only a file such an assistant reads gets that table. Where every reader loads the rulebooks by itself (Claude
+Code, Copilot, Cursor, Antigravity, each with a copy of every rulebook in its own folder), the block is a short
+pointer to the profile. A host whose copies the repo does not keep is told to read the rulebooks, like Codex. A
+table too large for the block (`scripts/stackfoundry/block.py` `BLOCK_BUDGET`) goes to `.stackfoundry/rulebooks.md`,
+which the block links, so Codex's 32 KiB is not spent on it. An instruction file is loaded
 into every session, and Claude Code's guidance is to keep it short and move part-of-the-codebase instructions
 into path-scoped rules, which load on a Read, Write or Edit of a matching file [cc-memory].
 

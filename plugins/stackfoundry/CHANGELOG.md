@@ -15,6 +15,13 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   (https://code.claude.com/docs/en/memory). The block now points to the profile and the target profiles, which
   list each target's stack. A file Codex or Gemini reads keeps the table, since they have no path-scoped rules.
   Template version 5: `/stackfoundry:upgrade` replaces an untouched block and offers an edited one as a merge.
+- **The block claims auto-loading only where the copies exist.** A host loads the rulebooks by itself only when its
+  rules folder holds a copy of every one; a repo may keep them only in `.stackfoundry/rules/`, where the block
+  used to promise loading that never happened. Such a host is now told to read the rulebooks, like Codex.
+  Template version 6.
+- **A large rulebook table moves out of the block** into `.stackfoundry/rulebooks.md`, which the block links,
+  once it passes 8 KiB (`block.py` `BLOCK_BUDGET`). A repo with dozens of packs had a 40 KB table, past Codex's
+  32 KiB. `size-check` warns when a block alone passes the budget.
 
 ## [0.3.0] - 2026-11-11
 

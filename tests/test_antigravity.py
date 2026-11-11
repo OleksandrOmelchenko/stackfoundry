@@ -75,7 +75,7 @@ class SizeAndBlockTests(unittest.TestCase):
                         rows[".agents/rules/web.md"])
 
     def test_a_shared_agents_md_says_how_each_reader_loads_the_rulebooks(self):
-        write(self.root, {".stackfoundry/rules/web.md": RULE})
+        write(self.root, {".stackfoundry/rules/web.md": RULE, ".agents/rules/web.md": RULE})
         readers = block.instruction_files(self.root, ["codex", "antigravity"])["AGENTS.md"]
         text = block.render(self.root, "AGENTS.md", readers)
         self.assertIn("Antigravity CLI loads each rulebook's copy in `.agents/rules/` when it reads a matching file.",

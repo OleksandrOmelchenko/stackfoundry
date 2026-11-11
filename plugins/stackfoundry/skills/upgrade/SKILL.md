@@ -68,7 +68,8 @@ new · keep mine · merge by hand (you produce the merged text and show it befor
 - `stackfoundry manifest record <files> --template <template>` for every file written or kept by choice, so the
   manifest's version and hash move forward.
 - Each instruction file's block (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`) is regenerated between its markers only,
-  with `stackfoundry render-block --write`; text outside the markers is never touched.
+  with `stackfoundry render-block --write`; text outside the markers is never touched. It also writes or removes
+  `.stackfoundry/rulebooks.md`: record it when written, and `manifest forget` it when removed.
 
 ## 4. Repo extensions
 

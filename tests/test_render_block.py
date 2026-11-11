@@ -3,7 +3,8 @@ import json
 import unittest
 
 from tests._support import TempRepo, run_cli, targets_json, write
-from stackfoundry import block, pack
+from stackfoundry import block, pack, sizes
+from stackfoundry.clients import RULE_FORMATS
 
 TARGETS = {"docsRoot": "docs", "targets": [
     {"name": "api", "paths": ["src/**"], "testPaths": ["tests/**"], "packs": ["language-python", "tooling-pytest"]},
@@ -32,6 +33,14 @@ class RenderBlockTests(unittest.TestCase):
     def config(self, *clients):
         write(self.root, {".stackfoundry/config.json": json.dumps({"schemaVersion": 1, "clients": list(clients)})})
 
+    def copies(self, *clients, skip=()):
+        """Each client's copy of every canonical rulebook (except `skip`), as render-rule --write leaves them."""
+        for c in clients:
+            folder, suffix = RULE_FORMATS[c]
+            for src in (self.root / ".stackfoundry/rules").glob("*.md"):
+                if src.stem not in skip:
+                    write(self.root, {f"{folder}/{src.stem}{suffix}": "copy\n"})
+
     def test_rows_link_from_the_file_and_take_covers_then_the_title(self):
         rows = block.rows(self.root, ".claude/CLAUDE.md", block.load_targets(self.root))
         self.assertEqual(rows, [
@@ -51,6 +60,7 @@ class RenderBlockTests(unittest.TestCase):
     def test_a_file_only_path_scoped_assistants_read_gets_no_table(self):
         # Claude Code loads a path-scoped rule on Read, Write or Edit of a matching file
         # (https://code.claude.com/docs/en/memory); a table in CLAUDE.md would repeat that every turn.
+        self.copies("claude-code", "copilot", "antigravity")
         claude = block.render(self.root, "CLAUDE.md", ["claude-code"])
         self.assertNotIn("|---|", claude)
         self.assertNotIn("| [", claude)
@@ -70,6 +80,7 @@ class RenderBlockTests(unittest.TestCase):
                               block.render(self.root, "AGENTS.md", readers))
 
     def test_each_assistant_reading_a_file_gets_its_sentence(self):
+        self.copies("copilot")
         shared = block.render(self.root, "AGENTS.md", ["codex", "copilot", "gemini"])
         self.assertIn("Copilot loads each rulebook's copy in `.github/instructions/` when it reads a matching file. "
                       "Before editing a file that matches a rulebook's globs, read that rulebook.", shared)
@@ -119,6 +130,55 @@ class RenderBlockTests(unittest.TestCase):
         other = run_cli(["render-block", "GEMINI.md", "--root", str(self.root)])
         self.assertEqual(other.returncode, 2)
         self.assertIn("not an instruction file", other.stderr)
+
+    def test_without_copies_a_host_is_told_to_read_the_rulebooks_not_promised_they_load(self):
+        # A repo may keep its rulebooks only in .stackfoundry/rules/ (BookStore does): then nothing loads them.
+        text = " ".join(block.render(self.root, "CLAUDE.md", ["claude-code"]).split())
+        self.assertNotIn("load by themselves", text)
+        self.assertNotIn("loads each rulebook's copy", text)
+        self.assertIn(block.READ_FIRST, text)
+        self.assertIn("| [language-python](.stackfoundry/rules/language-python.md) |", text)
+
+    def test_a_missing_copy_of_one_rulebook_withdraws_the_claim(self):
+        self.copies("claude-code", skip=("testing",))
+        self.assertNotIn("load by themselves", block.render(self.root, "CLAUDE.md", ["claude-code"]))
+        self.copies("claude-code")
+        self.assertIn("load by themselves", block.render(self.root, "CLAUDE.md", ["claude-code"]))
+
+    def test_a_reader_with_copies_and_one_without_share_a_file(self):
+        self.copies("copilot")
+        text = block.render(self.root, "AGENTS.md", ["codex", "copilot"])
+        self.assertIn("Copilot loads each rulebook's copy in `.github/instructions/` when it reads a matching file. "
+                      + block.READ_FIRST, text)
+        self.assertIn("|---|---|---|", text)
+
+    def test_a_table_past_the_budget_moves_to_the_index(self):
+        many = {f".stackfoundry/rules/tooling-x{i:03d}.md":
+                f"---\ndescription: X{i} rulebook (tooling layer). Researched.\npaths:\n  - \"src/x{i}/**\"\n---\n\n# X\n"
+                for i in range(120)}
+        write(self.root, many)
+        self.config("claude-code", "codex")
+        text = block.render(self.root, "AGENTS.md", ["codex"])
+        self.assertNotIn("|---|", text)
+        self.assertIn("Before editing a file, read [`.stackfoundry/rulebooks.md`](.stackfoundry/rulebooks.md) and every "
+                      "rulebook whose globs match it.", " ".join(text.split()))
+        self.assertLess(len(text.encode("utf-8")), block.BLOCK_BUDGET)
+        proc = run_cli(["render-block", "--write", "--root", str(self.root)])
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        index = (self.root / ".stackfoundry/rulebooks.md").read_text(encoding="utf-8")
+        self.assertIn("| [tooling-x007](rules/tooling-x007.md) | `src/x7/**` | X7 |", index)  # relative to the index
+        self.assertIn("](.stackfoundry/rulebooks.md)", (self.root / "CLAUDE.md").read_text(encoding="utf-8"))
+        for f in many:
+            (self.root / f).unlink()
+        run_cli(["render-block", "--write", "--root", str(self.root)])
+        self.assertFalse((self.root / ".stackfoundry/rulebooks.md").exists())  # back under budget: the index goes
+
+    def test_size_check_warns_on_a_block_past_the_budget(self):
+        self.config("claude-code")
+        big = "<!-- stackfoundry:begin x -->\n" + "| row |\n" * 2000 + "<!-- stackfoundry:end -->\n"
+        write(self.root, {"CLAUDE.md": big})
+        row = next(r for r in sizes.check(self.root) if r["path"] == "CLAUDE.md")
+        self.assertTrue(any("stackfoundry budget" in w for w in row["warnings"]), row)
 
     def test_no_rulebooks_is_an_error_only_where_a_table_is_needed(self):
         for f in (self.root / ".stackfoundry/rules").glob("*.md"):

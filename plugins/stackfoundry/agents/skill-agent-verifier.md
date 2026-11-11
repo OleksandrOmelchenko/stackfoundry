@@ -57,8 +57,8 @@ description ≤ 250 characters, agent ≤ 300) as `verify-plumbing` enforces the
 3. **composition.** Every `/stackfoundry:<skill>`, `subagent_type` and agent named in prose exists; a skill's
    dispatch table names real agents; every `materialized` entry in `targets.json` names an existing agent file.
 4. **claude-md.** The root `CLAUDE.md` stays short and lists no skills or agents (the stackfoundry managed block's
-   rulebook table, written only where Codex or Gemini reads the file, is the exception); where it has a table,
-   its rows match the rule files both ways.
+   rulebook table, written only for a reader that does not load the rulebooks by itself, is the exception); where
+   it has a table, or links `.stackfoundry/rulebooks.md`, the rows match the rule files both ways.
 5. **collisions.** No two skills or agents declare the same name; none collides with a built-in agent type.
 6. **orphans.** An agent nothing dispatches, or a skill nothing names, is flagged, never deleted: an intentionally
    standalone entry looks the same as a dead one. A pack directory no target lists is an orphan too.

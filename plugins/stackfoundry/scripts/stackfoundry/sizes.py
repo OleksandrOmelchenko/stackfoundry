@@ -17,7 +17,7 @@ import json
 from pathlib import Path
 
 from . import config
-from .block import BLOCK, instruction_files
+from .block import BLOCK, BLOCK_BUDGET, instruction_files
 from .clients import LIMITS, RULE_FORMATS, outputs
 from .profile import find_root
 
@@ -63,6 +63,10 @@ def check(root: Path) -> list[dict]:
         found = BLOCK.search(text)
         add(path, "instructions", _limits("instructions", readers), text,
             block_lines=len(found.group(0).splitlines()) if found else 0)
+        block_bytes = len(found.group(0).encode("utf-8")) if found else 0
+        if block_bytes > BLOCK_BUDGET:  # a block written before the table could move to .stackfoundry/rulebooks.md
+            rows[-1]["warnings"].append(f"stackfoundry block {block_bytes} bytes > {BLOCK_BUDGET} (stackfoundry budget; "
+                                        "run `stackfoundry render-block --write`)")
 
     canonical = sorted((root / RULES).glob("*.md")) if (root / RULES).is_dir() else []
     for f in canonical:

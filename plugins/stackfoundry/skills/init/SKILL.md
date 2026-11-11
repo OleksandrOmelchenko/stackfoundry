@@ -121,14 +121,17 @@ reads. List every file to be written, marking each **new** or **merge** (an exis
 | each assistant's copy of every rulebook (`outputs` → rules: `.claude/rules/`, `.github/instructions/`, `.cursor/rules/`, `.agents/rules/`) | `stackfoundry render-rule .stackfoundry/rules/<id>.md --client <assistant> --write` | as its canonical rulebook |
 | `<app-model>-code-writer/SKILL.md` per app model (bare id: `app-model-wpf` → `wpf`), in each `outputs` → skills folder | `reference/templates/code-writer-skill.md` | that template |
 | under the docs root, only where missing: `bug-reports/README.md`, `test-designs/README.md`, `plans/README.md`, `plans/_template.md`, `plans/deferred-upgrades.md`, `specifications/README.md`, `security/README.md`, and the reports README in `dependency-reports/`, `radar/` (plus `radar/decisions.md`), `performance-reports/` and `reports/` | `reference/trackers/` (strip each template's own frontmatter) | that tracker |
-| the stackfoundry block in each `outputs` → instructions file (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`) | `stackfoundry render-block --write`, after the canonical rulebooks; never by hand | `reference/templates/instructions-block.md` (the block alone is hashed) |
+| the stackfoundry block in each `outputs` → instructions file (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`) | `stackfoundry render-block --write`, after the canonical rulebooks and their copies; never by hand | `reference/templates/instructions-block.md` (the block alone is hashed) |
+| `.stackfoundry/rulebooks.md`, only when `render-block --write` writes it (a rulebook table too large for the block) | the same command | `reference/templates/instructions-block.md` |
 | Claude Code only: `.claude/settings.json`: `extraKnownMarketplaces.stackfoundry` (GitHub `OleksandrOmelchenko/stackfoundry`) and `enabledPlugins["stackfoundry@stackfoundry"]` | merged into the existing JSON | `profile` |
 
 - **Which instruction file** (`render-block` applies it): for `CLAUDE.md`, the root one when it exists, else
   `.claude/CLAUDE.md` when that exists, else a new root one; `AGENTS.md` and `GEMINI.md` at the root.
-- **What the block holds:** a short pointer to the profile wherever every reader of the file loads path-scoped
-  rules by itself. The rulebook table appears only in a file Codex or Gemini reads, which have no path-scoped
-  rules: for them it is the instruction to read a rulebook before editing a matching file.
+- **What the block holds:** a short pointer to the profile wherever every reader of the file loads the rulebooks
+  by itself: it has path-scoped rules and its folder holds a copy of every rulebook. Every other reader (Codex,
+  Gemini, or a host whose copies the repo does not keep) is told to read a rulebook before editing a matching file,
+  with the table. A table past `render-block`'s budget goes to `.stackfoundry/rulebooks.md` instead, which the
+  block links.
 - **A repo that is itself the stackfoundry marketplace** (its `.claude-plugin/marketplace.json` lists `stackfoundry`):
   skip the `settings.json` entries; contributors run the working tree with `claude --plugin-dir plugins/stackfoundry`.
 - A name collision with an existing rule, skill or doc: write `stackfoundry-<name>` beside it and list it for the
