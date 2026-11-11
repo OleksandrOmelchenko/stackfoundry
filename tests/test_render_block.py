@@ -33,8 +33,7 @@ class RenderBlockTests(unittest.TestCase):
         write(self.root, {".stackfoundry/config.json": json.dumps({"schemaVersion": 1, "clients": list(clients)})})
 
     def test_rows_link_from_the_file_and_take_covers_then_the_title(self):
-        text = block.render(self.root, ".claude/CLAUDE.md", ["claude-code"])
-        rows = [line for line in text.splitlines() if line.startswith("| [")]
+        rows = block.rows(self.root, ".claude/CLAUDE.md", block.load_targets(self.root))
         self.assertEqual(rows, [
             "| [language-python](../.stackfoundry/rules/language-python.md) | `**/*.py` | "
             "encodings, the version floor, subprocess and path handling |",
@@ -42,16 +41,35 @@ class RenderBlockTests(unittest.TestCase):
             "| [testing](../.stackfoundry/rules/testing.md) | `tests/**` | oracles, the assurance gate, flaky tests |",
             "| [zz-extra](../.stackfoundry/rules/zz-extra.md) | `a\\|b/**` | Local rules |",
         ])
+        text = block.render(self.root, "AGENTS.md", ["codex"])
+        self.assertIn("| [language-python](.stackfoundry/rules/language-python.md) |", text)
         self.assertIn("Targets: `api`, `web`.", text)
         self.assertNotIn("{{", text)
         self.assertTrue(text.startswith("<!-- stackfoundry:begin"))
         self.assertTrue(text.endswith("<!-- stackfoundry:end -->\n"))
-        root_text = block.render(self.root, "AGENTS.md", ["codex"])
-        self.assertIn("| [language-python](.stackfoundry/rules/language-python.md) |", root_text)
+
+    def test_a_file_only_path_scoped_assistants_read_gets_no_table(self):
+        # Claude Code loads a path-scoped rule on Read, Write or Edit of a matching file
+        # (https://code.claude.com/docs/en/memory); a table in CLAUDE.md would repeat that every turn.
+        claude = block.render(self.root, "CLAUDE.md", ["claude-code"])
+        self.assertNotIn("|---|", claude)
+        self.assertNotIn("| [", claude)
+        self.assertIn("load by themselves when a matching file is read or written (Claude Code from `.claude/rules/`)",
+                      " ".join(claude.split()))
+        self.assertIn("Targets: `api`, `web`.", claude)
+        self.assertLess(len(claude.splitlines()), 15)
+        agents = block.render(self.root, "AGENTS.md", ["copilot", "antigravity"])
+        self.assertNotIn("|---|", agents)
+        self.assertIn("Copilot from `.github/instructions/`, Antigravity CLI from `.agents/rules/`",
+                      " ".join(agents.split()))
+
+    def test_a_file_codex_or_gemini_reads_keeps_the_table(self):
+        for readers in (["codex"], ["gemini"], ["codex", "copilot"]):
+            with self.subTest(readers=readers):
+                self.assertIn("| Rulebook | Applies to | Covers |\n|---|---|---|\n| [language-python]",
+                              block.render(self.root, "AGENTS.md", readers))
 
     def test_each_assistant_reading_a_file_gets_its_sentence(self):
-        self.assertIn("Claude Code loads each rulebook's copy in `.claude/rules/` when it reads a matching file.",
-                      block.render(self.root, "CLAUDE.md", ["claude-code"]))
         shared = block.render(self.root, "AGENTS.md", ["codex", "copilot", "gemini"])
         self.assertIn("Copilot loads each rulebook's copy in `.github/instructions/` when it reads a matching file. "
                       "Before editing a file that matches a rulebook's globs, read that rulebook.", shared)
@@ -102,13 +120,14 @@ class RenderBlockTests(unittest.TestCase):
         self.assertEqual(other.returncode, 2)
         self.assertIn("not an instruction file", other.stderr)
 
-    def test_no_rulebooks_is_an_error(self):
+    def test_no_rulebooks_is_an_error_only_where_a_table_is_needed(self):
         for f in (self.root / ".stackfoundry/rules").glob("*.md"):
             f.unlink()
-        self.config("claude-code")
-        proc = run_cli(["render-block", "CLAUDE.md", "--root", str(self.root)])
+        self.config("claude-code", "codex")
+        proc = run_cli(["render-block", "AGENTS.md", "--root", str(self.root)])
         self.assertEqual(proc.returncode, 2)
         self.assertIn("no rulebooks", proc.stderr)
+        self.assertEqual(run_cli(["render-block", "CLAUDE.md", "--root", str(self.root)]).returncode, 0)
 
 
 class PackCoversTests(unittest.TestCase):

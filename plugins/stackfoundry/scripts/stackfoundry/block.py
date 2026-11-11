@@ -1,11 +1,16 @@
 """`stackfoundry render-block [file] [--write | --out <path>]`: the stackfoundry block of an instruction file.
 
 The block (reference/templates/instructions-block.md) sits between the stackfoundry markers in each instruction file
-`stackfoundry outputs` lists. It is generated from the profile, never written by hand:
-  - one loading sentence per assistant that reads the file (from config.json `clients`);
-  - one row per canonical rulebook in .stackfoundry/rules/: a link relative to the file, its globs, and what it
-    covers (frontmatter `covers`, else the head of its `description`);
-  - the target names from targets.json.
+`stackfoundry outputs` lists. It is generated from the profile, never written by hand, and kept short: an
+instruction file is loaded into every session.
+  - Where every assistant reading the file loads path-scoped rules by itself (Claude Code, Copilot, Cursor,
+    Antigravity), one paragraph says so and where each target's stack is listed. A table there would repeat what
+    the host already does, at a cost on every turn (Claude Code's memory docs: keep CLAUDE.md short, move
+    part-of-the-codebase instructions into path-scoped rules).
+  - Where any reader has no path scoping (Codex, Gemini), the table is how it learns which rulebook applies: one
+    loading sentence per reader, then one row per canonical rulebook in .stackfoundry/rules/ with a link relative to
+    the file, its globs, and what it covers (frontmatter `covers`, else the head of its `description`).
+  - The target names from targets.json.
 `--write` splices the block between the file's markers, or appends it, keeping everything outside them and the
 file's own line endings. Without a file name, `--write` writes every instruction file the repo's assistants read.
 """
@@ -13,6 +18,7 @@ from __future__ import annotations
 
 import re
 import sys
+import textwrap
 from pathlib import Path
 
 from . import REFERENCE, config
@@ -40,6 +46,14 @@ def instruction_files(root: Path, clients: list[str]) -> dict[str, list[str]]:
             name = ".claude/CLAUDE.md"
         out.setdefault(name, []).append(c)
     return out
+
+
+def _scoped(readers: list[str]) -> str:
+    """The paragraph for a file whose every reader loads path-scoped rules by itself."""
+    where = ", ".join(f"{NAMES[c]} from `{RULE_FORMATS[c][0]}/`" for c in readers)
+    return textwrap.fill(f"The rulebooks in `{RULES.as_posix()}/` load by themselves when a matching file is read or "
+                         f"written ({where}). Each target's stack is in `.stackfoundry/targets/<target>.md`.",
+                         width=117, break_long_words=False, break_on_hyphens=False)
 
 
 def _sentences(readers: list[str]) -> str:
@@ -95,12 +109,15 @@ def render(root: Path, file_rel: str, readers: list[str]) -> str:
     if errors:
         raise ValueError(f"{TEMPLATE.name}: {'; '.join(errors)}")
     targets = load_targets(root)
-    table = rows(root, file_rel, targets)
-    if not table:
-        raise ProfileError("no rulebooks in .stackfoundry/rules/: write them before the block")
+    if all(c in RULE_FORMATS for c in readers):
+        rulebooks = _scoped(readers)
+    else:
+        table = rows(root, file_rel, targets)
+        if not table:
+            raise ProfileError("no rulebooks in .stackfoundry/rules/: write them before the block")
+        rulebooks = "\n".join([_sentences(readers), "", "| Rulebook | Applies to | Covers |", "|---|---|---|", *table])
     names = ", ".join(f"`{t['name']}`" for t in targets.get("targets", [])) or "none"
-    text = (body.strip("\n").replace("{{loading sentences}}", _sentences(readers))
-            .replace("{{rulebook rows}}", "\n".join(table)).replace("{{target names}}", names))
+    text = (body.strip("\n").replace("{{rulebooks}}", rulebooks).replace("{{target names}}", names))
     left = sorted(set(re.findall(r"\{\{[^}]*\}\}", text)))
     if left:
         raise ValueError(f"instructions block: unfilled placeholders {left}")

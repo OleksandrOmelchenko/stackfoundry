@@ -125,15 +125,16 @@ reads. List every file to be written, marking each **new** or **merge** (an exis
 | Claude Code only: `.claude/settings.json`: `extraKnownMarketplaces.stackfoundry` (GitHub `OleksandrOmelchenko/stackfoundry`) and `enabledPlugins["stackfoundry@stackfoundry"]` | merged into the existing JSON | `profile` |
 
 - **Which instruction file** (`render-block` applies it): for `CLAUDE.md`, the root one when it exists, else
-  `.claude/CLAUDE.md` when that exists, else a new root one; `AGENTS.md` and `GEMINI.md` at the root. For Codex and
-  Gemini, which have no path-scoped rules, the block's table is the instruction to read a rulebook before editing a
-  matching file.
+  `.claude/CLAUDE.md` when that exists, else a new root one; `AGENTS.md` and `GEMINI.md` at the root.
+- **What the block holds:** a short pointer to the profile wherever every reader of the file loads path-scoped
+  rules by itself. The rulebook table appears only in a file Codex or Gemini reads, which have no path-scoped
+  rules: for them it is the instruction to read a rulebook before editing a matching file.
 - **A repo that is itself the stackfoundry marketplace** (its `.claude-plugin/marketplace.json` lists `stackfoundry`):
   skip the `settings.json` entries; contributors run the working tree with `claude --plugin-dir plugins/stackfoundry`.
 - A name collision with an existing rule, skill or doc: write `stackfoundry-<name>` beside it and list it for the
   user to merge, never replace.
 - Every generated file is grounded: a placeholder the repo cannot fill is left out, never invented.
-- **Links in an instruction block** are relative to the file that holds it (`render-block` writes them): in
+- **Links in a block's table** are relative to the file that holds it (`render-block` writes them): in
   `.claude/CLAUDE.md` a rulebook is `../.stackfoundry/rules/<id>.md`; in a root file, `.stackfoundry/rules/<id>.md`.
 - **Write JSON with the `Write` tool**, never through a shell heredoc or `echo`: the shell can eat backslashes in
   regex patterns (`guards.json`), and `guard --check` then reports a pattern that no longer means what was agreed.

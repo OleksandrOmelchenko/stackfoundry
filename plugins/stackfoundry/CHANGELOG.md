@@ -6,6 +6,16 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 
 ## [Unreleased]
 
+### Changed
+
+- **A short instruction block where rulebooks load by themselves.** `render-block` no longer writes the rulebook
+  table into a `CLAUDE.md`, or into an `AGENTS.md` read only by Copilot, Cursor or Antigravity. Those hosts load
+  each path-scoped rule when a matching file is read or written, so the table repeated that in every session, and
+  in a larger repo it ran to dozens of lines. Claude Code's guidance is to keep `CLAUDE.md` short
+  (https://code.claude.com/docs/en/memory). The block now points to the profile and the target profiles, which
+  list each target's stack. A file Codex or Gemini reads keeps the table, since they have no path-scoped rules.
+  Template version 5: `/stackfoundry:upgrade` replaces an untouched block and offers an edited one as a merge.
+
 ## [0.3.0] - 2026-11-11
 
 ### Security

@@ -96,6 +96,11 @@ Where an assistant has no path-scoped rules (Codex, Gemini), stackfoundry writes
 `.stackfoundry/rules/<id>.md` and lists it in the instruction-file block with the globs it covers: read it before
 editing a matching file.
 
+Only a file such an assistant reads gets that table. Where every reader loads path-scoped rules by itself (Claude
+Code, Copilot, Cursor, Antigravity), the block is a short pointer to the profile. An instruction file is loaded
+into every session, and Claude Code's guidance is to keep it short and move part-of-the-codebase instructions
+into path-scoped rules, which load on a Read, Write or Edit of a matching file [cc-memory].
+
 ## Size limits
 
 What each host advises or enforces on what it loads. `scripts/stackfoundry/clients.py` `LIMITS` holds the numbers, and
