@@ -53,5 +53,51 @@ class MergedKindTests(unittest.TestCase):
                 self.assertIn("--kind merged", (PLUGIN / rel).read_text(encoding="utf-8"))
 
 
+RULE = '---\ndescription: "X{i} rulebook (tooling layer). Researched."\npaths:\n  - "src/x{i}/**"\n---\n\n# X\n'
+OLD_BLOCK = "# Team\n\n<!-- stackfoundry:begin old -->\nstale\n<!-- stackfoundry:end -->\n"
+
+
+class BlockDiffTests(unittest.TestCase):
+    """`render-block --diff` shows a block change and its size before anything is written."""
+
+    def setUp(self):
+        self.repo = TempRepo()
+        self.root = self.repo.__enter__()
+        self.addCleanup(self.repo.__exit__, None, None, None)
+        targets_json(self.root, {"targets": [{"name": "api", "paths": ["src/**"]}]})
+        config = {"schemaVersion": 1, "clients": ["claude-code", "codex"]}
+        write(self.root, {".stackfoundry/config.json": json.dumps(config),
+                          ".stackfoundry/rules/tooling-x0.md": RULE.format(i=0), "CLAUDE.md": OLD_BLOCK})
+
+    def files(self):
+        return {p.relative_to(self.root).as_posix(): p.read_bytes() for p in self.root.rglob("*") if p.is_file()}
+
+    def diff(self):
+        proc = run_cli(["render-block", "--diff", "--root", str(self.root)])
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        return proc.stdout
+
+    def test_the_preview_shows_each_change_with_its_size_and_writes_nothing(self):
+        before = self.files()
+        out = self.diff()
+        self.assertIn("--- a/CLAUDE.md\n+++ b/CLAUDE.md\n", out)
+        self.assertIn("-stale\n", out)
+        self.assertRegex(out, r"size: CLAUDE\.md \d+ bytes -> \d+ bytes")
+        self.assertIn("--- /dev/null\n+++ b/AGENTS.md\n", out)
+        self.assertIn("size: AGENTS.md absent -> ", out)
+        self.assertEqual(self.files(), before)
+
+    def test_a_table_moving_to_the_index_shows_up_in_the_preview(self):
+        write(self.root, {f".stackfoundry/rules/tooling-x{i}.md": RULE.format(i=i) for i in range(1, 150)})
+        out = self.diff()
+        self.assertIn("+++ b/.stackfoundry/rulebooks.md\n", out)
+        self.assertIn("size: .stackfoundry/rulebooks.md absent -> ", out)
+        self.assertFalse((self.root / ".stackfoundry/rulebooks.md").exists())
+
+    def test_no_change_says_so(self):
+        self.assertEqual(run_cli(["render-block", "--write", "--root", str(self.root)]).returncode, 0)
+        self.assertEqual(self.diff(), "render-block: no change\n")
+
+
 if __name__ == "__main__":
     unittest.main()

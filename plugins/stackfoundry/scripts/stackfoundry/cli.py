@@ -143,6 +143,8 @@ def build() -> argparse.ArgumentParser:
     bld = bl.add_mutually_exclusive_group()
     bld.add_argument("--out", help="write the block alone here")
     bld.add_argument("--write", action="store_true", help="splice the block between the file's markers, or append it")
+    bld.add_argument("--diff", action="store_true", help="show what --write would change, with each file's size before "
+                                                         "and after; writes nothing")
     bl.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/)")
     bl.set_defaults(func=block.main)
 

@@ -15,9 +15,11 @@ instruction file is loaded into every session.
   - The target names from targets.json.
 `--write` splices the block between the file's markers, or appends it, keeping everything outside them and the
 file's own line endings. Without a file name, `--write` writes every instruction file the repo's assistants read.
+`--diff` shows what `--write` would change, file by file with its size before and after, and writes nothing.
 """
 from __future__ import annotations
 
+import difflib
 import posixpath
 import re
 import sys
@@ -190,6 +192,33 @@ def write_index(root: Path, files: dict[str, list[str]]) -> None:
         print(f"removed {INDEX.as_posix()}")
 
 
+def _current(root: Path, rel: str) -> str | None:
+    path = root / rel
+    return path.read_bytes().decode("utf-8-sig").replace("\r\n", "\n") if path.is_file() else None
+
+
+def preview(root: Path, files: dict[str, list[str]], every: dict[str, list[str]]) -> str:
+    """The unified diff `--write` would apply to `files` (and to the index, decided over `every`), each file followed
+    by its size before and after. Empty when nothing would change."""
+    changes: list[tuple[str, str | None, str | None]] = []
+    for rel, readers in files.items():
+        before = _current(root, rel)
+        changes.append((rel, before, splice(before, render(root, rel, readers))))
+    index = INDEX.as_posix()
+    wanted = render_index(root) if any(needs_index(root, r, rd) for r, rd in every.items()) else None
+    changes.append((index, _current(root, index), wanted))
+    out: list[str] = []
+    for rel, before, after in changes:
+        if before == after:
+            continue
+        out += difflib.unified_diff((before or "").splitlines(keepends=True), (after or "").splitlines(keepends=True),
+                                    f"a/{rel}" if before is not None else "/dev/null",
+                                    f"b/{rel}" if after is not None else "/dev/null")
+        size = lambda t: "absent" if t is None else f"{len(t.encode('utf-8'))} bytes"  # noqa: E731
+        out.append(f"size: {rel} {size(before)} -> {size(after)}\n")
+    return "".join(line if line.endswith("\n") else line + "\n" for line in out)
+
+
 def write(root: Path, file_rel: str, readers: list[str]) -> None:
     path = root / file_rel
     raw = path.read_bytes() if path.is_file() else b""
@@ -209,6 +238,13 @@ def main(args) -> int:
                   f"({', '.join(files) or 'none'})", file=sys.stderr)
             return 2
         files = {rel: files[rel]}
+    if getattr(args, "diff", False):
+        try:
+            sys.stdout.reconfigure(newline="\n")
+        except (AttributeError, ValueError):
+            pass
+        sys.stdout.write(preview(root, files, every) or "render-block: no change\n")
+        return 0
     if args.write:
         for rel, readers in files.items():
             write(root, rel, readers)

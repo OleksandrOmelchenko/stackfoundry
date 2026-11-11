@@ -70,7 +70,8 @@ new · keep mine · merge by hand (you produce the merged text and show it befor
   The version and hash move forward either way; `merged` makes the next upgrade ask again instead of replacing
   the team's content.
 - Each instruction file's block (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`) is regenerated between its markers only,
-  with `stackfoundry render-block --write`; text outside the markers is never touched. It also writes or removes
+  with `stackfoundry render-block --write`, after showing `render-block --diff` (the change and each file's size
+  before and after) in the one confirmation; text outside the markers is never touched. It also writes or removes
   `.stackfoundry/rulebooks.md`: record it when written, and `manifest forget` it when removed.
 
 ## 4. Repo extensions

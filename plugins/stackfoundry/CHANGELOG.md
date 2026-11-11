@@ -23,6 +23,12 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   once it passes 8 KiB (`block.py` `BLOCK_BUDGET`). A repo with dozens of packs had a 40 KB table, past Codex's
   32 KiB. `size-check` warns when a block alone passes the budget.
 
+### Added
+
+- `stackfoundry render-block --diff`: what `--write` would change in each instruction file and the rulebook
+  index, with each file's size before and after, writing nothing. `upgrade` and `sync` show it before writing, so
+  a block growing from 1 KB to 40 KB is seen first.
+
 ### Fixed
 
 - **`upgrade` no longer overwrites a hand-merged file without asking.** A file merged by hand or kept by choice was

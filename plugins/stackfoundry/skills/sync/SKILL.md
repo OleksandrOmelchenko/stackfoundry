@@ -58,7 +58,8 @@ ambiguous app model or new target's exposure and stakes).
 - New targets: their target profile and gate, as `/stackfoundry:init` steps 4–5 do for one target (prove the gate
   once, with permission).
 - A changed `clients` list: for each assistant added, write what `stackfoundry outputs` lists for it (rulebook
-  copies with `render-rule --write`, its instruction-file block with `render-block --write` (which also writes or removes `.stackfoundry/rulebooks.md`), code-writer skills,
+  copies with `render-rule --write`, its instruction-file block with `render-block --write` after showing `render-block --diff` (it also writes or
+  removes `.stackfoundry/rulebooks.md`), code-writer skills,
   materialized agents with `render-agent --write`, which refuses an agent setting a host-privileged key: show it and
   ask); for one removed, list its generated files (`stackfoundry manifest list`) and ask before deleting any.
 - `stackfoundry manifest record` for every generated file written; one merged by hand into the team's file gets
