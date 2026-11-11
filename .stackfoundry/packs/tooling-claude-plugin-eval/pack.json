@@ -89,7 +89,7 @@
     {
       "rule": "Put --max-cost-usd on full-suite runs.",
       "why": "A suite costs roughly cases x runs x 2 agent runs, plus three judge calls per llm grader per run, on your plan or API bill. The ceiling is a list-price estimate checked before each run starts. Runs already in flight finish, and the command exits 2 with partial results.",
-      "where": ["not used here yet"],
+      "where": [".github/workflows/evals.yml (both eval commands, input max_cost_usd)"],
       "sources": ["docs-plugin-evals"]
     },
     {
@@ -109,7 +109,7 @@
     },
     {
       "name": "modification-invisible-to-grader",
-      "lookFor": "A 'nothing else changed' assertion built only from target: files, file_exists or tool_used Edit, while Write or Bash is granted. check-updates-report-only has nothing-else-created (created paths only) and no-edits (Edit tool only). A Write overwrite or a Bash redirect into an existing package.json or lock file goes undetected.",
+      "lookFor": "A 'nothing else changed' assertion built only from target: files, file_exists or tool_used Edit, while Write or Bash is granted. A Write overwrite or a Bash redirect into an existing package.json or lock file goes undetected. The report-only cases pair nothing-else-created with a file-content check (pins-unchanged), a Write grader outside the report folder and a shell-write grader.",
       "failure": "A report-only skill that rewrites manifests passes its data-integrity eval.",
       "severityHint": "confirm",
       "sources": ["docs-plugin-evals"]

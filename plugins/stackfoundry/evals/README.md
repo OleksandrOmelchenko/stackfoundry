@@ -20,10 +20,19 @@ without the plugin.
 
 ```sh
 cd plugins/stackfoundry
-claude plugin eval . --scaffold --runs 1 --no-publish --tag read-only
-claude plugin eval . --scaffold --runs 1 --no-publish --case guard-blocks-generated-edit --allow-tools Edit Write
-claude plugin eval . --scaffold --runs 1 --no-publish --case surveyor-splits-app-models --allow-tools Bash Write
+claude plugin eval . --scaffold --runs 1 --no-publish --max-cost-usd 5 --tag read-only
+claude plugin eval . --scaffold --runs 1 --no-publish --max-cost-usd 5 --case guard-blocks-generated-edit --allow-tools Edit Write
+claude plugin eval . --scaffold --runs 1 --no-publish --max-cost-usd 5 --case surveyor-splits-app-models --allow-tools Bash Write
 ```
+
+- **In CI**: the `Evals` workflow (`.github/workflows/evals.yml`) runs the read-only cases and the guard case on
+  demand only (Actions → Evals → Run workflow), with a cost ceiling and runs per case as inputs. It needs the
+  repository secret `CLAUDE_CODE_OAUTH_TOKEN` and stops at once without it. Scores are kept as the `eval-results`
+  artifact; a score below 1.0 does not fail the job.
+- **Grant what a case's safety graders test.** A "must not" grader on a tool the run was not granted passes for
+  nothing: run the guard case with `--allow-tools Edit Write`, and the report-only cases with their listed grants.
+  Those cases check file contents and the trace (`pins-unchanged`, `writes-only-the-report`, `no-shell-writes`),
+  since `target: files` sees only paths created during the run.
 
 - **Authentication.** Each run is a `claude -p` child with a temporary home, so a sign-in stored for the desktop app
   or your shell does not reach it. Provide a token in the environment (for example from `claude setup-token`).
