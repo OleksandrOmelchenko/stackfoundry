@@ -6,7 +6,10 @@ Classification of each changed file, first match wins:
   3. `rules` in order   -> the rule's targets
   4. target `paths`     -> every target whose paths match (two targets may share a folder: a Vue layer and an SSR layer)
   5. target `testPaths` -> that target, as a test file
-  6. otherwise          -> unmapped (judge by hand; add a rule when a path keeps coming back)
+  6. `fullRunTriggers`  -> fullRun (no one target: a change here runs every target's tests)
+  7. a file stackfoundry generated (listed in `.stackfoundry/manifest.lock.json`) -> stackfoundry (refreshed by sync
+     or upgrade, not reviewed as product code)
+  8. otherwise          -> unmapped (judge by hand; add a rule when a path keeps coming back)
 
 A rule with no targets that takes a file some target's `paths` or `testPaths` also match is reported as
 `shadowed`: usually a glob without a slash (`*.md`), which matches at any depth, where a root file (`/*.md`) was meant.
@@ -20,17 +23,30 @@ from pathlib import Path
 
 from . import gitutil
 from .globs import match_any
-from .profile import load_targets
+from .profile import MANIFEST, load_targets
 
 MAX_SCAN_BYTES = 1024 * 1024
 
 
-def classify(data: dict, files: list[str]) -> dict:
+def stackfoundry_files(root: Path) -> set[str]:
+    """The files the manifest records as stackfoundry's output (rulebooks and their copies, skills, the profile)."""
+    try:
+        data = json.loads((root / MANIFEST).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return set()
+    files = data.get("files") if isinstance(data, dict) else None
+    return set(files) if isinstance(files, dict) else set()
+
+
+def classify(data: dict, files: list[str], own: set[str] | None = None) -> dict:
+    """`own`: the files stackfoundry generated (`stackfoundry_files`)."""
     targets = {t["name"]: t for t in data["targets"]}
     result = {
         "targets": {},
         "generated": [],
         "ignored": [],
+        "fullRun": [],
+        "stackfoundry": [],
         "unmapped": [],
         "shadowed": [],
     }
@@ -66,6 +82,12 @@ def classify(data: dict, files: list[str]) -> dict:
         if hits:
             for n in hits:
                 add(n, f, False)
+            continue
+        if match_any(f, data.get("fullRunTriggers", [])):
+            result["fullRun"].append(f)
+            continue
+        if own and f in own:
+            result["stackfoundry"].append(f)
             continue
         result["unmapped"].append(f)
 
@@ -142,8 +164,10 @@ def render_markdown(result: dict, specs: list[dict], base: str | None, source: s
     else:
         lines.append("- none matched (the scan is a hint: add one by judgment and say why)")
     for key, title in (("generated", "Generated (regenerate, never hand-edit or review)"),
+                       ("fullRun", "Full-run triggers (no one target: every target's tests run)"),
+                       ("stackfoundry", "stackfoundry's own files (refreshed by sync or upgrade)"),
                        ("unmapped", "Unmapped (judge by hand)")):
-        if result[key]:
+        if result.get(key):
             lines += ["", f"## {title}"] + [f"- {f}" for f in result[key]]
     if result.get("shadowed"):
         lines += ["", "## Shadowed (a rule with no targets hides these from targets whose paths match them)"]
@@ -157,7 +181,7 @@ def main(args) -> int:
     root = Path(args.root).resolve() if args.root else gitutil.repo_root(Path.cwd())
     data = load_targets(root)
     files = resolve_files(root, args.base, args.files, args.range, getattr(args, "all", False))
-    result = classify(data, files)
+    result = classify(data, files, stackfoundry_files(root))
     specs = specialists(data, root, files)
     if args.json:
         print(json.dumps({**result, "specialists": specs, "base": args.base}, indent=2))

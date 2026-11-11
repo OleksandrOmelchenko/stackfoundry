@@ -23,7 +23,7 @@ argument-hint: "[plan or spec slug]"
 `/stackfoundry:implement-plan` retires a plan, but only one it just built. A plan built outside that flow (ad hoc,
 piecemeal, long ago) needs this step, and the work is mostly **establishing that the feature really is built**.
 
-Plans live in `<docsRoot>/plans/`, specs in `<docsRoot>/specifications/` (`targets.json` → `docsRoot`, default
+Plans live in `<docsRoot>/plans/`, specs in `<docsRoot>/specifications/` (`stackfoundry config docsRoot`, default
 `docs`).
 
 ## Scope

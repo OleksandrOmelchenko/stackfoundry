@@ -28,7 +28,7 @@ skill that owns it. Routes, the freshness check and every bump rule are in `.sta
 ## Procedure
 
 1. **Load the report**: the path given, else the newest `<docsRoot>/dependency-reports/*-dependency-updates.md`
-   (`docsRoot` from `.stackfoundry/targets.json`).
+   (`stackfoundry config docsRoot`).
    - Run the rulebook's freshness check per ecosystem (`git log --since=<report date> -- <pin files>`, the pin
      files from `.stackfoundry/ecosystems.json`). Rediscover a stale ecosystem with
      `/stackfoundry:check-updates <id>` before acting on it.

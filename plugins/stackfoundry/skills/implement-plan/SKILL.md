@@ -19,7 +19,7 @@ argument-hint: "[plan slug]"
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
 > (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
-Takes a plan from `<docsRoot>/plans/` (`targets.json` → `docsRoot`, default `docs`), builds it the repo's way, and
+Takes a plan from `<docsRoot>/plans/` (`stackfoundry config docsRoot`, default `docs`), builds it the repo's way, and
 once it is built and verified **retires** it in the same change: the plan is deleted, a living spec records what
 was built, and every instruction the change made untrue is synced. The lifecycle is in
 `.stackfoundry/rules/documentation.md` (*Plans, specifications and the backlog*).

@@ -26,7 +26,7 @@ reads the last N of them with the decision ledger and says what moved, what did 
 ## Inputs
 
 - `N`: how many reports of each kind (default 4).
-- `<docsRoot>` from `.stackfoundry/targets.json`:
+- `<docsRoot>` from `stackfoundry config docsRoot`:
   - `<docsRoot>/radar/*-tech-radar.md` and `*-stackfoundry-radar.md`, newest first;
   - `<docsRoot>/dependency-reports/*-dependency-updates.md`, newest first;
   - `<docsRoot>/radar/decisions.md` and the `ecosystems.json` → `deferredFile`;

@@ -24,7 +24,7 @@ here leaves the backlog and the docs lying about what exists. You review the ret
 
 ## Read first
 
-1. `.stackfoundry/targets.json` for `docsRoot` (default `docs`).
+1. `stackfoundry config docsRoot` for the docs root (default `docs`).
 2. `.stackfoundry/rules/documentation.md` (the plans → specifications lifecycle, what a spec may not carry) and the
    formats in `${CLAUDE_PLUGIN_ROOT}/reference/trackers/specifications-README.md` and `plans-README.md`.
 3. `<docsRoot>/plans/README.md` for the Category vocabulary.

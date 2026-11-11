@@ -27,7 +27,7 @@ categories and how they are fixed are `.stackfoundry/rules/testing.md` § 11 (Fl
 ## Inputs
 
 - `.stackfoundry/targets.json`: per target, `tests[]` (`name`, `command`, `shuffle`) and `gate.preconditions`;
-  `docsRoot` and `timezone`. Arguments pick targets; none means all. `--runs N`: runs per suite (default 5).
+  `timezone`. The docs root is `stackfoundry config docsRoot`. Arguments pick targets; none means all. `--runs N`: runs per suite (default 5).
 - No `targets.json`: one line ("run `/stackfoundry:init`") and stop without writing.
 
 ## Unattended contract

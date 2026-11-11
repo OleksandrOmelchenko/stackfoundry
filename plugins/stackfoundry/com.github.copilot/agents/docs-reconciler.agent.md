@@ -27,7 +27,7 @@ the bookkeeping; you never second-guess a documented decision or the code's desi
 1. `.stackfoundry/rules/documentation.md`: the rulebook (living vs snapshot vs tracker, what not to write, the Keep
    list, the plans → specifications lifecycle). Its template is
    `${CLAUDE_PLUGIN_ROOT}/reference/rulebooks/documentation.md` when the repo has none yet.
-2. `.stackfoundry/targets.json` for `docsRoot` (default `docs`) and the targets; the tracker formats in
+2. `stackfoundry config docsRoot` for the docs root (default `docs`), and `.stackfoundry/targets.json` for the targets; the tracker formats in
    `${CLAUDE_PLUGIN_ROOT}/reference/trackers/`.
 3. Every doc in your area, in full, before checking anything.
 

@@ -38,7 +38,7 @@ updates, upgrades or syncs anything.
   `https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md`.
 - **The other assistants** in `.stackfoundry/config.json` → `clients`: each one's documentation and announcements,
   starting from its sources in `${CLAUDE_PLUGIN_ROOT}/reference/clients.md`.
-- `docsRoot` and `timezone` from `.stackfoundry/targets.json`. No profile: report only the installed vs
+- `docsRoot` from `stackfoundry config docsRoot`, and `timezone` from `.stackfoundry/targets.json`. No profile: report only the installed vs
   latest comparison in chat and suggest `/stackfoundry:init`; write nothing.
 
 ## Unattended contract

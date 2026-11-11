@@ -26,7 +26,7 @@ radar stops re-suggesting what was settled. It never edits product code, packs o
 ## Procedure
 
 1. **Load the report**: the path given, else the newest `<docsRoot>/radar/*-tech-radar.md` (`docsRoot` from
-   `.stackfoundry/targets.json`). Load `decisions.md`; when it does not exist, it is created in step 4 from
+   `stackfoundry config docsRoot`). Load `decisions.md`; when it does not exist, it is created in step 4 from
    `${CLAUDE_PLUGIN_ROOT}/reference/trackers/radar-decisions.md`.
 2. **Check before asking.** Drop items a decision row already settles (unless its revisit condition fired, as the
    report says). An item a plan in `<docsRoot>/plans/` already covers cites it (`stackfoundry backlog --section

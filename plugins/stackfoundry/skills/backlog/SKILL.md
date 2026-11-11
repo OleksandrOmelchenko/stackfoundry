@@ -19,7 +19,7 @@ argument-hint: "[plans|bugs|todos] [category]"
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
 > (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
-`stackfoundry backlog` does the mechanical part. Under the docs root (`targets.json` → `docsRoot`, default `docs`)
+`stackfoundry backlog` does the mechanical part. Under the docs root (`stackfoundry config docsRoot`, default `docs`)
 it reads every plan's and spec's line-3 `**Category:**`, the `## Follow-ups` bullets of each spec, every open
 bug-report finding (⬜ OPEN, ⚠️ PARTIAL), every open test-design row, and `TODO`/`FIXME` comments in tracked code.
 This skill adds what a parser cannot: the judgment calls, and a faithful presentation.

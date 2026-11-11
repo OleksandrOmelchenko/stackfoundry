@@ -31,7 +31,7 @@ the code is supposed to be right. You never edit anything.
    table is your checklist; its *Rules* say what correct code looks like; its *Security* and *Performance* notes
    feed the categories of the same name.
 4. Prior findings: the bug reports for this target under `<docsRoot>/bug-reports/` (`docsRoot` from
-   `targets.json`, default `docs`), or the `prior:` lines of the dispatch. Format:
+   `stackfoundry config docsRoot`, default `docs`), or the `prior:` lines of the dispatch. Format:
    `${CLAUDE_PLUGIN_ROOT}/reference/trackers/bug-reports-README.md`.
 
 No `targets.json`, or no entry for the target: say so in one line ("run `/stackfoundry:init`" or

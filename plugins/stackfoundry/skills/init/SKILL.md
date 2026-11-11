@@ -104,9 +104,9 @@ message** (batches of about six when there are many). Each brief carries `pack:`
 
 ## 4. Write (one confirmation first)
 
-`.stackfoundry/config.json` names the repo's assistants; `stackfoundry outputs` (after writing it) says where each
-kind of file goes for them, so no assistant gets a copy another one already reads. List every file to be written,
-marking each **new** or **merge** (an existing file of the same name), and ask once. Then write:
+`.stackfoundry/config.json` names the repo's assistants. Before anything is written, `stackfoundry outputs --clients
+<the agreed clients>` says where each kind of file goes for them, so no assistant gets a copy another one already
+reads. List every file to be written, marking each **new** or **merge** (an existing file of the same name), and ask once. Then write:
 
 | File | From | Recorded with `--template` |
 |---|---|---|

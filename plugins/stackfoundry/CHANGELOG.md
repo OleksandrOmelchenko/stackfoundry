@@ -158,6 +158,15 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 - init's write probe no longer reads as if a shell write were a way around a refused one.
 - The test suite no longer passes git's hook variables (`GIT_INDEX_FILE`, `GIT_DIR`…) to the temp repos it creates,
   so a run from the pre-commit hook cannot touch the outer repo's index.
+- Skills and agents take the docs root from `stackfoundry config docsRoot`. `config.json` has been where it lives,
+  but these still read it from `targets.json`, so a repo with its own docs root had reports written to `docs/`.
+  The surveyor now drafts `docsRoot` for `config.json` too.
+- `change-targets` lists `fullRunTriggers` files and the files stackfoundry generated (from the manifest) in
+  sections of their own, instead of under **Unmapped**.
+- The surveyor never drafts a paid or manual check (such as `claude plugin eval`) as a test or gate; it drafts an
+  `ask` guard instead, as init's rule asks.
+- init learns where every file goes (`stackfoundry outputs --clients …`) before its one confirmation, rather than
+  after writing `config.json`.
 
 ## [0.2.0] - 2026-11-09
 

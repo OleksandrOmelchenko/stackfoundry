@@ -39,7 +39,7 @@ desktop app for UI-thread work and startup. The target's packs say which applies
 1. **Load.** No `targets.json` → "run `/stackfoundry:init`", stop. Read the target's entry, profile and pack
    rulebooks. A pack rulebook without a *Performance* section is named under Not covered.
 2. **Read prior reports first.** The latest `<docsRoot>/performance-reports/*-<target>-performance-review.md`
-   (`docsRoot` from `targets.json`, default `docs`). Hand the reviewer its findings: don't re-report what was
+   (`stackfoundry config docsRoot`, default `docs`). Hand the reviewer its findings: don't re-report what was
    addressed; flag what the code now contradicts.
 3. **Dispatch** `stackfoundry:performance-reviewer` (or `materialized.performance-reviewer`), one per target, all
    in one message for `all`. Brief: `target`, `scope`, `mode: sweep | area | diff`, `prior:` the earlier findings,

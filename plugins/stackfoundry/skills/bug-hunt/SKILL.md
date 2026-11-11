@@ -43,7 +43,7 @@ never fixes. Report format: `${CLAUDE_PLUGIN_ROOT}/reference/trackers/bug-report
    (category, pack, one-line *Look for*) before fanning out. A pack without a rulebook is named as missing
    (`/stackfoundry:research-stack`), never filled from memory.
 2. **Read prior findings first.** The target's reports under `<docsRoot>/bug-reports/` (`docsRoot` from
-   `targets.json`, default `docs`). Reconcile, don't re-file: skip ✅ FIXED and 🚫 WONT-FIX (flag a marker the code
+   `stackfoundry config docsRoot`, default `docs`). Reconcile, don't re-file: skip ✅ FIXED and 🚫 WONT-FIX (flag a marker the code
    contradicts), hand ⬜ OPEN and ⚠️ PARTIAL ones to the hunter of their category to re-confirm, and spend the hunt
    on new defects. Decide now whether this run updates the latest report of the same scope or starts a new one.
 3. **Scope.** Sweep → the target's `paths`; area → that subtree; diff → `stackfoundry change-targets [--base

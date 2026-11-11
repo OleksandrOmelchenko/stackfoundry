@@ -29,7 +29,7 @@ are in `.stackfoundry/rules/dependency-bumps.md` (template: `${CLAUDE_PLUGIN_ROO
 
 - `.stackfoundry/ecosystems.json`: the ecosystems in apply order, their `discover` commands,
   `outsideManifest` pins, `chains`, `sources` and `deferredFile`. Arguments pick a subset by `id`; none means all.
-- `.stackfoundry/targets.json`: `docsRoot` and `timezone`.
+- `stackfoundry config docsRoot`, and `timezone` from `.stackfoundry/targets.json`.
 - Each ecosystem's pack: `.stackfoundry/rules/<pack>.md` § Upgrades and `.stackfoundry/packs/<pack>/pack.json` →
   `upgrade` (release notes, migration guides, deprecations in use).
 

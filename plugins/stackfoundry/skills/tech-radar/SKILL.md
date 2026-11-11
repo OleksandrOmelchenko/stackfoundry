@@ -33,7 +33,7 @@ and `/stackfoundry:check-updates` own version numbers, so this skill points at t
   with a row there is skipped unless its **Revisit when** condition now holds; say which condition fired.
 - The refresh window: the repo's `researchRefreshDays` (`stackfoundry config researchRefreshDays`; 90 when
   unset).
-- `docsRoot` and `timezone` from `.stackfoundry/targets.json`. No packs: one line ("run
+- `docsRoot` from `stackfoundry config docsRoot`, and `timezone` from `.stackfoundry/targets.json`. No packs: one line ("run
   `/stackfoundry:init`") and stop without writing.
 
 ## Unattended contract

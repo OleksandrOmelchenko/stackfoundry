@@ -19,7 +19,7 @@ argument-hint: "<feature idea>"
 > Its `## Rules` win where they conflict with this file, never over the fixed contract
 > (`${CLAUDE_PLUGIN_ROOT}/reference/extensions.md`). Your report names every extension you applied.
 
-Records a future feature as one file in `<docsRoot>/plans/` (`targets.json` → `docsRoot`, default `docs`): the
+Records a future feature as one file in `<docsRoot>/plans/` (`stackfoundry config docsRoot`, default `docs`): the
 unordered backlog of work not yet started. It **captures** a plan; it implements nothing and touches no code or
 other doc. The lifecycle is in `.stackfoundry/rules/documentation.md` (*Plans, specifications and the backlog*).
 

@@ -25,7 +25,7 @@ sessions and back-to-back changes. A second kind of drift needs no code change a
 (a count, a `file:line`, a date) written into living text. This skill re-derives the truth from the code and
 corrects the bookkeeping instead of trusting what the docs claim. The rules are `.stackfoundry/rules/documentation.md`.
 
-The docs root is `targets.json` → `docsRoot` (default `docs`).
+The docs root is `stackfoundry config docsRoot` (default `docs`).
 
 ## Scope
 
