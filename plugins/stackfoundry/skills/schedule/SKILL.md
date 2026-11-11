@@ -89,7 +89,13 @@ approves every tool.
      `.claude/settings.local.json` (this clone, this machine, not committed). It records which rules it owns, so a
      later rewrite replaces only those. `--to project` (the committed `.claude/settings.json`, which every teammate
      and session inherits) only when the user asks for it;
-   - the trade-off: those local rules also apply to every other session in this clone;
+   - the trade-off: those local rules also apply to every other session in this clone. The per-task alternative:
+     start each task once from the app (**Run now**) and approve its tools there; the app stores those approvals on
+     the task and reuses them on later runs. Offer it when the user would rather not widen the local settings.
+     `allowed-tools` in the task's own file does not work (`reference/clients.md`, *Claude desktop scheduled
+     tasks*);
+   - a task created from an Auto session is saved in Auto mode, where a classifier decides each call: say so, and
+     that the user can change the task's mode in the app;
    - `stackfoundry schedule check` afterwards: every approved skill must come back ok, and what is still missing is
      shown, never left for the first run to discover;
    - a command those rules don't allow stalls or is denied.

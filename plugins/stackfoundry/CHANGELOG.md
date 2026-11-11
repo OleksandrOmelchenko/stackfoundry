@@ -28,6 +28,9 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 - `schedule` writes the rules to the local settings instead of telling you to edit the committed
   `.claude/settings.json`, and says the trade-off: they apply to every session in that clone.
 - `pack check` rejects a source or upgrade URL whose host is not a real DNS name (a placeholder like `api.<host>`).
+- `schedule` offers per-task approvals as the alternative to local settings: start the task once from the app and
+  approve its tools, which the app stores on the task. A probe showed that `allowed-tools` in a task's own file
+  pre-approves nothing; `reference/clients.md` records it.
 
 ## [0.4.0] - 2026-11-11
 

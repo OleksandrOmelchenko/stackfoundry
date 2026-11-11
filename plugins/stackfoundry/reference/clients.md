@@ -98,8 +98,15 @@ manual installs, after `/hooks` trust).
 - **So the rules live in settings:** `stackfoundry schedule rules --write` puts them in
   `.claude/settings.local.json`, which every session in that clone on that machine also gets. That is the
   trade-off until a task can carry its own list.
-- *Confirm:* whether `allowed-tools` in a task's `SKILL.md` frontmatter pre-approves tools for its runs, as it
-  does for a skill. The probe is in `docs/plans/desktop-task-allowed-tools.md` of the stackfoundry repo.
+- **`allowed-tools` in a task's `SKILL.md` does nothing** (probed with Claude Code 2.1 in the desktop app, a task in
+  ask mode): a run receives the file's body as a user message, not as a skill. A `python -c` command stalled on
+  its approval prompt with the frontmatter rule as without it. The app also drops unknown frontmatter keys when
+  a task is edited.
+- **Per-task approvals do exist:** approvals granted during a run are stored on the task and reused by its later
+  runs. A first run started from the app (**Run now**), with someone there to approve each tool, gives that task
+  its own permissions without any settings file. Approve only what the run's report needs.
+- **Saved mode:** a task created from an Auto session is saved in Auto mode, where a classifier, not rules, decides
+  each call; a person changes it by editing the task in the app.
 
 ## Rules where there is no path scoping
 
