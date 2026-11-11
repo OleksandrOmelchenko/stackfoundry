@@ -23,8 +23,12 @@ dependency bumpers and a tech radar.
 | GitHub Copilot CLI | `copilot plugin marketplace add OleksandrOmelchenko/stackfoundry`, then `copilot plugin install stackfoundry@stackfoundry` |
 | Codex | `codex plugin marketplace add OleksandrOmelchenko/stackfoundry`, then install `stackfoundry` from its plugin list |
 | Cursor | add `OleksandrOmelchenko/stackfoundry` as a team marketplace, or clone it and link `plugins/stackfoundry` into `~/.cursor/plugins/local/` |
-| Gemini CLI | `gemini extensions install` with the `stackfoundry-gemini.tar.gz` of a release |
+| Antigravity CLI | extract the `stackfoundry-antigravity.tar.gz` of a release, then `agy plugin install <that folder>` |
+| Gemini CLI (Code Assist Standard and Enterprise, paid API keys) | `gemini extensions install` with the `stackfoundry-gemini.tar.gz` of a release |
 | Any Agent Skills client | copy `plugins/stackfoundry/skills/` into the folder it reads (often `.agents/skills/`); skills only |
+
+Moving from Gemini CLI to Antigravity CLI: install the Antigravity plugin above rather than `agy plugin import
+gemini`, which converts the extension but not its guard hook.
 
 Requirements: git, Python 3.11+, and `sh` (Git Bash on Windows) or PowerShell 7. In Claude Code the guard hook
 runs through `sh`, so on Windows it needs Git Bash: without it the guard is off (the hook lets every call through),

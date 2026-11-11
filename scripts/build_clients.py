@@ -12,11 +12,13 @@ The source of truth is the plugin as Claude Code reads it: `.claude-plugin/plugi
 - the marketplace catalogs at the repository root: `.agents/plugins/marketplace.json` (Codex),
   `.github/plugin/marketplace.json` (Copilot) and `.cursor-plugin/marketplace.json` (Cursor);
 - with `--gemini-out <dir>` only: a complete Gemini CLI extension (not committed; the release workflow attaches it).
+- with `--antigravity-out <dir>` only: a complete Antigravity CLI plugin (likewise).
 
 Usage (from the repository root):
     python scripts/build_clients.py            write the committed files
     python scripts/build_clients.py --check    exit 1 and list every file that differs (pre-commit and CI)
     python scripts/build_clients.py --gemini-out <dir>
+    python scripts/build_clients.py --antigravity-out <dir>
 Standard library only. Deterministic: the same source always gives the same bytes.
 """
 from __future__ import annotations
@@ -236,6 +238,64 @@ def build_gemini(src: dict, out: Path) -> None:
     }]}}), encoding="utf-8", newline="\n")
 
 
+# Antigravity CLI (reference/clients.md, [ag-build-plugins], [ag-hooks]). Its manifest schema allows no other keys,
+# and a skill's frontmatter takes only these.
+ANTIGRAVITY_MANIFEST_KEYS = ("name", "displayName", "description", "version", "homepage", "repository", "license")
+ANTIGRAVITY_SKILL_KEYS = ("name", "description", "disable-model-invocation", "license", "compatibility")
+ANTIGRAVITY_GUARDED_TOOLS = ("run_command", "write_to_file", "replace_file_content", "multi_replace_file_content")
+FRONTMATTER_KEY = re.compile(r"^([A-Za-z][\w-]*):")
+
+
+def antigravity_skill(text: str) -> str:
+    """A SKILL.md with only the frontmatter keys Antigravity documents (others, such as argument-hint, dropped)."""
+    if not text.startswith("---\n"):
+        return text
+    end = text.index("\n---\n", 4)
+    kept, keep = [], False
+    for line in text[4:end].split("\n"):
+        m = FRONTMATTER_KEY.match(line)
+        if m:
+            keep = m.group(1) in ANTIGRAVITY_SKILL_KEYS
+        if keep:
+            kept.append(line)
+    return "---\n" + "\n".join(kept) + text[end:]
+
+
+def antigravity_hooks() -> dict:
+    """hooks.json maps a hook's name to its events. Hooks run from the plugin root, so the launcher is relative; a
+    hook that exits non-zero is ignored, and the guard always exits 0 with its answer in JSON."""
+    return {"stackfoundry-guard": {"PreToolUse": [{
+        "matcher": "^(" + "|".join(ANTIGRAVITY_GUARDED_TOOLS) + ")$",
+        "hooks": [{"type": "command", "command": "sh ./scripts/stackfoundry.sh guard --client antigravity",
+                   "timeout": 10}],
+    }]}}
+
+
+def build_antigravity(src: dict, out: Path) -> None:
+    """A complete Antigravity CLI plugin at `out` (replaced if it exists), for `agy plugin install <out>`."""
+    if out.exists():
+        shutil.rmtree(out)
+    out.mkdir(parents=True)
+    manifest = {k: src[k] for k in ANTIGRAVITY_MANIFEST_KEYS if isinstance(src.get(k), str)}
+    manifest.setdefault("displayName", src["name"])
+    manifest = {k: manifest[k] for k in ANTIGRAVITY_MANIFEST_KEYS if k in manifest}
+    (out / "plugin.json").write_text(dump(manifest), encoding="utf-8", newline="\n")
+    for name in ("scripts", "reference"):
+        shutil.copytree(PLUGIN / name, out / name, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+    for name in ("README.md", "CHANGELOG.md"):
+        shutil.copy2(PLUGIN / name, out / name)
+    for skill in sorted((PLUGIN / "skills").glob("*/SKILL.md")):
+        shutil.copytree(skill.parent, out / "skills" / skill.parent.name,
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        (out / "skills" / skill.parent.name / "SKILL.md").write_text(
+            antigravity_skill(skill.read_text(encoding="utf-8")), encoding="utf-8", newline="\n")
+    (out / "agents").mkdir()
+    for agent in sorted((PLUGIN / "agents").glob("*.md")):
+        (out / "agents" / agent.name).write_text(render_agent(agent.read_text(encoding="utf-8"), "antigravity"),
+                                                encoding="utf-8", newline="\n")
+    (out / "hooks.json").write_text(dump(antigravity_hooks()), encoding="utf-8", newline="\n")
+
+
 def expected() -> dict[Path, str]:
     src = load_claude_manifest()
     files = {PLUGIN / rel: text for rel, text in build_plugin_files(src).items()}
@@ -253,6 +313,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--check", action="store_true", help="report files that differ; write nothing")
     ap.add_argument("--gemini-out", help="also build the Gemini CLI extension into this folder")
+    ap.add_argument("--antigravity-out", help="also build the Antigravity CLI plugin into this folder")
     args = ap.parse_args(argv)
 
     files = expected()
@@ -286,6 +347,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.gemini_out:
         build_gemini(load_claude_manifest(), Path(args.gemini_out))
         print(f"build_clients: Gemini extension in {args.gemini_out}")
+    if args.antigravity_out:
+        build_antigravity(load_claude_manifest(), Path(args.antigravity_out))
+        print(f"build_clients: Antigravity plugin in {args.antigravity_out}")
     return 0
 
 

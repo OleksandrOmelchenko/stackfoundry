@@ -53,7 +53,8 @@ One command, `stackfoundry guard`, serves every assistant's pre-tool hook. It re
 **Antigravity CLI** sends `toolCall.name` and `toolCall.args` and reads `{"decision": "deny"|"ask", "reason": …}`
 [ag-hooks]. A hook that exits non-zero is logged and ignored, so the call goes through [ag-build-plugins]: the guard
 always answers in JSON and exits 0. Plugin hooks run from the plugin root, so the command names the launcher
-relative to it. Gemini CLI still serves Gemini Code Assist Standard and Enterprise and paid API keys; individual
+relative to it (`sh ./scripts/stackfoundry.sh`, built by `scripts/build_clients.py` `antigravity_hooks`). On
+Windows that needs `sh` (Git Bash): without it the hook fails and the call goes through unguarded. Gemini CLI still serves Gemini Code Assist Standard and Enterprise and paid API keys; individual
 tiers moved to Antigravity CLI on 2026-06-18 [google-antigravity], [gemini-cli-readme].
 
 Each assistant's hook file is generated (`plugin.json` → `com.openai/hooks.json`, `com.github.copilot/hooks/`,

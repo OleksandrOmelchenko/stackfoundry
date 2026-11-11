@@ -83,6 +83,11 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   `render-agent --client antigravity` maps an agent's tools, and refuses a grant with no equivalent rather than
   give it every tool. `size-check` errors when a rule or instruction file passes the 24,000 bytes Antigravity
   reads.
+- **An Antigravity CLI plugin** on every release, `stackfoundry-antigravity.tar.gz`: extract it and run `agy plugin
+  install <folder>`. It carries the skills (frontmatter cut to the keys Antigravity documents), the agents with
+  Antigravity tool allowlists, and the guard as a `PreToolUse` hook. `python scripts/build_clients.py
+  --antigravity-out <dir>` builds it. Gemini CLI keeps its extension, for the Code Assist Standard and Enterprise
+  tiers and paid API keys it still serves.
 - The `web-researcher` agent: it answers a skill's web questions with cited notes, and holds no shell and writes
   nothing.
 - `stackfoundry side-effects start|end`, and `reference/unattended.md`, the one copy of the unattended-run contract.

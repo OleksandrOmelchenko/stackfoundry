@@ -1,10 +1,14 @@
 """Antigravity CLI as a repo client: where its files go, its rule and agent formats, its size limits, its block
 sentence. Formats from reference/clients.md ([ag-rules], [ag-build-plugins]); accessed 2026-11-11."""
+import importlib.util
 import json
+import tempfile
 import unittest
+from pathlib import Path
 
-from tests._support import TempRepo, run_cli, targets_json, write
-from stackfoundry import block, clients, sizes
+from tests._support import ROOT, TempRepo, run_cli, targets_json, write
+from stackfoundry import block, clients, guard, sizes
+from stackfoundry.frontmatter import split
 
 RULE = "---\ndescription: Web rules\npaths:\n  - \"*.ts\"\n  - \"src/**\"\n---\n\n# Web\n\nSee [testing](testing.md).\n"
 AGENT = "---\nname: reviewer\ndescription: Reviews.\ntools: Read, Grep, Glob, Bash, WebSearch, Agent\n---\n\nBody.\n"
@@ -77,6 +81,62 @@ class SizeAndBlockTests(unittest.TestCase):
         self.assertIn("Antigravity CLI loads each rulebook's copy in `.agents/rules/` when it reads a matching file.",
                       text)
         self.assertIn(block.READ_FIRST, text)  # for Codex, which has no path-scoped rules
+
+
+class PluginBundleTests(unittest.TestCase):
+    """The tree `build_clients.py --antigravity-out` builds, which the release attaches."""
+
+    @classmethod
+    def setUpClass(cls):
+        spec = importlib.util.spec_from_file_location("build_clients", ROOT / "scripts" / "build_clients.py")
+        cls.b = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cls.b)
+        cls._tmp = tempfile.TemporaryDirectory()
+        cls.out = Path(cls._tmp.name) / "stackfoundry"
+        cls.b.build_antigravity(cls.b.load_claude_manifest(), cls.out)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._tmp.cleanup()
+
+    def test_the_manifest_has_only_keys_its_schema_allows(self):
+        manifest = json.loads((self.out / "plugin.json").read_text(encoding="utf-8"))
+        self.assertLessEqual(set(manifest), set(self.b.ANTIGRAVITY_MANIFEST_KEYS))
+        self.assertRegex(manifest["name"], r"^[a-z0-9]+(-[a-z0-9]+)*$")
+
+    def test_every_skill_is_named_for_its_folder_with_only_documented_keys(self):
+        skills = sorted((self.out / "skills").glob("*/SKILL.md"))
+        self.assertTrue(skills)
+        for path in skills:
+            with self.subTest(skill=path.parent.name):
+                fields, _, errors = split(path.read_text(encoding="utf-8"))
+                self.assertEqual(errors, [])
+                self.assertEqual(fields["name"], path.parent.name)
+                self.assertLessEqual(set(fields), set(self.b.ANTIGRAVITY_SKILL_KEYS))
+
+    def test_every_agent_renders_with_a_tool_allowlist(self):
+        agents = sorted((self.out / "agents").glob("*.md"))
+        self.assertEqual(len(agents), len(list((ROOT / "plugins/stackfoundry/agents").glob("*.md"))))
+        for path in agents:
+            with self.subTest(agent=path.stem):
+                self.assertTrue(split(path.read_text(encoding="utf-8"))[0].get("tools"))
+
+    def test_the_hook_matches_exactly_the_tools_the_guard_maps(self):
+        hook = json.loads((self.out / "hooks.json").read_text(encoding="utf-8"))["stackfoundry-guard"]["PreToolUse"][0]
+        import re
+        candidates = ("run_command", "write_to_file", "replace_file_content", "multi_replace_file_content",
+                      "view_file", "list_dir", "grep_search", "search_web")
+        mapped = {t for t in candidates if guard.normalize({"toolCall": {"name": t, "args": {}}}, "antigravity",
+                                                           Path.cwd()) is not None}
+        matched = {t for t in candidates if re.search(hook["matcher"], t)}
+        self.assertEqual(matched, mapped)
+
+    def test_the_hook_names_the_launcher_relative_to_the_plugin_root(self):
+        text = (self.out / "hooks.json").read_text(encoding="utf-8")
+        self.assertNotIn("CLAUDE_PLUGIN_ROOT", text)
+        command = json.loads(text)["stackfoundry-guard"]["PreToolUse"][0]["hooks"][0]["command"]
+        self.assertTrue((self.out / command.split()[1]).is_file(), command)
+        self.assertIn("--client antigravity", command)
 
 
 if __name__ == "__main__":

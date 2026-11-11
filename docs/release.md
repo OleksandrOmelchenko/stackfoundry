@@ -24,7 +24,8 @@ tags named `<plugin>--v<version>`. So a release is: bump the version, record the
    `claude plugin tag` checks that `plugin.json` and the marketplace entry agree before it creates
    `stackfoundry--v<version>`.
 5. **Publish a GitHub release** for the tag. The `Release assets` workflow (`.github/workflows/release.yml`) builds
-   the Gemini CLI extension and attaches it as `stackfoundry-gemini.tar.gz`. The other assistants read the
+   the Gemini CLI extension and the Antigravity CLI plugin and attaches them as `stackfoundry-gemini.tar.gz` and
+   `stackfoundry-antigravity.tar.gz`. The other assistants read the
    committed files that `python scripts/build_clients.py` generates, which the checks in step 3 keep current.
    - **Immutable releases stay off** for this repository. The workflow attaches the asset after the release is
      published, and an immutable release refuses any change after publishing
@@ -38,7 +39,7 @@ tags named `<plugin>--v<version>`. So a release is: bump the version, record the
 
 Each assistant installs from this repository: `.claude-plugin/marketplace.json` (Claude Code),
 `.agents/plugins/marketplace.json` (Codex), `.github/plugin/marketplace.json` (Copilot), `.cursor-plugin/marketplace.json`
-(Cursor), and the release asset (Gemini CLI). In each one: add the marketplace from a local clone, install
+(Cursor), and the release assets (Gemini CLI, Antigravity CLI). In each one: add the marketplace from a local clone, install
 `stackfoundry`, check that its skills and agents are listed, and in a scratch repo whose `.stackfoundry/guards.json`
 marks a folder generated, ask it to edit a file there: the guard must refuse, naming how to regenerate. Then say
 "walk me through stackfoundry" with no slash command: the `walkthrough` skill must start. Last, give `backlog` an
@@ -53,3 +54,4 @@ and ask what's left in the backlog: the marker must appear. The table in
 | Codex | not run yet | not run yet | not run yet | not run yet | not run yet |
 | Cursor | not run yet | not run yet | not run yet | not run yet | not run yet |
 | Gemini CLI | not run yet | not run yet | not run yet | not run yet | not run yet |
+| Antigravity CLI | not run yet (`agy` not installed) | not run yet | not run yet | not run yet | not run yet |

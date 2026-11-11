@@ -1,8 +1,8 @@
 name: Release assets
 
-# Gemini CLI installs an extension from a repository root or a release, and this repository's root is the
-# marketplace, not the plugin. So each published release gets the plugin built as a Gemini extension
-# (scripts/build_clients.py --gemini-out), with gemini-extension.json at the archive root.
+# Gemini CLI and Antigravity CLI install from a repository root, a release or a folder, and this repository's root
+# is the marketplace, not the plugin. So each published release gets the plugin built for each of them
+# (scripts/build_clients.py --gemini-out / --antigravity-out), with its manifest at the archive root.
 on:
   release:
     types: [published]
@@ -39,3 +39,28 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
         run: gh release upload "$TAG" stackfoundry-gemini.tar.gz --clobber --repo "$GITHUB_REPOSITORY"
+
+  antigravity:
+    name: Antigravity CLI plugin
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.x"
+      - name: The other assistants' files match the source
+        run: python scripts/build_clients.py --check
+      - name: Build the plugin
+        run: python scripts/build_clients.py --antigravity-out dist/stackfoundry
+      - name: Archive it
+        run: tar -czf stackfoundry-antigravity.tar.gz -C dist/stackfoundry .
+      - name: Attach it to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" stackfoundry-antigravity.tar.gz --clobber --repo "$GITHUB_REPOSITORY"
