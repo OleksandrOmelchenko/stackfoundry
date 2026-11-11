@@ -69,5 +69,17 @@ class UnattendedTests(unittest.TestCase):
                 self.assertNotIn("git status --porcelain", text)
 
 
+class LandingPrsTests(unittest.TestCase):
+    """Threat model T13: landing PRs never runs a command a PR branch's own config supplied."""
+
+    def test_config_comes_from_the_default_branch_and_commands_are_confirmed(self):
+        text = " ".join((PLUGIN / "skills" / "github-prs" / "SKILL.md").read_text(encoding="utf-8").split())
+        self.assertIn("git show origin/<default>:.stackfoundry/<file>", text)
+        self.assertIn("never from a PR's branch", text)
+        self.assertIn("**control files**", text)
+        self.assertIn("lists every command the resolution will run", text)
+        self.assertIn("is named in the report, never run", text)
+
+
 if __name__ == "__main__":
     unittest.main()
