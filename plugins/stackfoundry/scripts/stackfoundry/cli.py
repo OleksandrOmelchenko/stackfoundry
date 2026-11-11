@@ -170,6 +170,8 @@ def build() -> argparse.ArgumentParser:
                     help="local: .claude/settings.local.json (default); project: the committed .claude/settings.json")
     sc.add_argument("--add", action="append", default=[], help="with --write: an extra owned rule (repeatable)")
     sc.add_argument("--remove", action="append", default=[], help="with --write: drop an extra rule added before")
+    sc.add_argument("--format", choices=["text", "cmd"], default="text",
+                    help="cmd: a Windows Task Scheduler .cmd file running the one skill headless with its rules")
     sc.add_argument("skills", nargs="*", help=f"default: every schedulable skill ({', '.join(schedule.SKILLS)})")
     sc.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/)")
     sc.add_argument("--json", action="store_true")

@@ -223,5 +223,69 @@ class DeniedTests(unittest.TestCase):
             self.assertEqual(allow, [])
 
 
+def _msvcrt_split(line: str) -> list[str]:
+    """Split a Windows command line the way node and MSVCRT programs do (enough for these tests)."""
+    args, cur, quoted, i, started = [], "", False, 0, False
+    while i < len(line):
+        ch = line[i]
+        if ch == "\\":
+            n = 0
+            while i < len(line) and line[i] == "\\":
+                n += 1
+                i += 1
+            if i < len(line) and line[i] == '"':
+                cur += "\\" * (n // 2)
+                if n % 2:
+                    cur += '"'
+                    i += 1
+                started = True
+                continue
+            cur += "\\" * n
+            started = True
+            continue
+        if ch == '"':
+            quoted = not quoted
+            started = True
+        elif ch == " " and not quoted:
+            if started:
+                args.append(cur)
+            cur, started = "", False
+        else:
+            cur += ch
+            started = True
+        i += 1
+    if started:
+        args.append(cur)
+    return args
+
+
+class CmdFileTests(unittest.TestCase):
+    def test_the_cmd_file_passes_every_rule_through_intact(self):
+        with TempRepo() as tmp:
+            root = tmp / "Проєкт з пробілом"
+            root.mkdir()
+            targets_json(root, {"targets": [{"name": "api", "paths": ["src/**"]}]})
+            with mock.patch.dict(os.environ, {"CLAUDE_PLUGIN_ROOT": "C:/Users/Олександр/plugins/stack foundry/0.4.0"}):
+                text = schedule.cmd_file(root, "stackfoundry-radar")
+                expected = [r["rule"] for r in schedule.rules(root, "stackfoundry-radar")]
+        lines = text.split("\r\n")
+        self.assertEqual(lines[:3], ["@echo off", lines[1], "chcp 65001 >nul"])
+        self.assertEqual(_msvcrt_split(lines[3].removeprefix("cd /d ")), [str(root)])
+        self.assertTrue(lines[4].startswith("if not exist "))  # the log folder exists before the redirect
+        claude = lines[5].split(" >> ")[0].replace("%%", "%")
+        argv = _msvcrt_split(claude)
+        self.assertEqual(argv[:5], ["claude", "-p", "/stackfoundry:stackfoundry-radar", "--permission-mode", "dontAsk"])
+        self.assertEqual(argv[6:], expected)
+        self.assertTrue(text.endswith("\r\n"))
+
+    def test_the_cli_writes_utf8_and_takes_one_skill(self):
+        with TempRepo() as root:
+            targets_json(root, {"targets": [{"name": "api", "paths": ["src/**"]}]})
+            ok = run_cli(["schedule", "rules", "whats-next", "--format", "cmd", "--root", str(root)])
+            self.assertIn('claude -p "/stackfoundry:whats-next --report"', ok.stdout)
+            two = run_cli(["schedule", "rules", "whats-next", "tech-radar", "--format", "cmd", "--root", str(root)])
+            self.assertEqual(two.returncode, 2)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -105,7 +105,8 @@ check-updates on an npm repo; fill in the plugin root, the docs root and the row
 # cron (Linux, macOS)
 0 7 * * 1 cd /path/to/repo && claude -p "/stackfoundry:check-updates" --permission-mode dontAsk --allowedTools "Edit(docs/dependency-reports/**)" "Bash(sh \"/path/to/plugin/scripts/stackfoundry.sh\" *)" "Bash(git status *)" "Bash(npm outdated *)" >> "$HOME/.cache/stackfoundry-check-updates.log" 2>&1
 
-# Windows Task Scheduler: put the cd and claude line in a .cmd file (the quoting nests too deeply inline)
+# Windows Task Scheduler: `stackfoundry schedule rules check-updates --format cmd > stackfoundry-check-updates.cmd`
+# writes the .cmd file (UTF-8 with `chcp 65001`, the rules quoted for a Windows command line), then:
 schtasks /Create /TN "stackfoundry check-updates" /SC WEEKLY /D MON /ST 07:00 /TR "C:\path\to\stackfoundry-check-updates.cmd"
 ```
 
