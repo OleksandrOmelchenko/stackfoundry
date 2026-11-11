@@ -68,6 +68,8 @@ class Call:
 # --- reading the event ---------------------------------------------------------------------------------------------
 
 def detect(event: dict) -> str:
+    if "toolCall" in event:
+        return "antigravity"
     if "toolName" in event or "toolArgs" in event:
         return "copilot"
     if "cursor_version" in event or event.get("hook_event_name") in ("preToolUse", "beforeShellExecution"):
@@ -139,6 +141,20 @@ def normalize(event: dict, client: str, project: Path) -> Call | None:
         if tool == "Shell":
             return Call("shell", Path(args.get("working_directory") or base), command=args.get("command") or "",
                         can_ask=False)
+        return None
+    if client == "antigravity":
+        # toolCall.{name,args}, PascalCase arguments; no cwd field, and the hook runs from the plugin root, so paths
+        # resolve against the workspace (reference/clients.md, [ag-hooks]).
+        call = event.get("toolCall") if isinstance(event.get("toolCall"), dict) else {}
+        tool, args = str(call.get("name", "")), _args(call.get("args"))
+        roots = event.get("workspacePaths") or []
+        base = Path(roots[0]) if roots and isinstance(roots[0], str) else project
+        if tool in ("write_to_file", "replace_file_content", "multi_replace_file_content"):
+            return Call("edit", base, _path_keys(args, "TargetFile"))
+        if tool == "run_command":
+            where = args.get("Cwd")
+            return Call("shell", _absolute(where, base) if isinstance(where, str) and where else base,
+                        command=args.get("CommandLine") or "")
         return None
     if client == "gemini":
         tool, args = event.get("tool_name", ""), _args(event.get("tool_input"))
@@ -325,6 +341,8 @@ def answer(client: str, event: dict, decided: tuple[str, str] | None, can_ask: b
         return json.dumps({"permission": kind, "user_message": reason, "agent_message": reason})
     if client == "gemini":
         return json.dumps({"decision": "deny", "reason": reason})
+    if client == "antigravity":
+        return json.dumps({"decision": kind, "reason": reason})
     return None
 
 
@@ -390,7 +408,7 @@ def check_file(path: Path) -> list[str]:
 
 
 def _project_dir(event: dict) -> Path:
-    roots = event.get("workspace_roots") or []
+    roots = event.get("workspace_roots") or event.get("workspacePaths") or []
     return Path(os.environ.get("CLAUDE_PROJECT_DIR") or os.environ.get("GEMINI_PROJECT_DIR")
                 or (roots[0] if roots else None) or event.get("cwd") or os.getcwd())
 

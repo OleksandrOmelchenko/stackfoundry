@@ -6,6 +6,8 @@ Event shapes follow each assistant's hook documentation (accessed 2026-11-09):
   Copilot      https://docs.github.com/en/copilot/reference/hooks-configuration   (toolName, toolArgs)
   Cursor       https://cursor.com/docs/agent/hooks              (preToolUse, beforeShellExecution, workspace_roots)
   Gemini CLI   https://geminicli.com/docs/hooks/reference/      (BeforeTool; write_file, replace, run_shell_command)
+  Antigravity  https://antigravity.google/docs/hooks?tab=cli    (PreToolUse; toolCall.name/args, TargetFile,
+               CommandLine, Cwd, workspacePaths; accessed 2026-11-11)
 """
 import json
 import unittest
@@ -141,12 +143,50 @@ class GeminiTests(unittest.TestCase):
             self.assertIsNone(guard(root, self.event(root, "read_file", {"file_path": str(root / GEN)})))
 
 
+class AntigravityTests(unittest.TestCase):
+    # The hook runs from the plugin root, not the repo (reference/clients.md), and the event has no cwd: the repo
+    # comes from workspacePaths. The test process's own folder is a different repo with its own guards.json.
+    def event(self, root, tool, args):
+        return {"conversationId": "c", "stepIdx": 3, "workspacePaths": [str(root)], "transcriptPath": "t",
+                "modelName": "pro", "toolCall": {"name": tool, "args": args}}
+
+    def test_every_write_and_edit_tool_on_a_generated_file_is_denied(self):
+        with TempRepo() as root:
+            for tool in ("write_to_file", "replace_file_content", "multi_replace_file_content"):
+                with self.subTest(tool=tool):
+                    out = guard(root, self.event(root, tool, {"TargetFile": str(root / GEN), "CodeContent": "x"}))
+                    self.assertEqual(out["decision"], "deny")
+                    self.assertIn("regeneration", out["reason"])
+
+    def test_a_relative_target_resolves_against_the_workspace(self):
+        with TempRepo() as root:
+            out = guard(root, self.event(root, "write_to_file", {"TargetFile": GEN}))
+        self.assertEqual(out["decision"], "deny")
+
+    def test_a_git_write_asks_because_antigravity_can(self):
+        with TempRepo() as root:
+            out = guard(root, self.event(root, "run_command", {"CommandLine": "git push", "Cwd": str(root / "web")}))
+        self.assertEqual(out["decision"], "ask")
+        self.assertTrue(out["reason"].startswith("stackfoundry guard: "))
+
+    def test_a_denied_command_is_denied(self):
+        with TempRepo() as root:
+            out = guard(root, self.event(root, "run_command", {"CommandLine": "sqlcmd -Q x", "Cwd": "web"}))
+        self.assertEqual(out["decision"], "deny")
+
+    def test_no_opinion_is_no_output(self):
+        with TempRepo() as root:
+            self.assertIsNone(guard(root, self.event(root, "view_file", {"AbsolutePath": str(root / GEN)})))
+            self.assertIsNone(guard(root, self.event(root, "write_to_file", {"TargetFile": str(root / PLAIN)})))
+
+
 class DetectionTests(unittest.TestCase):
     def test_the_event_shape_names_the_client_and_claude_stays_the_default(self):
         from stackfoundry.guard import detect
         self.assertEqual(detect({"toolName": "bash", "toolArgs": {}}), "copilot")
         self.assertEqual(detect({"hook_event_name": "beforeShellExecution"}), "cursor")
         self.assertEqual(detect({"hook_event_name": "BeforeTool"}), "gemini")
+        self.assertEqual(detect({"toolCall": {"name": "run_command", "args": {}}}), "antigravity")
         self.assertEqual(detect({"turn_id": "t", "tool_name": "Bash"}), "codex")
         self.assertEqual(detect({"hook_event_name": "PreToolUse", "tool_name": "Bash"}), "claude-code")
 

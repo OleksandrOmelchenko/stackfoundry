@@ -182,7 +182,7 @@ def build() -> argparse.ArgumentParser:
     ex.set_defaults(func=extensions.main)
 
     g = sub.add_parser("guard", help="(read-only) pre-tool hook entry for every assistant: reads the hook event on stdin")
-    g.add_argument("--client", choices=["auto", "claude-code", "codex", "copilot", "cursor", "gemini"], default="auto",
+    g.add_argument("--client", choices=["auto", "antigravity", "claude-code", "codex", "copilot", "cursor", "gemini"], default="auto",
                    help="the assistant sending the event (default: told by the event's shape)")
     g.add_argument("--check", action="store_true", help="validate guards.json instead of reading a hook event")
     g.add_argument("--root", help="repo root for --check (default: CLAUDE_PROJECT_DIR or the current directory)")

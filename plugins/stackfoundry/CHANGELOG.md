@@ -75,6 +75,9 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 
 ### Added
 
+- **The guard speaks Antigravity CLI** (`--client antigravity`, or told by a `toolCall` event): it denies writes and
+  edits of generated files, asks before git writes, and reads the repo from `workspacePaths`, because Antigravity
+  runs plugin hooks from the plugin's own folder.
 - The `web-researcher` agent: it answers a skill's web questions with cited notes, and holds no shell and writes
   nothing.
 - `stackfoundry side-effects start|end`, and `reference/unattended.md`, the one copy of the unattended-run contract.
