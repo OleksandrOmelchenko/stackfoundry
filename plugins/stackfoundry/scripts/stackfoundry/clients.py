@@ -158,11 +158,22 @@ def _toml_string(value: str) -> str:
     return json.dumps(value, ensure_ascii=False)  # a TOML basic string accepts JSON's escapes for this text
 
 
+# Frontmatter a project agent's host honours with more than the agent's own tools: its permission mode, hooks that
+# run commands, MCP servers that start processes, a first prompt. A materialized agent is regenerated from team
+# files, so a key slipped into one would be rendered into .claude/agents and honoured there (threat model T12).
+PRIVILEGED_AGENT_KEYS = ("permissionMode", "hooks", "mcpServers", "initialPrompt")
+
+
 def render_agent(text: str, client: str) -> str:
     """A Claude Code agent file (frontmatter name, description, tools; body = instructions) for the assistant."""
     fields, body, errors = split(text)
     if errors or not fields.get("name") or not fields.get("description"):
         raise ValueError("the agent needs frontmatter with name and description")
+    privileged = [k for k in PRIVILEGED_AGENT_KEYS if k in fields]
+    if privileged:
+        raise ValueError(f"the agent sets {', '.join(privileged)}, which would give it host privileges where it is "
+                         "installed; stackfoundry never renders these. Remove them, or keep this agent outside "
+                         "stackfoundry and record the exception with /stackfoundry:customize")
     body = body.lstrip("\n")
     grant = _grant(fields)
     if client in ("claude-code", "cursor"):

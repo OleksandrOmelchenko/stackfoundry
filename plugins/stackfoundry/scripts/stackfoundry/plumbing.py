@@ -10,6 +10,7 @@ import re
 from pathlib import Path
 
 from . import PLUGIN_ROOT, extensions, preamble
+from .clients import PRIVILEGED_AGENT_KEYS
 from .frontmatter import split
 
 MATERIALIZED = Path(".stackfoundry") / "agents"
@@ -132,6 +133,9 @@ def check(base: Path) -> Report:
             for key in fields:
                 if key not in SKILL_KEYS:
                     rep.warn(f, f"unknown frontmatter key {key!r}")
+            if not plugin_mode and "hooks" in fields:
+                rep.warn(f, "'hooks' runs commands whenever this skill is active; check that the team meant it "
+                            "(threat model T12)")
             if "disable-model-invocation" in fields and not isinstance(fields["disable-model-invocation"], bool):
                 rep.error(f, "disable-model-invocation must be true or false")
             if plugin_mode and fields.get("disable-model-invocation") is True:
@@ -167,6 +171,9 @@ def check(base: Path) -> Report:
             for key in fields:
                 if key in IGNORED_IN_PLUGIN_AGENTS and plugin_mode:
                     rep.warn(f, f"{key!r} is ignored in a plugin agent (put hooks and MCP servers at plugin level)")
+                elif key in PRIVILEGED_AGENT_KEYS and not plugin_mode:
+                    rep.warn(f, f"{key!r} gives this agent host privileges here, and render-agent refuses to render "
+                                "it; check that the team meant it (threat model T12)")
                 elif key not in AGENT_KEYS and key not in IGNORED_IN_PLUGIN_AGENTS:
                     rep.warn(f, f"unknown frontmatter key {key!r}")
             tools = _tools(fields.get("tools"))

@@ -32,7 +32,9 @@ description, and in the place Claude Code actually loads it from.
 
 For the other assistants the same skill goes in each folder `stackfoundry outputs` lists under skills, and a team
 agent is written once to `.stackfoundry/agents/<name>.md` (Claude Code's format), then
-`stackfoundry render-agent .stackfoundry/agents/<name>.md --client <assistant> --write` for each one it lists.
+`stackfoundry render-agent .stackfoundry/agents/<name>.md --client <assistant> --write` for each one it lists. It
+refuses an agent that sets `permissionMode`, `hooks`, `mcpServers` or `initialPrompt` (host privileges, threat model
+T12): leave them out of a team agent, or record the exception with `/stackfoundry:customize`.
 
 Claude Code scans `.claude/agents/` recursively, so any non-agent file under it breaks discovery: keep reference
 material elsewhere. Some files here are stackfoundry's; `stackfoundry manifest list` says which and of what kind:

@@ -60,7 +60,8 @@ template, and renders it for each assistant the repo uses. From then on the team
 5. **Write** `.stackfoundry/agents/<target>-<role>.md` (Claude Code's agent format), then each assistant's copy:
    `stackfoundry render-agent .stackfoundry/agents/<target>-<role>.md --client <assistant> --write` for every entry
    of `stackfoundry outputs` → agents (Claude Code's `.claude/agents/` copy also serves Copilot and Cursor). Run
-   `stackfoundry verify-plumbing .` from the repo root and fix every error it reports for these files.
+   `stackfoundry verify-plumbing .` from the repo root and fix every error it reports for these files. render-agent refuses an agent that sets `permissionMode`, `hooks`, `mcpServers` or `initialPrompt` (host
+   privileges, threat model T12): show the user the key it names and ask, never strip it silently.
 6. **Record it.**
    - In `targets.json`, set the target's `"materialized": {"<role>": "<target>-<role>"}`, keeping other entries.
    - Run `stackfoundry manifest record .stackfoundry/agents/<target>-<role>.md <its copies> --template

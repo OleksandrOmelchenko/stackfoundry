@@ -1,4 +1,4 @@
-"""Threat-model gaps T10 and T18, and the CLI hardening the sixth self-run's researchers proposed."""
+"""Threat-model gaps T10, T12 and T18, and the CLI hardening the sixth self-run's researchers proposed."""
 import json
 import os
 import shutil
@@ -108,6 +108,40 @@ class GitBashWarningTests(unittest.TestCase):
     def test_windows_with_sh_says_nothing_more(self):
         # (os.name cannot be faked as "posix" on Windows: pathlib refuses PosixPath there.)
         self.assertNotIn("warning", self.check("nt", "C:/Program Files/Git/usr/bin/sh.exe")[1])
+
+
+class PrivilegedFrontmatterTests(unittest.TestCase):
+    """T12: a materialized agent carrying host-privileged keys is never rendered into .claude/agents."""
+
+    AGENT = "---\nname: api-bug-hunter\ndescription: Hunts bugs.\ntools: Read, Grep\n{extra}---\n\n# Hunter\n"
+
+    def test_render_agent_refuses_each_privileged_key_for_every_assistant(self):
+        from stackfoundry.clients import CLIENTS, PRIVILEGED_AGENT_KEYS, render_agent
+        for key in PRIVILEGED_AGENT_KEYS:
+            text = self.AGENT.format(extra=f"{key}: x\n")
+            for client in CLIENTS:
+                with self.assertRaisesRegex(ValueError, f"sets {key}.*/stackfoundry:customize"):
+                    render_agent(text, client)
+        self.assertTrue(render_agent(self.AGENT.format(extra=""), "claude-code").startswith("---\nname: api-bug"))
+
+    def test_the_cli_refuses_and_writes_nothing(self):
+        with TempRepo({".stackfoundry/config.json": "{}",
+                       ".stackfoundry/agents/api-bug-hunter.md": self.AGENT.format(extra="permissionMode: bypassPermissions\n")}) as root:
+            proc = run_cli(["render-agent", str(root / ".stackfoundry/agents/api-bug-hunter.md"), "--client",
+                            "claude-code", "--write", "--root", str(root)])
+            self.assertEqual(proc.returncode, 2)
+            self.assertIn("permissionMode", proc.stderr)
+            self.assertFalse((root / ".claude/agents/api-bug-hunter.md").exists())
+
+    def test_verify_plumbing_warns_in_a_repo(self):
+        from stackfoundry.plumbing import check
+        files = {".claude/agents/api-bug-hunter.md": self.AGENT.format(extra="hooks: x\n"),
+                 ".claude/skills/own/SKILL.md": "---\nname: own\ndescription: Own skill. Use for \"own\".\n"
+                                                "hooks: x\n---\n# Own\n"}
+        with TempRepo(files) as root:
+            warnings = " | ".join(check(root).warnings)
+        self.assertIn("'hooks' gives this agent host privileges here", warnings)
+        self.assertIn("'hooks' runs commands whenever this skill is active", warnings)
 
 
 class HardeningTests(unittest.TestCase):

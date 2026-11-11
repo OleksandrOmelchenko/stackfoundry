@@ -82,7 +82,9 @@ rewritten by an upgrade; this step makes sure they still fit the new plugin.
 2. `stackfoundry extensions list --json`: for every `replace` file and materialized agent marked behind the plugin,
    run `stackfoundry extensions merge <file>`.
    - `merged`: report it. For a materialized agent, re-render each assistant's copy
-     (`stackfoundry render-agent <file> --client <assistant> --write`) and re-record them in the manifest.
+     (`stackfoundry render-agent <file> --client <assistant> --write`) and re-record them in the manifest. A
+     refusal names a host-privileged key (`permissionMode`, `hooks`, `mcpServers`, `initialPrompt`, threat model
+     T12): show it to the user and ask; never strip it silently.
    - `conflict`: show each conflict hunk from `<file>.merge.md` and ask per hunk: keep the repo's · take the
      plugin's · a merge you write and show. Write the settled text to `<file>.merge.md`, then
      `stackfoundry extensions merge <file> --resolved`.
