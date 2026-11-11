@@ -238,8 +238,8 @@ def build_gemini(src: dict, out: Path) -> None:
     }]}}), encoding="utf-8", newline="\n")
 
 
-# Antigravity CLI (reference/clients.md, [ag-build-plugins], [ag-hooks]). Its manifest schema allows no other keys,
-# and a skill's frontmatter takes only these.
+# Antigravity CLI (reference/clients.md, [ag-build-plugins], [ag-hooks]). Its manifest schema rejects unknown keys,
+# so the plugin.json carries only these string fields of it; a skill's frontmatter takes only the documented keys.
 ANTIGRAVITY_MANIFEST_KEYS = ("name", "displayName", "description", "version", "homepage", "repository", "license")
 ANTIGRAVITY_SKILL_KEYS = ("name", "description", "disable-model-invocation", "license", "compatibility")
 ANTIGRAVITY_GUARDED_TOOLS = ("run_command", "write_to_file", "replace_file_content", "multi_replace_file_content")

@@ -68,7 +68,7 @@ description ≤ 250 characters, agent ≤ 300) as `verify-plumbing` enforces the
    `.stackfoundry/packs/<pack-id>/pack.json` exist; the shared rulebooks the targets need exist
    (`testing.md` when any target has tests, `documentation.md`, `benchmarking.md` when a benchmark project exists).
 8. **volatile.** `stackfoundry volatile-facts <dir> --include-counts` over skills, agents and rules, excluding
-   generated pack rulebooks (one `--exclude "rules/<layer>-*.md"` per layer), which carry research and access
+   generated pack rulebooks (one `--exclude "<layer>-*"`, which also covers the `.instructions.md` and `.mdc` copies per layer), which carry research and access
    dates by design; plus your own read of every description (loaded in every session).
 
 ## Fix or flag

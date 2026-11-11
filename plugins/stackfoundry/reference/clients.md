@@ -48,11 +48,11 @@ One command, `stackfoundry guard`, serves every assistant's pre-tool hook. It re
 | Copilot | `preToolUse` | `create`, `edit`, `str_replace_editor`, `apply_patch`; also `write`, matched in case it is sent | (asks; its autopilot denies an ask, and its cloud agent loads no plugin hooks) | no output |
 | Cursor | `preToolUse` for edits, `beforeShellExecution` for commands | `Write`, `Edit`, `Delete` | a deny for edits (commands can ask) | `{"permission": "allow"}`: Cursor blocks on empty output |
 | Gemini CLI | `BeforeTool` | `write_file`, `replace` | a deny saying to get the user's go-ahead | no output |
-| Antigravity CLI | `PreToolUse` | `write_to_file`, `replace_file_content`, `multi_replace_file_content` (`TargetFile`); commands are `run_command` (`CommandLine`, `Cwd`) | (asks) | no output |
+| Antigravity CLI | `PreToolUse` | `write_to_file`, `replace_file_content`, `multi_replace_file_content` (`TargetFile`); commands are `run_command` (`CommandLine`, `Cwd`) | (asks with `force_ask`, which a cached "Always Allow" cannot skip) | no output |
 
-**Antigravity CLI** sends `toolCall.name` and `toolCall.args` and reads `{"decision": "deny"|"ask", "reason": …}`
-[ag-hooks]. A hook that exits non-zero is logged and ignored, so the call goes through [ag-build-plugins]: the guard
-always answers in JSON and exits 0. Plugin hooks run from the plugin root, so the command names the launcher
+**Antigravity CLI** sends `toolCall.name` and `toolCall.args` and reads `{"decision": "deny"|"force_ask", "reason":
+…}` [ag-hooks]. A hook that exits non-zero is logged and ignored, so the call goes through [ag-build-plugins]: the
+guard always exits 0, with a decision in JSON or no output for no opinion. Plugin hooks run from the plugin root, so the command names the launcher
 relative to it (`sh ./scripts/stackfoundry.sh`, built by `scripts/build_clients.py` `antigravity_hooks`). On
 Windows that needs `sh` (Git Bash): without it the hook fails and the call goes through unguarded. Gemini CLI still serves Gemini Code Assist Standard and Enterprise and paid API keys; individual
 tiers moved to Antigravity CLI on 2026-06-18 [google-antigravity], [gemini-cli-readme].

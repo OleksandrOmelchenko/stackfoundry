@@ -163,10 +163,10 @@ class AntigravityTests(unittest.TestCase):
             out = guard(root, self.event(root, "write_to_file", {"TargetFile": GEN}))
         self.assertEqual(out["decision"], "deny")
 
-    def test_a_git_write_asks_because_antigravity_can(self):
+    def test_a_git_write_asks_with_force_ask_so_a_cached_always_allow_cannot_skip_it(self):
         with TempRepo() as root:
             out = guard(root, self.event(root, "run_command", {"CommandLine": "git push", "Cwd": str(root / "web")}))
-        self.assertEqual(out["decision"], "ask")
+        self.assertEqual(out["decision"], "force_ask")  # [ag-hooks]: plain "ask" respects "Always Allow"
         self.assertTrue(out["reason"].startswith("stackfoundry guard: "))
 
     def test_a_denied_command_is_denied(self):

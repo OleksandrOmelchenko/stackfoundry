@@ -167,6 +167,14 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   `ask` guard instead, as init's rule asks.
 - init learns where every file goes (`stackfoundry outputs --clients …`) before its one confirmation, rather than
   after writing `config.json`.
+- The guard asks Antigravity CLI with `force_ask`: its plain `ask` is skipped once a user chose "Always Allow".
+- `verify-plumbing .` checks the skills in `.agents/skills` and `.github/skills` too, not only `.claude/skills`, and
+  reads `${CLAUDE_PLUGIN_ROOT}/reference/…` in prose as a placeholder, not a missing path.
+- Code-writer skills link to repo files from the repo root (`../../../`), so every skills folder's copy resolves
+  (template version 4). Target profiles say `unproven` until init's gate step marks each command, never a count,
+  and allow "no shuffle option" (template version 2).
+- The documented `volatile-facts` exclude (`<layer>-*`) also covers Copilot's and Cursor's rulebook copies.
+- The eval workflow runs its guard case even when the read-only cases fail.
 
 ## [0.2.0] - 2026-11-09
 

@@ -28,7 +28,8 @@ The decision was to add Antigravity CLI as a channel and keep the Gemini extensi
     antigravity`, because Antigravity runs plugin hooks from the plugin root.
 - **The guard.** An event with `toolCall` is Antigravity's. Edits take their path from `TargetFile`, and commands
   take `CommandLine` and `Cwd`. The repo comes from `workspacePaths`, since the process's own folder is the plugin.
-  - The answer is `{"decision": "deny"|"ask", "reason": …}`, and asks are kept.
+  - The answer is `{"decision": "deny"|"force_ask", "reason": …}`. An ask is sent as `force_ask`, because a plain
+    `ask` is skipped when the user once chose "Always Allow".
   - It always exits 0, because Antigravity ignores a hook that fails.
   - On Windows without `sh`, the hook fails and the call goes through unguarded, as with Claude Code.
 - **The repo client `antigravity`** (`config.json` `clients`):

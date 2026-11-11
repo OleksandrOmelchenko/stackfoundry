@@ -1,6 +1,6 @@
 ---
-templateVersion: 3
-output: <each skills folder `stackfoundry outputs` lists>/{{app-model}}-code-writer/SKILL.md; the filled description is at most 250 characters (verify-plumbing counts characters, not bytes), and every path in the body is written from the repo root (`plugins/x/hooks/hooks.json`, never `hooks/hooks.json`), links relative to the skill's own folder
+templateVersion: 4
+output: <each skills folder `stackfoundry outputs` lists>/{{app-model}}-code-writer/SKILL.md; the filled description is at most 250 characters (verify-plumbing counts characters, not bytes), and every path in the body is written from the repo root (`plugins/x/hooks/hooks.json`, never `hooks/hooks.json`), links climbing to the repo root first (`../../../.claude/rules/x.md`, never `../../rules/x.md`), because the same file is copied into every skills folder and each sits three levels down
 ---
 ---
 name: {{app-model}}-code-writer

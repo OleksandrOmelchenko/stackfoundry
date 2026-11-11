@@ -3,7 +3,8 @@ import json
 import re
 import unittest
 
-from tests._support import PLUGIN, TempRepo, write
+from tests._support import PLUGIN, ROOT, TempRepo, write
+from stackfoundry import plumbing, volatile
 from stackfoundry.change_targets import classify, stackfoundry_files
 
 DATA = {"schemaVersion": 1, "targets": [{"name": "cli", "paths": ["src/**"]}],
@@ -71,6 +72,53 @@ class SurveyorAndInitTests(unittest.TestCase):
         step4 = text[text.index("## 4. Write"):text.index("| File | From |")]
         self.assertIn("Before anything is written, `stackfoundry outputs --clients", step4)
         self.assertNotIn("(after writing it)", step4)
+
+
+SKILL = "---\nname: web-code-writer\ndescription: Writes web code. Use when editing web code.\n---\n\n# Web\n\n"
+
+
+class SecondRunTests(unittest.TestCase):
+    """The eighth self-run, run again once the disk had room."""
+
+    def test_verify_plumbing_checks_every_skills_folder_in_a_repo(self):
+        # The same skill is copied to .claude/skills and .agents/skills; a link that climbs too little breaks in one.
+        with TempRepo({".claude/rules/authoring.md": "x\n"}) as root:
+            body = SKILL + "See [authoring](../../rules/authoring.md).\n"
+            write(root, {".claude/skills/web-code-writer/SKILL.md": body, ".agents/skills/web-code-writer/SKILL.md": body})
+            errors = plumbing.check(root).errors
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn(".agents", errors[0])
+
+    def test_a_placeholder_after_the_plugin_root_is_prose_not_a_path(self):
+        rep = plumbing.Report()
+        plumbing._check_links(PLUGIN / "skills/init/SKILL.md",
+                              "Paths look like `${CLAUDE_PLUGIN_ROOT}/reference/…` or `${CLAUDE_PLUGIN_ROOT}/x/...`.",
+                              PLUGIN, rep)
+        self.assertEqual(rep.errors, [])
+
+    def test_the_code_writer_template_says_to_climb_to_the_repo_root(self):
+        text = (PLUGIN / "reference/templates/code-writer-skill.md").read_text(encoding="utf-8")
+        self.assertIn("climbing to the repo root first (`../../../", text)
+        self.assertNotIn("links relative to the skill's own folder", text)
+
+    def test_the_documented_volatile_exclude_covers_every_assistants_copy(self):
+        dated = "Researched 2026-11-01; 42 rules.\n"
+        with TempRepo({".claude/rules/language-python.md": dated, ".github/instructions/language-python.instructions.md":
+                       dated, ".cursor/rules/language-python.mdc": dated, ".claude/rules/authoring.md": dated}) as root:
+            hits = volatile.scan(root, True, ["language-*"])
+        self.assertEqual({h["file"].rsplit("/", 1)[-1] for h in hits}, {"authoring.md"})
+        for rel in ("agents/skill-agent-verifier.md", "skills/skill-agent-verifier/SKILL.md"):
+            self.assertIn('`--exclude "<layer>-*"`', (PLUGIN / rel).read_text(encoding="utf-8"))
+
+    def test_the_target_template_records_gate_status_and_allows_no_shuffle(self):
+        text = (PLUGIN / "reference/templates/target.md").read_text(encoding="utf-8")
+        self.assertIn("never a count of tests", text)
+        self.assertIn("has no shuffle option", text)
+
+    def test_the_eval_workflow_runs_the_guard_case_after_a_failed_step(self):
+        text = (ROOT / ".github/workflows/evals.yml").read_text(encoding="utf-8")
+        guard = text[text.index("- name: Guard case"):]
+        self.assertIn("if: ${{ !cancelled() }}", guard.split("run:")[0])
 
 
 if __name__ == "__main__":

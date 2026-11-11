@@ -91,13 +91,10 @@ class PluginBundleTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location("build_clients", ROOT / "scripts" / "build_clients.py")
         cls.b = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(cls.b)
-        cls._tmp = tempfile.TemporaryDirectory()
-        cls.out = Path(cls._tmp.name) / "stackfoundry"
+        tmp = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(tmp.cleanup)  # runs even when the build below fails
+        cls.out = Path(tmp.name) / "stackfoundry"
         cls.b.build_antigravity(cls.b.load_claude_manifest(), cls.out)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls._tmp.cleanup()
 
     def test_the_manifest_has_only_keys_its_schema_allows(self):
         manifest = json.loads((self.out / "plugin.json").read_text(encoding="utf-8"))

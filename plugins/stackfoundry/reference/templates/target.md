@@ -1,5 +1,5 @@
 ---
-templateVersion: 1
+templateVersion: 2
 output: .stackfoundry/targets/{{target}}.md
 ---
 # Target `{{target}}`
@@ -30,7 +30,8 @@ output: .stackfoundry/targets/{{target}}.md
 ```
 
 Preconditions: {{e.g. services that lock build output must be stopped; a container runtime; a built artifact}}.
-Shuffled run (assurance gate): `{{shuffle command}}`. Coverage: `{{coverage command}}`. Mutation lane:
+Status: {{"unproven" when written; init's step 5 marks each command proven or failed (never a count of tests)}}.
+Shuffled run (assurance gate): {{`shuffle command`, or "none: <framework> has no shuffle option"}}. Coverage: `{{coverage command}}`. Mutation lane:
 {{command, or "none yet: /stackfoundry:setup-mutation"}}.
 
 Local URL for live repros: {{localUrl, or "not served locally"}}.

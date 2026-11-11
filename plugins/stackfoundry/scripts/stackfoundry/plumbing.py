@@ -92,9 +92,10 @@ def _check_links(path: Path, body: str, plugin_root: Path, rep: Report):
         if target and not (path.parent / target).exists():
             rep.error(path, f"link target does not exist: {target}")
     for m in PLUGIN_REF.finditer(body):
-        rel = m.group(1).split("#", 1)[0].rstrip(".,;:")  # a #section anchor is not part of the path
-        if any(c in rel for c in "<*{"):
+        raw = m.group(1)
+        if any(c in raw for c in "<*{…") or "..." in raw:  # a placeholder in prose, not a path
             continue
+        rel = raw.split("#", 1)[0].rstrip(".,;:")  # a #section anchor is not part of the path
         if not (plugin_root / rel).exists():
             rep.error(path, f"${{CLAUDE_PLUGIN_ROOT}}/{rel} does not exist")
 
@@ -108,49 +109,52 @@ def check(base: Path) -> Report:
     bodies: list[tuple[Path, str]] = []
     listing = 0
 
-    if skills_dir.is_dir():
-        for d in sorted(p for p in skills_dir.iterdir() if p.is_dir()):
-            f = d / "SKILL.md"
-            if not f.exists():
-                rep.error(d, "skill folder without SKILL.md")
-                continue
-            fields, body, errs = split(f.read_text(encoding="utf-8"))
-            for e in errs:
-                rep.error(f, f"frontmatter: {e}")
-            if not fields:
-                rep.error(f, "no frontmatter")
-                continue
-            skill_names.add(d.name)
-            if fields.get("name") != d.name:
-                rep.error(f, f"name {fields.get('name')!r} does not match the folder {d.name!r}")
-            if not PORTABLE_NAME.fullmatch(d.name) or len(d.name) > 64:
-                rep.error(f, "name must be lowercase letters, digits and single hyphens, at most 64 characters "
-                             "(the Agent Skills standard other assistants enforce)")
-            if plugin_mode and preamble.SKILL not in body:
-                rep.error(f, "missing or outdated portable-form preamble under the title (see scripts/stackfoundry/preamble.py)")
-            desc = fields.get("description")
-            if not isinstance(desc, str) or not desc.strip():
-                rep.error(f, "description is missing")
-            elif len(desc) > SKILL_CAP:
-                rep.error(f, f"description is {len(desc)} characters (cap {SKILL_CAP})")
-            listing += len(desc) if isinstance(desc, str) else 0
-            if isinstance(desc, str) and re.search(r"[<>]", desc):
-                rep.warn(f, "description has < or >, which the skill list shows as HTML entities; use [brackets]")
-            for key in fields:
-                if key not in SKILL_KEYS:
-                    rep.warn(f, f"unknown frontmatter key {key!r}")
-            if not plugin_mode and "hooks" in fields:
-                rep.warn(f, "'hooks' runs commands whenever this skill is active; check that the team meant it "
-                            "(threat model T12)")
-            if "disable-model-invocation" in fields and not isinstance(fields["disable-model-invocation"], bool):
-                rep.error(f, "disable-model-invocation must be true or false")
-            if plugin_mode and fields.get("disable-model-invocation") is True:
-                rep.error(f, "disable-model-invocation: true makes the skill slash-only; every plugin skill must start "
-                             "from a plain request (say \"Only when asked.\" in the description instead)")
-            if plugin_mode and isinstance(desc, str) and desc.strip() and not TRIGGER.search(desc):
-                rep.error(f, "description has no plain-language trigger (end it with Use for \"...\", Use when, "
-                             "Use to, Use after or Use before)")
-            bodies.append((f, body))
+    # In a repo, init writes the same skills into every folder `stackfoundry outputs` lists, so each copy is checked.
+    skills_dirs = [skills_dir] if plugin_mode else [skills_dir, base / ".agents" / "skills", base / ".github" / "skills"]
+    for sdir in skills_dirs:
+        if sdir.is_dir():
+            for d in sorted(p for p in sdir.iterdir() if p.is_dir()):
+                f = d / "SKILL.md"
+                if not f.exists():
+                    rep.error(d, "skill folder without SKILL.md")
+                    continue
+                fields, body, errs = split(f.read_text(encoding="utf-8"))
+                for e in errs:
+                    rep.error(f, f"frontmatter: {e}")
+                if not fields:
+                    rep.error(f, "no frontmatter")
+                    continue
+                skill_names.add(d.name)
+                if fields.get("name") != d.name:
+                    rep.error(f, f"name {fields.get('name')!r} does not match the folder {d.name!r}")
+                if not PORTABLE_NAME.fullmatch(d.name) or len(d.name) > 64:
+                    rep.error(f, "name must be lowercase letters, digits and single hyphens, at most 64 characters "
+                                 "(the Agent Skills standard other assistants enforce)")
+                if plugin_mode and preamble.SKILL not in body:
+                    rep.error(f, "missing or outdated portable-form preamble under the title (see scripts/stackfoundry/preamble.py)")
+                desc = fields.get("description")
+                if not isinstance(desc, str) or not desc.strip():
+                    rep.error(f, "description is missing")
+                elif len(desc) > SKILL_CAP:
+                    rep.error(f, f"description is {len(desc)} characters (cap {SKILL_CAP})")
+                listing += len(desc) if isinstance(desc, str) else 0
+                if isinstance(desc, str) and re.search(r"[<>]", desc):
+                    rep.warn(f, "description has < or >, which the skill list shows as HTML entities; use [brackets]")
+                for key in fields:
+                    if key not in SKILL_KEYS:
+                        rep.warn(f, f"unknown frontmatter key {key!r}")
+                if not plugin_mode and "hooks" in fields:
+                    rep.warn(f, "'hooks' runs commands whenever this skill is active; check that the team meant it "
+                                "(threat model T12)")
+                if "disable-model-invocation" in fields and not isinstance(fields["disable-model-invocation"], bool):
+                    rep.error(f, "disable-model-invocation must be true or false")
+                if plugin_mode and fields.get("disable-model-invocation") is True:
+                    rep.error(f, "disable-model-invocation: true makes the skill slash-only; every plugin skill must start "
+                                 "from a plain request (say \"Only when asked.\" in the description instead)")
+                if plugin_mode and isinstance(desc, str) and desc.strip() and not TRIGGER.search(desc):
+                    rep.error(f, "description has no plain-language trigger (end it with Use for \"...\", Use when, "
+                                 "Use to, Use after or Use before)")
+                bodies.append((f, body))
 
     agent_files = sorted(agents_dir.glob("*.md")) if agents_dir.is_dir() else []
     if not plugin_mode and (base / MATERIALIZED).is_dir():

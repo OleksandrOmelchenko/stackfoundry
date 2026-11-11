@@ -42,7 +42,7 @@ A plugin root works as well as a repo root: `stackfoundry verify-plumbing <dir>`
 1. **Mechanical baseline** from the repo root: `stackfoundry verify-plumbing .` (names, description caps, unknown
    frontmatter keys, tool grants against the body, links and `${CLAUDE_PLUGIN_ROOT}` paths, skill and agent
    references) and `stackfoundry volatile-facts .claude --include-counts`. Generated pack rulebooks carry their
-   research date and source access dates by design: exclude them with one `--exclude "rules/<layer>-*.md"` per
+   research date and source access dates by design: exclude them with one `--exclude "<layer>-*"`, which also covers the `.instructions.md` and `.mdc` copies per
    layer (`language`, `app-model`, `capability`, `tooling`).
 2. **Dispatch** the agent with `scope:` the directory plus the category or name, and the baseline output as
    `prior:`. It enumerates every skill, agent and

@@ -342,7 +342,8 @@ def answer(client: str, event: dict, decided: tuple[str, str] | None, can_ask: b
     if client == "gemini":
         return json.dumps({"decision": "deny", "reason": reason})
     if client == "antigravity":
-        return json.dumps({"decision": kind, "reason": reason})
+        # Its plain "ask" is skipped when the user once chose "Always Allow"; the guard's ask must always prompt.
+        return json.dumps({"decision": "force_ask" if kind == "ask" else kind, "reason": reason})
     return None
 
 

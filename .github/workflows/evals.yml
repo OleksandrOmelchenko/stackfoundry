@@ -58,6 +58,7 @@ jobs:
           claude plugin eval . --scaffold --trust-plugin --no-publish --runs "$RUNS" --max-cost-usd "$MAX_COST_USD"
           --threshold 0 --tag read-only --json evals/results/read-only.json --report evals/results/read-only.html
       - name: Guard case
+        if: ${{ !cancelled() }}
         # Edit and Write are granted, so file-untouched proves the hook denied the edit, not that Edit was missing.
         working-directory: plugins/stackfoundry
         run: >-
