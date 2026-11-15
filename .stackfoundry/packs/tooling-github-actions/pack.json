@@ -9,7 +9,7 @@
     {"version": "actions/checkout v7.0.1 (3d3c42e5aac5ba805825da76410c181273ba90b1)", "pinnedIn": ".github/workflows/ci.yml jobs unit, validate", "latest": "v7.0.1"},
     {"version": "actions/setup-python v7.1.0 (6d4fd22b20465ccc0f7354476588e8df7c9ca0e0)", "pinnedIn": ".github/workflows/ci.yml job unit", "latest": "v7.1.0"},
     {"version": "actions/setup-node v7.1.0 (949feb2413d6458794dcd2491c4babbbce0c15c1)", "pinnedIn": ".github/workflows/ci.yml job validate", "latest": "v7.1.0"},
-    {"version": "@anthropic-ai/claude-code 2.1.307", "pinnedIn": ".github/workflows/ci.yml job validate, step 'Install Claude Code CLI'", "latest": "2.1.319"},
+    {"version": "@anthropic-ai/claude-code 2.1.319", "pinnedIn": ".github/workflows/ci.yml job validate, step 'Install Claude Code CLI'", "latest": "2.1.319"},
     {"version": "runners ubuntu-latest (Ubuntu 24.04), windows-latest (Windows Server 2025), macos-latest (macOS 26 arm64)", "pinnedIn": ".github/workflows/ci.yml jobs unit (matrix.os), validate", "latest": "ubuntu-26.04 available but not yet ubuntu-latest"}
   ],
   "targets": ["cli", "plugin"],
@@ -50,7 +50,7 @@
     },
     {
       "rule": "Keep the Claude Code CLI version pinned exactly in the install step and bump it by hand: Dependabot's github-actions ecosystem does not see npm installs inside `run:`.",
-      "why": "An unpinned CLI can change what `claude plugin validate --strict` accepts between two runs of the same commit; a forgotten pin silently drifts behind (2.1.307 pinned, 2.1.319 latest).",
+      "why": "An unpinned CLI can change what `claude plugin validate --strict` accepts between two runs of the same commit; a forgotten pin silently drifts behind the latest release.",
       "where": [".github/workflows/ci.yml job validate, step 'Install Claude Code CLI'", ".github/dependabot.yml (package-ecosystem: github-actions only)"],
       "sources": ["npm-claude-latest", "npm-claude-2-1-307", "dependabot-actions"]
     },
@@ -150,7 +150,7 @@
       "sources": ["dependabot-options"]
     },
     {
-      "note": "`npm install -g @anthropic-ai/claude-code@2.1.307` runs the package's postinstall script (`node install.cjs`) in a job whose checkout persisted the token; keep the job's token read-only.",
+      "note": "`npm install -g @anthropic-ai/claude-code@<pin>` runs the package's postinstall script (`node install.cjs`) in a job whose checkout persisted the token; keep the job's token read-only.",
       "where": [".github/workflows/ci.yml job validate"],
       "sources": ["npm-claude-2-1-307", "checkout-readme"]
     }
@@ -160,7 +160,7 @@
       ".github/workflows/ci.yml: actions/checkout@3d3c42e5... # v7.0.1 (x2: unit, validate) - latest",
       ".github/workflows/ci.yml: actions/setup-python@6d4fd22b... # v7.1.0 - latest",
       ".github/workflows/ci.yml: actions/setup-node@949feb24... # v7.1.0 - latest",
-      ".github/workflows/ci.yml: @anthropic-ai/claude-code@2.1.307 - latest 2.1.319, manual bump",
+      ".github/workflows/ci.yml: @anthropic-ai/claude-code@2.1.319 - latest 2.1.319 at research time, manual bump",
       ".github/workflows/ci.yml: matrix python ['3.11', '3.x'] - 3.11 is the floor declared by scripts/stackfoundry.sh",
       ".github/workflows/ci.yml: node-version lts/* - resolved at run time, unpinned"
     ],
@@ -218,7 +218,7 @@
   "questions": [
     "Set `persist-credentials: false` on both actions/checkout steps? No step needs authenticated git, and the validate job runs an npm postinstall after checkout (zizmor artipacked).",
     "Adopt .github/workflows/actions.lock (gh actions-lock) instead of or alongside SHA pins? GitHub calls it the strongest protection; status is public preview per official sources.",
-    "Bump the Claude Code CLI pin from 2.1.307 to 2.1.319, and decide who owns that manual bump since Dependabot does not cover it.",
+    "Decide who owns the manual Claude Code CLI pin bump, since Dependabot does not cover it.",
     "Raise Dependabot's cooldown above the default 3 days for github-actions (cooldown.default-days)?",
     "Pin the OS of the Python 3.11 floor leg (e.g. ubuntu-24.04) so the -latest migration cannot change the floor test silently?"
   ]

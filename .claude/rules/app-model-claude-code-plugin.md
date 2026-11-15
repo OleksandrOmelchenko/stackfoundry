@@ -14,7 +14,7 @@ paths:
      Disagree with a rule? Record the repo's way in the pack's repoConvention and re-render, so a refresh keeps
      your decision. -->
 
-Applies to: plugin. Versions in use: 0.1.0 (plugins/stackfoundry/.claude-plugin/plugin.json (version)); 2.1.307 (.github/workflows/ci.yml (validate job: npm install -g @anthropic-ai/claude-code@2.1.307)).
+Applies to: plugin. Versions in use: 0.5.0 (plugins/stackfoundry/.claude-plugin/plugin.json (version)); 2.1.319 (.github/workflows/ci.yml (validate job: npm install -g @anthropic-ai/claude-code@2.1.319)).
 
 ## Rules
 
@@ -95,7 +95,7 @@ Static: unittest (tests/) for the helper CLI and guard, verify-plumbing for skil
 
 ## Upgrades
 
-- Pinned in: .github/workflows/ci.yml: @anthropic-ai/claude-code@2.1.307 (latest 2.1.319 at research time); plugins/stackfoundry/.claude-plugin/plugin.json: version 0.1.0
+- Pinned in: .github/workflows/ci.yml: @anthropic-ai/claude-code@2.1.319 (latest 2.1.319 at research time); plugins/stackfoundry/.claude-plugin/plugin.json: version 0.5.0
 - Moves with: The CI CLI pin and verify-plumbing's SKILL_KEYS / AGENT_KEYS / IGNORED_IN_PLUGIN_AGENTS / KNOWN_TOOLS sets in plugins/stackfoundry/scripts/stackfoundry/plumbing.py: re-check them against the skills and subagents docs when the pin moves.; Minimum user CLI: userConfig `options` needs v2.1.271+, hook `onFailure` needs v2.1.295+.; plugin.json version with plugins/stackfoundry/CHANGELOG.md and the stackfoundry--v<version> tag (docs/release.md).
 - Release notes: https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/CHANGELOG.md
 - Migration guides: https://code.claude.com/docs/en/plugins/loading

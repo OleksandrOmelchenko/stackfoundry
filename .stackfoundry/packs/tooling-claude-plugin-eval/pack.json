@@ -7,8 +7,8 @@
   "researchedAt": "2026-11-09",
   "versions": [
     {
-      "version": "2.1.307",
-      "pinnedIn": ".github/workflows/ci.yml (npm install -g @anthropic-ai/claude-code@2.1.307; evals are not run in CI)",
+      "version": "2.1.319",
+      "pinnedIn": ".github/workflows/ci.yml and .github/workflows/evals.yml (npm install -g @anthropic-ai/claude-code@2.1.319; evals.yml runs on manual dispatch only)",
       "latest": "2.1.319"
     }
   ],
@@ -217,13 +217,13 @@
       "sources": ["docs-plugin-evals"]
     },
     {
-      "note": "Before each run, eval switches off git hooks, credential helpers and other programs that git configuration can start, through GIT_CONFIG_COUNT. This needs git 2.31 or later, and Claude Code enforces it since 2.1.283. It matters because every scaffold here creates a git repository. No advisory found mentions plugin eval. The sandbox-escape advisories that were found (for example a git worktree path confusion, fixed in 2.1.163) predate eval's minimum version 2.1.269, so the 2.1.307 pin is above them.",
+      "note": "Before each run, eval switches off git hooks, credential helpers and other programs that git configuration can start, through GIT_CONFIG_COUNT. This needs git 2.31 or later, and Claude Code enforces it since 2.1.283. It matters because every scaffold here creates a git repository. No advisory found mentions plugin eval. The sandbox-escape advisories that were found (for example a git worktree path confusion, fixed in 2.1.163) predate eval's minimum version 2.1.269, so the 2.1.319 pin is above them.",
       "where": ["fixtures/scaffold-lib.sh scaffold() git init/commit"],
       "sources": ["docs-plugin-evals", "adv-cve-2026-55607"]
     }
   ],
   "upgrade": {
-    "pins": ["@anthropic-ai/claude-code@2.1.307 in .github/workflows/ci.yml (used for claude plugin validate; evals run locally with whatever claude is installed)"],
+    "pins": ["@anthropic-ai/claude-code@2.1.319 in .github/workflows/ci.yml (claude plugin validate) and .github/workflows/evals.yml (manual eval runs); local eval runs use whatever claude is installed"],
     "lockStep": ["git >= 2.31 on the machine running evals", "sandbox backend (bubblewrap + socat on Linux, macOS, or WSL2) for Bash cases"],
     "releaseNotes": ["https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md"],
     "migrationGuides": ["https://code.claude.com/docs/en/plugin-evals"],

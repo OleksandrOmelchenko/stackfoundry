@@ -11,7 +11,7 @@ paths:
      Disagree with a rule? Record the repo's way in the pack's repoConvention and re-render, so a refresh keeps
      your decision. -->
 
-Applies to: plugin. Versions in use: 2.1.307 (.github/workflows/ci.yml (npm install -g @anthropic-ai/claude-code@2.1.307, job validate)); 0.1.0 (plugins/stackfoundry/.claude-plugin/plugin.json (version; release tag stackfoundry--v<version>)).
+Applies to: plugin. Versions in use: 2.1.319 (.github/workflows/ci.yml (npm install -g @anthropic-ai/claude-code@2.1.319, job validate)); 0.5.0 (plugins/stackfoundry/.claude-plugin/plugin.json (version; release tag stackfoundry--v<version>)).
 
 ## Rules
 
@@ -54,7 +54,7 @@ Unit tests prove the two manifests agree (names, source path, semver, no conflic
 
 ## Upgrades
 
-- Pinned in: @anthropic-ai/claude-code@2.1.307 in .github/workflows/ci.yml (latest 2.1.319 at research time)
+- Pinned in: @anthropic-ai/claude-code@2.1.319 in .github/workflows/ci.yml (latest 2.1.319 at research time)
 - Moves with: plugin.json version <-> plugins/stackfoundry/CHANGELOG.md section <-> tag stackfoundry--v<version>; marketplace.json plugins[].name <-> plugin.json name; marketplace.json name <-> extraKnownMarketplaces key and enabledPlugins id in init/SKILL.md and both READMEs
 - Release notes: https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md
 - Migration guides: https://code.claude.com/docs/en/plugins/host-marketplace.md

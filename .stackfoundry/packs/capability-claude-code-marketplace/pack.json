@@ -7,12 +7,12 @@
   "researchedAt": "2026-11-09",
   "versions": [
     {
-      "version": "2.1.307",
-      "pinnedIn": ".github/workflows/ci.yml (npm install -g @anthropic-ai/claude-code@2.1.307, job validate)",
+      "version": "2.1.319",
+      "pinnedIn": ".github/workflows/ci.yml (npm install -g @anthropic-ai/claude-code@2.1.319, job validate)",
       "latest": "2.1.319"
     },
     {
-      "version": "0.1.0",
+      "version": "0.5.0",
       "pinnedIn": "plugins/stackfoundry/.claude-plugin/plugin.json (version; release tag stackfoundry--v<version>)"
     }
   ],
@@ -141,7 +141,7 @@
     }
   ],
   "upgrade": {
-    "pins": ["@anthropic-ai/claude-code@2.1.307 in .github/workflows/ci.yml (latest 2.1.319 at research time)"],
+    "pins": ["@anthropic-ai/claude-code@2.1.319 in .github/workflows/ci.yml (latest 2.1.319 at research time)"],
     "lockStep": [
       "plugin.json version <-> plugins/stackfoundry/CHANGELOG.md section <-> tag stackfoundry--v<version>",
       "marketplace.json plugins[].name <-> plugin.json name",
@@ -168,7 +168,6 @@
   "questions": [
     "init's report reminds each collaborator to run `/plugin install stackfoundry@stackfoundry` once; the org docs say a relative-path plugin loads from the marketplace copy once the repo's extraKnownMarketplaces entry applies (after folder trust) with enabledPlugins set. Keep the reminder, or reword it as 'accept the folder trust dialog'?",
     "claude.ai organization sync rejects a plugin with a top-level bin/ directory (plugins/stackfoundry/scripts/stackfoundry.sh). Is org-sync distribution a goal? If so the CLI entry point would need to move (e.g. scripts/), which touches every hook command.",
-    "tests/test_manifests.py allows the marketplace entry to carry a version equal to plugin.json; the docs say set it in one place only. Tighten the test to forbid an entry version?",
-    "The CI CLI pin is 2.1.307; latest is 2.1.319. Bump the pin (no breaking marketplace changes seen in the notes read)?"
+    "tests/test_manifests.py allows the marketplace entry to carry a version equal to plugin.json; the docs say set it in one place only. Tighten the test to forbid an entry version?"
   ]
 }

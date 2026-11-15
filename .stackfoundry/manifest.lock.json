@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pluginVersion": "0.3.0",
+  "pluginVersion": "0.5.0",
   "files": {
     ".claude/CLAUDE.md": {
       "template": "reference/templates/instructions-block.md",
@@ -11,7 +11,7 @@
     ".claude/rules/app-model-claude-code-plugin.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "8993cc88be3ec8756eb879b6f4590b4fef67a13ab93a7af23137b1e041df92da",
+      "sha256": "183c23fedbd6995fa33d295232433d6a12e806ed37675495d3f5e7d031543374",
       "kind": "generated"
     },
     ".claude/rules/app-model-python-cli.md": {
@@ -23,7 +23,7 @@
     ".claude/rules/capability-claude-code-marketplace.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "9f4411795b9d398efaa6b17e30d591c37a0e3fd795d6aaa45c50dadb77827afd",
+      "sha256": "8aedf97f57e4388ef28f9c6afadff02a5df1989f0be86529d7df205f291e5a61",
       "kind": "generated"
     },
     ".claude/rules/dependency-bumps.md": {
@@ -59,13 +59,13 @@
     ".claude/rules/tooling-claude-plugin-eval.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "662fd406283a559afebfa94f27809cd964841fc71329945a61d095a0fd8d571c",
+      "sha256": "27ec38bc5e17fa18a389281a29b9260845f5eae99087e1eebf394c28dfe0e4de",
       "kind": "generated"
     },
     ".claude/rules/tooling-github-actions.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "c607fa6e2243ea19f4064c1de0ba14b1a85bfbfac6cabc982cbf46ba1a3276eb",
+      "sha256": "2eb0e7c5d9c1b2b2f63a6bcd12dca112766e35d566b5a0161331457c1b20acf3",
       "kind": "generated"
     },
     ".claude/rules/tooling-unittest.md": {
@@ -113,7 +113,7 @@
     ".stackfoundry/packs/app-model-claude-code-plugin/pack.json": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "2dfe379829404b41f8bb295e032c98901c747648143e76e406394759d26918e5",
+      "sha256": "ee37e4fcf8c00796fb0ca3cc6c4edcc99d8a8975a6f3316b09a2efc381a393d4",
       "kind": "generated"
     },
     ".stackfoundry/packs/app-model-python-cli/pack.json": {
@@ -125,7 +125,7 @@
     ".stackfoundry/packs/capability-claude-code-marketplace/pack.json": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "e16ab4be0cb741684fd33ab88d4c7d26845d77735aadb74d8b9e2b3332507dd3",
+      "sha256": "3adab9f451444fd63d251a944d561e3707767b6faecb6c65ff81adee95eace99",
       "kind": "generated"
     },
     ".stackfoundry/packs/language-posix-sh/pack.json": {
@@ -143,13 +143,13 @@
     ".stackfoundry/packs/tooling-claude-plugin-eval/pack.json": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "80d402ee3246a8d368684df71f91a9595b8e7cd807dfa34a8ad15518cef1fee1",
+      "sha256": "136d535e8f0882048179928cd9ad57b0cdd97fa39f5546cd3f02b8cf82281de3",
       "kind": "generated"
     },
     ".stackfoundry/packs/tooling-github-actions/pack.json": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "a95ff5bc43298c84481ad5bd46f21bc7a9667fa3560cd52a899f2b1b47114aa2",
+      "sha256": "d538651ccd48b9989530b1c574f38c09cd16ed018db7634fac2dc91dd291ecb8",
       "kind": "generated"
     },
     ".stackfoundry/packs/tooling-unittest/pack.json": {
@@ -173,7 +173,7 @@
     ".stackfoundry/rules/app-model-claude-code-plugin.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "56880a5c588b735a8d8312ced21f97dc3b0f983c3d0a38c55a031c929dcb9e53",
+      "sha256": "391cec64019fbe81d7edc08dbb8153b49d5f3c7f3501fa45618fcf5e0689d48a",
       "kind": "generated"
     },
     ".stackfoundry/rules/app-model-python-cli.md": {
@@ -185,7 +185,7 @@
     ".stackfoundry/rules/capability-claude-code-marketplace.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "da52996c10c20218bedae685d083dc62883b4ddafd234698fb0ac142318f3ca4",
+      "sha256": "fe1f6ebeccd13d98b9d728f1cadb115e59112b5dfe12906b61f665572abc9efe",
       "kind": "generated"
     },
     ".stackfoundry/rules/dependency-bumps.md": {
@@ -221,13 +221,13 @@
     ".stackfoundry/rules/tooling-claude-plugin-eval.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "00870aa2835b814daaf85bb145a27ce64faa30dcc999e73f8641bb55fd134d55",
+      "sha256": "b47421e7f09ae9c30956c321b290850b24fd811598040e7364a9a25b5a2a6be8",
       "kind": "generated"
     },
     ".stackfoundry/rules/tooling-github-actions.md": {
       "template": "research",
       "templateVersion": "research",
-      "sha256": "e953d828bdf8d0a1fca38f0b9a52787947c64a94bf0f98eac1f1319f716564cb",
+      "sha256": "f3eb19f112628cccdef54a45a498dada201c03ffb49366deb3ea4fe892a8efb0",
       "kind": "generated"
     },
     ".stackfoundry/rules/tooling-unittest.md": {

@@ -11,7 +11,7 @@ paths:
      Disagree with a rule? Record the repo's way in the pack's repoConvention and re-render, so a refresh keeps
      your decision. -->
 
-Applies to: plugin. Versions in use: 2.1.307 (.github/workflows/ci.yml (npm install -g @anthropic-ai/claude-code@2.1.307; evals are not run in CI)).
+Applies to: plugin. Versions in use: 2.1.319 (.github/workflows/ci.yml and .github/workflows/evals.yml (npm install -g @anthropic-ai/claude-code@2.1.319; evals.yml runs on manual dispatch only)).
 
 ## Rules
 
@@ -72,11 +72,11 @@ The eval suite is itself the behavioural harness for skills, agents and hooks. E
 
 - Running claude plugin eval loads the plugin's hooks, skills and agents and runs scaffolds as you, outside the sandbox. Run isolation limits only the agent under test. The plugin's own hooks (hooks/hooks.json guard) run outside the sandbox and could modify the files graders read. A passing suite says nothing about whether the plugin is safe. Here: plugins/stackfoundry/hooks/hooks.json; fixtures/scaffold-lib.sh. [docs-plugin-evals]
 - A bare WebFetch or WebSearch grant (check-updates-report-only) lets the agent reach the web directly. Network rules from the sandbox apply only to shell commands. Fetched pages can carry prompt injection into a run that also holds Write and Bash. Prefer WebFetch(domain:...) grants for the registries the case needs, and run Bash-granting cases only on a sandboxed host. Here: plugins/stackfoundry/evals/README.md check-updates-report-only (--allow-tools Bash Write WebFetch WebSearch). [docs-plugin-evals]
-- Before each run, eval switches off git hooks, credential helpers and other programs that git configuration can start, through GIT_CONFIG_COUNT. This needs git 2.31 or later, and Claude Code enforces it since 2.1.283. It matters because every scaffold here creates a git repository. No advisory found mentions plugin eval. The sandbox-escape advisories that were found (for example a git worktree path confusion, fixed in 2.1.163) predate eval's minimum version 2.1.269, so the 2.1.307 pin is above them. Here: fixtures/scaffold-lib.sh scaffold() git init/commit. [docs-plugin-evals, adv-cve-2026-55607]
+- Before each run, eval switches off git hooks, credential helpers and other programs that git configuration can start, through GIT_CONFIG_COUNT. This needs git 2.31 or later, and Claude Code enforces it since 2.1.283. It matters because every scaffold here creates a git repository. No advisory found mentions plugin eval. The sandbox-escape advisories that were found (for example a git worktree path confusion, fixed in 2.1.163) predate eval's minimum version 2.1.269, so the 2.1.319 pin is above them. Here: fixtures/scaffold-lib.sh scaffold() git init/commit. [docs-plugin-evals, adv-cve-2026-55607]
 
 ## Upgrades
 
-- Pinned in: @anthropic-ai/claude-code@2.1.307 in .github/workflows/ci.yml (used for claude plugin validate; evals run locally with whatever claude is installed)
+- Pinned in: @anthropic-ai/claude-code@2.1.319 in .github/workflows/ci.yml (claude plugin validate) and .github/workflows/evals.yml (manual eval runs); local eval runs use whatever claude is installed
 - Moves with: git >= 2.31 on the machine running evals; sandbox backend (bubblewrap + socat on Linux, macOS, or WSL2) for Bash cases
 - Release notes: https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md
 - Migration guides: https://code.claude.com/docs/en/plugin-evals

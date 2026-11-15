@@ -6,8 +6,8 @@
   "covers": "plugin components, tool grants, briefs, paths",
   "researchedAt": "2026-11-09",
   "versions": [
-    {"version": "0.1.0", "pinnedIn": "plugins/stackfoundry/.claude-plugin/plugin.json (version)"},
-    {"version": "2.1.307", "pinnedIn": ".github/workflows/ci.yml (validate job: npm install -g @anthropic-ai/claude-code@2.1.307)", "latest": "2.1.319"}
+    {"version": "0.5.0", "pinnedIn": "plugins/stackfoundry/.claude-plugin/plugin.json (version)"},
+    {"version": "2.1.319", "pinnedIn": ".github/workflows/ci.yml (validate job: npm install -g @anthropic-ai/claude-code@2.1.319)", "latest": "2.1.319"}
   ],
   "targets": ["plugin"],
   "rulebookPaths": [
@@ -244,8 +244,8 @@
   ],
   "upgrade": {
     "pins": [
-      ".github/workflows/ci.yml: @anthropic-ai/claude-code@2.1.307 (latest 2.1.319 at research time)",
-      "plugins/stackfoundry/.claude-plugin/plugin.json: version 0.1.0"
+      ".github/workflows/ci.yml: @anthropic-ai/claude-code@2.1.319 (latest 2.1.319 at research time)",
+      "plugins/stackfoundry/.claude-plugin/plugin.json: version 0.5.0"
     ],
     "lockStep": [
       "The CI CLI pin and verify-plumbing's SKILL_KEYS / AGENT_KEYS / IGNORED_IN_PLUGIN_AGENTS / KNOWN_TOOLS sets in plugins/stackfoundry/scripts/stackfoundry/plumbing.py: re-check them against the skills and subagents docs when the pin moves.",
@@ -276,7 +276,6 @@
   "questions": [
     "The hooks docs say to enforce a hard deny with the permission system, not a hook; the guard is a fail-open PreToolUse hook (hooks.json onFailure: continue). Should init also write permissions.deny rules (for example Edit(...) on generated globs) into the user's .claude/settings.json, or stay hook-only?",
     "The plugin needs Claude Code v2.1.271+ (userConfig options) and v2.1.295+ (onFailure), but no minimum CLI version is stated for users. Document a floor in the plugin README / marketplace description?",
-    "The CI pin is 2.1.307 and the latest release is 2.1.319 (2.1.310 fixed Windows PreToolUse hooks letting calls through when Git Bash is missing). Bump the pin?",
     "The guard matcher includes MultiEdit, which the current hooks docs no longer mention. Keep it as harmless, or drop it from the matcher and guard.py EDIT_TOOLS?"
   ]
 }
