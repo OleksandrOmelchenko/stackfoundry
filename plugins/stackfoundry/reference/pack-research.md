@@ -52,7 +52,9 @@ Read in this order, and stop widening once the pack is complete:
   file's table; without it the table shows the `title`.
 - **One line per text field.** Every text field in the pack is one line of plain text:
   - no line breaks, control characters or HTML comments;
-  - `rulebookPaths` are plain globs: no quotes, backslashes, commas, `#` or spaces.
+  - `rulebookPaths` are plain globs: no quotes, backslashes, commas, braces, `#` or spaces. Write
+    `**/*.{ts,html}` as two globs, `**/*.ts` and `**/*.html`: Cursor, Copilot and Antigravity read the paths as
+    one comma-separated list.
 
   The rulebook renders them inline and loads in every matching session, so `stackfoundry pack check` rejects
   anything else.

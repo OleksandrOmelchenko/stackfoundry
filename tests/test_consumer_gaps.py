@@ -67,5 +67,46 @@ class TrackerIdTests(unittest.TestCase):
         self.assertEqual(tracker.check(text), [])
 
 
+def _pack(**over) -> dict:
+    pack = {"schemaVersion": 1, "id": "capability-i18n", "layer": "capability", "title": "i18n",
+            "researchedAt": "2026-01-01", "versions": [], "targets": ["web"],
+            "sources": {"d": {"url": "https://example.org/docs", "accessed": "2026-01-01", "title": "Docs"}},
+            "rules": [{"rule": "Keep keys flat.", "why": "Lookups stay cheap.", "where": ["web/i18n"],
+                       "sources": ["d"]}],
+            "rulebookPaths": ["web/**/*.ts"]}
+    pack.update(over)
+    return pack
+
+
+class PackGlobTests(unittest.TestCase):
+    """P4: a brace glob is refused with a hint to split it; the description quoting is a fix and stays."""
+
+    def test_brace_glob_is_refused_with_a_split_hint(self):
+        from stackfoundry import pack
+        errors, _ = pack.check(_pack(rulebookPaths=["web/**/*.{ts,html}"]))
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("split `{a,b}` into one glob per extension", errors[0])
+
+    def test_split_globs_pass(self):
+        from stackfoundry import pack
+        errors, _ = pack.check(_pack(rulebookPaths=["web/**/*.ts", "web/**/*.html"]))
+        self.assertEqual(errors, [])
+
+    def test_brace_glob_breaks_the_comma_joined_formats(self):
+        # Why braces stay refused: the same glob through render-rule for Cursor becomes two broken globs.
+        from stackfoundry import clients
+        text = "---\ndescription: x\npaths:\n  - \"web/**/*.{ts,html}\"\n---\n\n# x\n"
+        globs = next(line for line in clients.render_rule(text, "cursor").splitlines() if line.startswith("globs:"))
+        self.assertEqual(globs[len("globs: "):].split(","), ["web/**/*.{ts", "html}"])
+
+    def test_description_with_colon_space_is_quoted_and_reads_back_whole(self):
+        from stackfoundry import pack
+        from stackfoundry.frontmatter import split
+        rendered = pack.render(_pack(id="capability-bicep", title="Bicep: Azure infrastructure"))
+        fields, _, errors = split(rendered)
+        self.assertEqual(errors, [])
+        self.assertTrue(fields["description"].startswith("Bicep: Azure infrastructure rulebook (capability layer)."))
+
+
 if __name__ == "__main__":
     unittest.main()

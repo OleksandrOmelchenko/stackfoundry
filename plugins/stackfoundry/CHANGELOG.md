@@ -14,6 +14,16 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   read as ids, and a banner token that is no finding id of the file still reads as its parts (`B1/B2` is two ids):
   existing trackers parse exactly as before. Test-design rows keep `TD-<n>`. The bug-reports README template
   (version 2) states the shape.
+- **`pack check` says how to fix a brace glob.** A `rulebookPaths` entry such as `**/*.{ts,html}` is still refused:
+  Cursor, Copilot and Antigravity read a rulebook's paths as one comma-separated list, where it would split into
+  two broken globs. The error now says to split `{a,b}` into one glob per extension, and braces are refused even
+  without a comma.
+
+### Fixed
+
+- Recorded late: since 0.3.0, `pack render` quotes a rulebook `description` that YAML would cut or misread, such
+  as a title with `: ` (`Bicep: Azure infrastructure …`). A pack rendered by 0.2.x shows a one-time quoting diff on
+  its next render; the quoted form is the correct one.
 
 ## [0.5.0] - 2026-11-12
 

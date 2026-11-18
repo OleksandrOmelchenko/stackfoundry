@@ -3,7 +3,7 @@
 check   Read-only. Errors exit 1: missing required fields, a citation key with no source, a source without url or
         access date, HTML-escaped text (a sign the JSON went through a renderer), a line break, control character or
         HTML comment in any text (researched text renders inline into always-loaded rulebooks), a rulebook path that
-        is not a plain glob, an id whose prefix contradicts its layer. Warnings: an empty section, a rule with no
+        is not a plain glob (a brace glob `{a,b}` is told to split into one per extension), an id whose prefix contradicts its layer. Warnings: an empty section, a rule with no
         `where`, no rulebook paths, a catch-all path, and, in a repo, the signs of text that came from a page rather
         than from research (a URL that is no source, a command to run that is no gate, test or discover command,
         text addressed to an agent). init and research-stack show them to the user.
@@ -29,8 +29,10 @@ RULE_LINES = min(v for lims in LIMITS["rule"].values() for unit, v, _ in lims if
 ID = re.compile(r"^(language|app-model|capability|tooling)-[a-z0-9-]+$")
 CITED_SECTIONS = {"rules": ("rule", "why"), "bugCategories": ("name", "lookFor", "failure"), "wiring": (),
                   "performance": (), "security": ()}
-# A rulebook path goes into YAML frontmatter and, for some assistants, a comma-joined list.
-GLOB_BAD = re.compile(r"[\"'\\,#\s]|: ")
+# A rulebook path goes into YAML frontmatter and, for Cursor, Copilot and Antigravity, one comma-joined string
+# (clients.render_rule), so a brace glob `{a,b}` would split there into two broken globs.
+GLOB_BAD = re.compile(r"[\"'\\,#{}\s]|: ")
+BRACES = re.compile(r"\{[^}]*,[^}]*\}")
 CATCH_ALL = {"*", "**", "**/*", "/**", "**/**", "/**/*"}
 URL = re.compile(r"https?://[^\s)\]>`'\"]+")
 RUN = re.compile(r"(?i)\b(?:run|execute|invoke|call|pipe to)\s+`([^`]+)`")
@@ -80,8 +82,12 @@ def check(pack: dict) -> tuple[list[str], list[str]]:
         errors.append("rulebookPaths must be a list of globs")
         paths = []
     for i, g in enumerate(paths):
-        if not isinstance(g, str) or not g or GLOB_BAD.search(g):
-            errors.append(f"rulebookPaths[{i}] must be a plain glob (no quotes, backslashes, commas, '#' or spaces)")
+        if isinstance(g, str) and BRACES.search(g):
+            errors.append(f"rulebookPaths[{i}] {g!r}: split `{{a,b}}` into one glob per extension (`**/*.a`, "
+                          "`**/*.b`); Cursor, Copilot and Antigravity read the paths as one comma-separated list")
+        elif not isinstance(g, str) or not g or GLOB_BAD.search(g):
+            errors.append(f"rulebookPaths[{i}] must be a plain glob (no quotes, backslashes, commas, braces, '#' or "
+                          "spaces)")
         elif g in CATCH_ALL:
             warnings.append(f"rulebookPaths[{i}] {g!r} loads this rulebook for every file; scope it to the stack")
     for section in ("bugCategories", "testing"):
