@@ -41,12 +41,13 @@ templates only, never technology content (`.claude/CLAUDE.md`, `docs/design.md`)
 
 ## Who decides
 
-The owner: release tags (`stackfoundry--v<version>`) and pushes (`.claude/CLAUDE.md`, `docs/release.md`).
+The owner: release tags (`stackfoundry--v<version>`) (`.claude/CLAUDE.md`, `docs/release.md`).
 
 ## Working agreements
 
-- Git: single branch, work on `main`; commits only when the user asks in that turn; tags and pushes are the owner's
-  (enforced as `guards.json` `git.writes: ask`, plus a deny on `claude plugin tag` without `--dry-run`).
+- Git: single branch, work on `main`. Commit, push or open a PR when the user asks for it in plain language: the
+  request is the permission, so no second confirmation (`guards.json` `git.writes: allow`). Release tags are the
+  owner's (a `guards.json` deny on `claude plugin tag` without `--dry-run`).
 - Generated code: the other assistants' plugin files (`targets.json` `generated`), written by
   `scripts/build_clients.py` and denied to hand edits by `guards.json`.
 - Evals (`claude plugin eval`) spend real tokens: ask before running them (guarded).

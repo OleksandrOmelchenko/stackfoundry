@@ -47,8 +47,9 @@ claude plugin validate --strict plugins/stackfoundry
 
 ## Git
 
-Single branch: work on `main`. Release tags (`stackfoundry--v<version>`) and pushes are the owner's. The pre-commit
-hook lives in `.githooks/` (`git config core.hooksPath .githooks`).
+Single branch: work on `main`. When the user asks in plain language to commit, push or open a PR, do it without
+asking again: the request is the permission. Release tags (`stackfoundry--v<version>`) are the owner's. The
+pre-commit hook lives in `.githooks/` (`git config core.hooksPath .githooks`).
 
 <!-- stackfoundry:begin (managed by the stackfoundry init and upgrade skills; edit outside the markers) -->
 ## stackfoundry

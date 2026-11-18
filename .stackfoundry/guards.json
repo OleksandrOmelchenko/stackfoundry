@@ -28,7 +28,7 @@
     }
   ],
   "git": {
-    "writes": "ask",
-    "reason": "Commits happen only when the user asks in that turn; release tags and pushes are the owner's (.claude/CLAUDE.md, Git)."
+    "writes": "allow",
+    "reason": "Git writes (commit, push, pull request, branch) happen when the user asks for them in plain language; that request is the permission, so the guard does not ask again. Release tags stay the owner's (the plugin-tag command rule above)."
   }
 }
