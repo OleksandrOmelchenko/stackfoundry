@@ -108,5 +108,36 @@ class PackGlobTests(unittest.TestCase):
         self.assertTrue(fields["description"].startswith("Bicep: Azure infrastructure rulebook (capability layer)."))
 
 
+COMMAND_ROLES = ("test-runner", "test-writer", "test-fixer", "test-reviewer", "benchmark-writer", "benchmark-reviewer",
+                 "code-verifier", "debugger", "fix-verifier", "web-fix-verifier", "bug-hunter", "change-reviewer",
+                 "code-semantics-reviewer", "markup-semantics-reviewer", "security-reviewer", "performance-reviewer")
+
+
+class PowerShellGrantTests(unittest.TestCase):
+    """P1: roles that run a profile's gate, test, benchmark or analysis commands can run a `.ps1` command through
+    `PowerShell` (inside an EnterWorktree worktree `Bash` refuses to launch pwsh)."""
+
+    def test_command_roles_grant_powershell_and_say_when_to_use_it(self):
+        import re
+        from tests._support import PLUGIN
+        from stackfoundry.frontmatter import split
+        for role in COMMAND_ROLES:
+            with self.subTest(role=role):
+                fields, body, _ = split((PLUGIN / "agents" / f"{role}.md").read_text(encoding="utf-8"))
+                tools = [t.strip() for t in fields["tools"].split(",")]
+                self.assertIn("PowerShell", tools)
+                self.assertIn("Bash", tools)
+                tooling = re.search(r"^## Tooling\n(.*)", body, re.M | re.S).group(1)
+                self.assertIn("`PowerShell` for a `.ps1` command when you have it", tooling)
+                self.assertIn("`EnterWorktree`", tooling)
+
+    def test_copilot_copies_carry_the_tooling_line(self):
+        from tests._support import PLUGIN
+        for role in COMMAND_ROLES:
+            with self.subTest(role=role):
+                text = (PLUGIN / "com.github.copilot" / "agents" / f"{role}.agent.md").read_text(encoding="utf-8")
+                self.assertIn("`PowerShell` for a `.ps1` command when you have it", text)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,7 +1,7 @@
 ---
 name: change-reviewer
 description: Reviews a change set as a stranger, from the diff and the code alone with no knowledge of intent — correctness, concurrency, blast radius, contracts, security, convention fit against the touched targets' rulebooks. Read-only. Dispatched by review-changes with the scope.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, PowerShell
 ---
 
 # Change reviewer
@@ -84,3 +84,6 @@ right, anything needing a running system).
 `Bash` for `stackfoundry change-targets`, read-only `git diff`/`git show`/`gh pr diff`, and the target's gate
 commands; `Read`, `Grep` and `Glob` for the code around the change. The grant has no `Edit` or `Write`, by design.
 Your final message is the report and goes to the orchestrator: no preamble.
+
+`PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+`Bash` refuses to launch pwsh); `Bash` otherwise.

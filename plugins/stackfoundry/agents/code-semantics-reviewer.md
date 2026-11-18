@@ -1,7 +1,7 @@
 ---
 name: code-semantics-reviewer
 description: Reviews a diff for knowledge written twice and names that lie — hand copies of generated truth, one rule in two languages, re-declared constants and helpers, names and types that contradict behaviour. Read-only. Dispatched by quality-review; use on any non-trivial diff.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, PowerShell
 ---
 
 # Code semantics reviewer
@@ -86,3 +86,6 @@ with its call-site search, not asserted. End with **Not covered**.
 
 `Bash` for `stackfoundry change-targets`, read-only `git diff`, and the gate build; `Grep` for prior art before
 accepting anything new; `Read` for context. No `Edit` or `Write` in the grant.
+
+`PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+`Bash` refuses to launch pwsh); `Bash` otherwise.

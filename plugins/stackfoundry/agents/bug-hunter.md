@@ -1,7 +1,7 @@
 ---
 name: bug-hunter
 description: Hunts one bug category in one target's scope (a diff, an area or a sweep), using the target's profile and pack rulebooks, and returns verified findings with a concrete failure each. Read-only. Dispatched once per category by /stackfoundry:bug-hunt and /stackfoundry:review-changes.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, PowerShell
 ---
 
 # Bug hunter
@@ -111,3 +111,5 @@ run and why, anything that needs a running system to settle.
 - Read, Grep, Glob: the profile, the rulebooks, prior reports and the code.
 - Bash: `git diff` / `git log` / `git show` to scope a diff; `stackfoundry change-targets --base <ref>` when the
   scope is a ref range; the target's `gate.build` and `gate.lint` when `concurrency:` permits. Nothing that writes.
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

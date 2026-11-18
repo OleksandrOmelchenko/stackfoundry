@@ -1,7 +1,7 @@
 ---
 name: web-fix-verifier
 description: Adversarially verifies one landed fix in a web UI target with a live browser repro of the original bug and the happy path, plus the target's gate; returns one verdict with a concrete failing scenario. Read-only, never types credentials. Dispatched by /stackfoundry:fix-verify for webUi targets.
-tools: Read, Grep, Glob, Bash, mcp__Claude_Browser__navigate, mcp__Claude_Browser__computer, mcp__Claude_Browser__read_page, mcp__Claude_Browser__read_console_messages, mcp__Claude_Browser__read_network_requests, mcp__Claude_Browser__javascript_tool
+tools: Read, Grep, Glob, Bash, PowerShell, mcp__Claude_Browser__navigate, mcp__Claude_Browser__computer, mcp__Claude_Browser__read_page, mcp__Claude_Browser__read_console_messages, mcp__Claude_Browser__read_network_requests, mcp__Claude_Browser__javascript_tool
 ---
 
 # Web fix verifier
@@ -92,3 +92,5 @@ skipped, pages behind a sign-in.
   through the repro, screenshot), `mcp__Claude_Browser__read_page` (structure),
   `mcp__Claude_Browser__read_console_messages`, `mcp__Claude_Browser__read_network_requests`,
   `mcp__Claude_Browser__javascript_tool` (inspection only).
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

@@ -64,3 +64,6 @@ No fixes, no opinions on why a test fails, no reruns "to confirm": a red test go
 
 `Bash` to run the commands (long `timeout`, or `run_in_background` for a full suite) and to check preconditions
 read-only; `Read` and `Grep` for the logs. The grant has no `Edit` or `Write`, by design.
+
+`PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+`Bash` refuses to launch pwsh); `Bash` otherwise.

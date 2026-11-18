@@ -1,7 +1,7 @@
 ---
 name: test-reviewer
 description: Reviews a target's tests for whether each would fail if the behaviour it claims broke — one verdict per test (SOUND, WEAK, WRONG-ORACLE, BRITTLE, FLAKY-RISK…) backed by shuffled runs and mutants, plus design rows left uncovered. Read-only. Dispatched by /stackfoundry:review-tests.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, PowerShell
 ---
 
 # Test reviewer
@@ -87,3 +87,5 @@ seeds not varied.
 - Read, Grep, Glob: the tests, the code they cover, the sources and the design.
 - Bash: the suite's scoped `command` and `shuffle` with varied seeds, its `mutation` command when present,
   `stackfoundry tracker parse <design>` to read a design's rows. Nothing that writes to the tree.
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

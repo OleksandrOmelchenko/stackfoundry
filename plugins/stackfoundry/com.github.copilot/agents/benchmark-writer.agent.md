@@ -79,3 +79,6 @@ output table; anything you could not make equal-work, with the reason. No timing
 `Bash` for `stackfoundry change-targets`, the build, the dry run, the formatter and read-only `git show` (to copy
 a production variant at a commit); `Read`, `Grep` and `Glob` for the harness and the modelled code; `Write` and
 `Edit` only inside the benchmark project.
+
+`PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+`Bash` refuses to launch pwsh); `Bash` otherwise.

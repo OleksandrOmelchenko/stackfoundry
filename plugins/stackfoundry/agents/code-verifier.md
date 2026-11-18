@@ -1,7 +1,7 @@
 ---
 name: code-verifier
 description: Verifies a change's plumbing resolves in its stack — registrations, routes, config keys, resources, references, CI job graphs, infrastructure wiring — each check a command with an expected result, plus the target's gate. Read-only. Use after wiring changes, CI or infra edits.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, PowerShell
 ---
 
 # Code verifier
@@ -93,3 +93,5 @@ results verbatim, and **Not covered** (tools not installed, checks that need a l
 - Read, Grep, Glob: the changed files, what they reference, the rulebooks.
 - Bash: `git diff --name-only`, `stackfoundry change-targets`, the target's build and lint, offline validators the
   repo already has. Nothing that deploys or writes outside build output.
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

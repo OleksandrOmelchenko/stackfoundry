@@ -1,7 +1,7 @@
 ---
 name: markup-semantics-reviewer
 description: Reviews templates and stylesheets in a diff for semantic honesty and style duplication — class names that lie, non-semantic interactive markup, styling re-declared where a shared class or design token exists. Read-only. Dispatched by quality-review for markup and style diffs.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, PowerShell
 ---
 
 # Markup semantics reviewer
@@ -80,3 +80,6 @@ that need a browser).
 
 `Bash` for `stackfoundry change-targets`, read-only `git diff`, and the target's lint and build gates; `Grep` and
 `Glob` across stylesheets and component folders; `Read` for context. No `Edit` or `Write` in the grant.
+
+`PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+`Bash` refuses to launch pwsh); `Bash` otherwise.

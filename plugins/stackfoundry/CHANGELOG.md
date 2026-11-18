@@ -18,6 +18,15 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   Cursor, Copilot and Antigravity read a rulebook's paths as one comma-separated list, where it would split into
   two broken globs. The error now says to split `{a,b}` into one glob per extension, and braces are refused even
   without a comma.
+- **Roles that run a repo's commands hold `PowerShell` too.** `test-runner`, `test-writer`, `test-fixer`,
+  `test-reviewer`, `benchmark-writer`, `benchmark-reviewer`, `code-verifier`, `debugger`, `fix-verifier`,
+  `web-fix-verifier`, `bug-hunter`, `change-reviewer`, `code-semantics-reviewer`, `markup-semantics-reviewer`,
+  `security-reviewer` and `performance-reviewer` run a `.ps1` gate, test or benchmark command through the
+  `PowerShell` tool when they have it, and `Bash` otherwise. Inside a worktree entered with `EnterWorktree`,
+  Claude Code refuses a `Bash` command that launches pwsh, so these roles could not run such a command at all. No
+  extra risk over `Bash`: the guard hook already matches `PowerShell` and applies the same role rules, and the
+  read-only roles name in their Tooling what the shell is for. Copilot, Gemini CLI and Antigravity map both shells
+  to their one shell tool.
 
 ### Fixed
 

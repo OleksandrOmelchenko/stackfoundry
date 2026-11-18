@@ -110,3 +110,5 @@ run and why, anything that needs a running system to settle.
 - Read, Grep, Glob: the profile, the rulebooks, prior reports and the code.
 - Bash: `git diff` / `git log` / `git show` to scope a diff; `stackfoundry change-targets --base <ref>` when the
   scope is a ref range; the target's `gate.build` and `gate.lint` when `concurrency:` permits. Nothing that writes.
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

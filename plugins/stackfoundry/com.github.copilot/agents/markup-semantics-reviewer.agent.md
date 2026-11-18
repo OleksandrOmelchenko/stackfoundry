@@ -79,3 +79,6 @@ that need a browser).
 
 `Bash` for `stackfoundry change-targets`, read-only `git diff`, and the target's lint and build gates; `Grep` and
 `Glob` across stylesheets and component folders; `Read` for context. No `Edit` or `Write` in the grant.
+
+`PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+`Bash` refuses to launch pwsh); `Bash` otherwise.

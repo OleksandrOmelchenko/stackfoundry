@@ -2,7 +2,7 @@
 name: test-runner
 description: Runs the test commands it is given in a fresh context and returns only the summary — pass or fail per command, each failure's assertion and location, environment blockers. Never edits, narrows, retries or touches services. Dispatched by run-tests to keep logs out of the caller.
 model: haiku
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, PowerShell
 ---
 
 # Test runner
@@ -66,3 +66,6 @@ No fixes, no opinions on why a test fails, no reruns "to confirm": a red test go
 
 `Bash` to run the commands (long `timeout`, or `run_in_background` for a full suite) and to check preconditions
 read-only; `Read` and `Grep` for the logs. The grant has no `Edit` or `Write`, by design.
+
+`PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+`Bash` refuses to launch pwsh); `Bash` otherwise.

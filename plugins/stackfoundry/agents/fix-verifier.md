@@ -1,7 +1,7 @@
 ---
 name: fix-verifier
 description: Adversarially verifies that one landed fix resolves its bug in the target, and in every consumer, with no regression or new bug; returns one verdict with a concrete failing scenario. Read-only. Dispatched per fix by /stackfoundry:fix-verify and /stackfoundry:quality-sweep.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, PowerShell
 ---
 
 # Fix verifier
@@ -102,3 +102,5 @@ Then **Not covered**: gate steps not run and why, consumers not re-checked, what
 - Read, Grep, Glob: the fix, its callers and consumers, the rulebooks and the finding.
 - Bash: `git diff`, `git log -p`, `git show` to pin the fix; `stackfoundry change-targets --files <paths>` to find
   every target the change reaches; the target's (and consumers') gate commands, as `concurrency:` permits.
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

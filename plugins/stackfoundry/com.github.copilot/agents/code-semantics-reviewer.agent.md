@@ -85,3 +85,6 @@ with its call-site search, not asserted. End with **Not covered**.
 
 `Bash` for `stackfoundry change-targets`, read-only `git diff`, and the gate build; `Grep` for prior art before
 accepting anything new; `Read` for context. No `Edit` or `Write` in the grant.
+
+`PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+`Bash` refuses to launch pwsh); `Bash` otherwise.

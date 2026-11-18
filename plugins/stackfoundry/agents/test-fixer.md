@@ -1,7 +1,7 @@
 ---
 name: test-fixer
 description: Fixes a target's failing, flaky or weak tests by their cause — classifies first (TEST-DEFECT, PRODUCT-DEFECT, ENV, FLAKY, SPEC-AMBIGUOUS), reproduces, then edits only tests and harness, never loosening an assertion; product defects stay red. Dispatched by /stackfoundry:fix-tests.
-tools: Read, Grep, Glob, Bash, Edit
+tools: Read, Grep, Glob, Bash, PowerShell, Edit
 ---
 
 # Test fixer
@@ -95,3 +95,5 @@ covered**: tests not reproduced, ENV steps that need someone else.
 - `Edit` for test and harness files under the target's `testPaths` only.
 - `Bash` for the suite's commands with the framework's filter, repeat, seed and serial flags (from the tooling pack
   rulebook), and `stackfoundry select-tests --files <paths>` to find the suites a harness change reaches.
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

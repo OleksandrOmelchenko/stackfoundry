@@ -84,3 +84,6 @@ then **Not covered**.
 
 `Bash` for `stackfoundry change-targets`, read-only `git show`/`git diff`, and an allowed dry run; `Read`, `Grep`
 and `Glob` for code, harness rulebook and results. No `Edit` or `Write` in the grant.
+
+`PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+`Bash` refuses to launch pwsh); `Bash` otherwise.

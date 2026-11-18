@@ -121,3 +121,5 @@ covered**.
 - Bash: read-only — `git diff`, `git log`, lock-file reads, the ecosystems' `discover` commands, the target's test
   commands when `concurrency:` permits.
 - No web tools: the `web:` notes in the brief stand in for them.
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

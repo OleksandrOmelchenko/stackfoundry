@@ -86,3 +86,5 @@ seeds not varied.
 - Read, Grep, Glob: the tests, the code they cover, the sources and the design.
 - Bash: the suite's scoped `command` and `shuffle` with varied seeds, its `mutation` command when present,
   `stackfoundry tracker parse <design>` to read a design's rows. Nothing that writes to the tree.
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

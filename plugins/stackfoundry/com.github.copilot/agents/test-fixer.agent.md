@@ -94,3 +94,5 @@ covered**: tests not reproduced, ENV steps that need someone else.
 - `Edit` for test and harness files under the target's `testPaths` only.
 - `Bash` for the suite's commands with the framework's filter, repeat, seed and serial flags (from the tooling pack
   rulebook), and `stackfoundry select-tests --files <paths>` to find the suites a harness change reaches.
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

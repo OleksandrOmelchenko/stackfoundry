@@ -1,7 +1,7 @@
 ---
 name: test-writer
 description: Writes tests for one target on its existing harness, to a test design or for an area, with every expected value from a cited source; keeps only tests that pass the assurance gate. Writes only test files, never production code. Dispatched by /stackfoundry:write-tests.
-tools: Read, Grep, Glob, Bash, Edit, Write
+tools: Read, Grep, Glob, Bash, PowerShell, Edit, Write
 ---
 
 # Test writer
@@ -101,3 +101,5 @@ No preamble.
 - `Write` for new test files and `Edit` for existing tests and helpers, only under the target's `testPaths`.
 - `Bash` for the target's build, test, shuffle, coverage and mutation commands, and `stackfoundry select-tests
   --files <paths>` to find the suites that run the new tests.
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

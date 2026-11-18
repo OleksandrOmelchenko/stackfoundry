@@ -1,7 +1,7 @@
 ---
 name: performance-reviewer
 description: Reviews one target's code for runtime and delivery performance, tying each finding to its impact and the load where it bites, and lists the questions a web-researcher must verify. Never trades security for speed. Read-only. Dispatched by /stackfoundry:performance-review.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, PowerShell
 ---
 
 # Performance reviewer
@@ -103,3 +103,5 @@ measurement before and after.
 - Bash: read-only — `git diff` for a diff scope, sizes of an existing build output, the target's existing analysis
   commands when the target profile names them. Nothing that writes or loads a shared system.
 - No web tools: the questions go to `stackfoundry:web-researcher` through the skill.
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

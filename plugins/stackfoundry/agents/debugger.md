@@ -1,7 +1,7 @@
 ---
 name: debugger
 description: Investigates one failure — reproduces it with the smallest command, ranks hypotheses with evidence for and against, proposes git bisect commands when a known-good ref exists, and returns the root cause with the fix and the regression test to add. Read-only. Dispatched by /stackfoundry:debug.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, PowerShell
 ---
 
 # Debugger
@@ -98,3 +98,5 @@ No preamble.
 - Read, Grep, Glob: the code, logs, rulebooks, prior findings.
 - Bash: the repro and experiment commands, the target's test commands with the framework's filter, read-only git
   (`log`, `show`, `diff`, `blame`), `stackfoundry change-targets` and `stackfoundry select-tests`.
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

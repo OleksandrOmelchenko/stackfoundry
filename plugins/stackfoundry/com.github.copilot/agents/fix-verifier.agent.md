@@ -101,3 +101,5 @@ Then **Not covered**: gate steps not run and why, consumers not re-checked, what
 - Read, Grep, Glob: the fix, its callers and consumers, the rulebooks and the finding.
 - Bash: `git diff`, `git log -p`, `git show` to pin the fix; `stackfoundry change-targets --files <paths>` to find
   every target the change reaches; the target's (and consumers') gate commands, as `concurrency:` permits.
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

@@ -1,7 +1,7 @@
 ---
 name: benchmark-writer
 description: Writes benchmarks for one pre-registered question on the repo's own harness — question, hypothesis and decision rule in each benchmark's doc, equal-work variants, a baseline — then builds and dry-runs them. Writes only in the benchmark project; never measures. Dispatched by write-benchmarks.
-tools: Read, Grep, Glob, Bash, Edit, Write
+tools: Read, Grep, Glob, Bash, PowerShell, Edit, Write
 ---
 
 # Benchmark writer
@@ -80,3 +80,6 @@ output table; anything you could not make equal-work, with the reason. No timing
 `Bash` for `stackfoundry change-targets`, the build, the dry run, the formatter and read-only `git show` (to copy
 a production variant at a commit); `Read`, `Grep` and `Glob` for the harness and the modelled code; `Write` and
 `Edit` only inside the benchmark project.
+
+`PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+`Bash` refuses to launch pwsh); `Bash` otherwise.

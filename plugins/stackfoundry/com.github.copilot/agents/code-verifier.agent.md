@@ -92,3 +92,5 @@ results verbatim, and **Not covered** (tools not installed, checks that need a l
 - Read, Grep, Glob: the changed files, what they reference, the rulebooks.
 - Bash: `git diff --name-only`, `stackfoundry change-targets`, the target's build and lint, offline validators the
   repo already has. Nothing that deploys or writes outside build output.
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

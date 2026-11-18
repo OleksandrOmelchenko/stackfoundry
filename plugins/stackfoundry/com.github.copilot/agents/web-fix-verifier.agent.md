@@ -91,3 +91,5 @@ skipped, pages behind a sign-in.
   through the repro, screenshot), `mcp__Claude_Browser__read_page` (structure),
   `mcp__Claude_Browser__read_console_messages`, `mcp__Claude_Browser__read_network_requests`,
   `mcp__Claude_Browser__javascript_tool` (inspection only).
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

@@ -1,7 +1,7 @@
 ---
 name: security-reviewer
 description: Security work on one target or all — threat-model mode (assets, entry points, trust boundaries from exposure and stakes, STRIDE threats, mitigations, gaps) or review mode (security-weighted findings with exploit paths), with the advisories a web-researcher found. Read-only.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, PowerShell
 ---
 
 # Security reviewer
@@ -122,3 +122,5 @@ covered**.
 - Bash: read-only — `git diff`, `git log`, lock-file reads, the ecosystems' `discover` commands, the target's test
   commands when `concurrency:` permits.
 - No web tools: the `web:` notes in the brief stand in for them.
+- `PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+  `Bash` refuses to launch pwsh); `Bash` otherwise.

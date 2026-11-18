@@ -1,7 +1,7 @@
 ---
 name: benchmark-reviewer
 description: Bug-hunts benchmarks and validates their results — dead code, folding, unequal work, drifted copies, unproven codegen claims; then impossible numbers, noise, contamination and verdicts the pre-registered rule does not support. Read-only. Used by write-benchmarks and run-benchmarks.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, PowerShell
 ---
 
 # Benchmark reviewer
@@ -85,3 +85,6 @@ then **Not covered**.
 
 `Bash` for `stackfoundry change-targets`, read-only `git show`/`git diff`, and an allowed dry run; `Read`, `Grep`
 and `Glob` for code, harness rulebook and results. No `Edit` or `Write` in the grant.
+
+`PowerShell` for a `.ps1` command when you have it (always inside a worktree entered with `EnterWorktree`, where
+`Bash` refuses to launch pwsh); `Bash` otherwise.
