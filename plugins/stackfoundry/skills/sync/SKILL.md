@@ -41,7 +41,7 @@ Run `stackfoundry survey` (`--pretty` is not needed) and compare with `targets.j
 | A gate command whose script or project vanished | the command's target file is gone | fix it in `targets.json`, or `stackfoundry gate record <target> --command "<command>" --status unproven` |
 | A new manifest or lock file | survey manifests vs `ecosystems.json` pins | add it to an ecosystem |
 | An assistant in use that `config.json` does not list, or one listed that is gone | survey `assistants.detected` vs `stackfoundry config clients` | add or drop it in `clients`, then write or remove its files (below) |
-| An assistant's copy missing or differing from its source | `stackfoundry outputs` vs the files; `stackfoundry render-rule <canonical> --client <assistant>` vs the copy | re-render it (an edited copy: ask first) |
+| An assistant's copy missing or differing from its source | `stackfoundry outputs --check` (it expects no pack rulebook copy when `packRulebooks` is `index`, and accepts a materialized agent kept only in an assistant's agents folder that the manifest records as materialized); `stackfoundry render-rule <canonical> --client <assistant>` vs the copy | re-render it (an edited copy: ask first); a "not recorded" agent: `stackfoundry manifest record <file> --kind materialized` |
 | The product grew past its profile | a new unit or dependency that names a business capability `product.json` does not reflect (payments, a mobile app, a new market's locale or currency), or no `product.json` at all | propose the edit to `product.json` (or a draft, as the surveyor writes it); a changed `category`, `audiences` or `markets` makes the domain brief stale for `/stackfoundry:whats-next` |
 
 Confirm each candidate against the code before proposing it: a hint is evidence, not a decision.
@@ -60,7 +60,7 @@ ambiguous app model or new target's exposure and stakes).
 - New targets: their target profile and gate, as `/stackfoundry:init` steps 4–5 do for one target (prove the gate
   once, with permission).
 - A changed `clients` list: for each assistant added, write what `stackfoundry outputs` lists for it (rulebook
-  copies with `render-rule --write`, its instruction-file block with `render-block --write` after showing `render-block --diff` (it also writes or
+  copies with `render-rule --write`, which `outputs --check` then lists as missing no more, its instruction-file block with `render-block --write` after showing `render-block --diff` (it also writes or
   removes `.stackfoundry/rulebooks.md`), code-writer skills,
   materialized agents with `render-agent --write`, which refuses an agent setting a host-privileged key: show it and
   ask); for one removed, list its generated files (`stackfoundry manifest list`) and ask before deleting any.

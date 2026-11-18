@@ -104,13 +104,16 @@ def build() -> argparse.ArgumentParser:
     td.set_defaults(func=checks.main_today)
 
     cf = sub.add_parser("config", help="(read-only) the repo's settings from .stackfoundry/config.json, defaults filled in")
-    cf.add_argument("key", nargs="?", help="one setting (clients, docsRoot, researchRefreshDays, defaultEffort)")
+    cf.add_argument("key", nargs="?", help="one setting (clients, docsRoot, researchRefreshDays, defaultEffort, "
+                                           "shellWithBrowser, packRulebooks)")
     cf.add_argument("--root", help="repo root (default: the nearest folder with .stackfoundry/, else the git root)")
     cf.add_argument("--json", action="store_true")
     cf.set_defaults(func=config.main)
 
     op = sub.add_parser("outputs", help="(read-only) where rulebooks, instruction blocks, skills and agents go for the repo's assistants")
     op.add_argument("--clients", help="comma-separated instead of config.json's clients")
+    op.add_argument("--check", action="store_true",
+                    help="list the expected rulebook and team-agent copies that are missing; exit 1 when any is")
     op.add_argument("--root")
     op.add_argument("--json", action="store_true")
     op.set_defaults(func=clients.main_outputs)

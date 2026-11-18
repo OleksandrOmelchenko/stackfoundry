@@ -11,7 +11,8 @@ instruction file is loaded into every session.
   - Every other reader (Codex, Gemini, or a host without the copies) is told to read a rulebook before editing a
     matching file, with the table: one row per canonical rulebook in .stackfoundry/rules/, with a link relative to
     the file, its globs, and what it covers (frontmatter `covers`, else the head of its `description`). A table
-    past BLOCK_BUDGET goes to .stackfoundry/rulebooks.md instead, which the block links.
+    past BLOCK_BUDGET goes to .stackfoundry/rulebooks.md instead, which the block links; so does every table when
+    config.json packRulebooks is "index" (pack rulebooks get no per-assistant copy and are read through it).
   - The target names from targets.json.
 `--write` splices the block between the file's markers, or appends it, keeping everything outside them and the
 file's own line endings. Without a file name, `--write` writes every instruction file the repo's assistants read.
@@ -61,9 +62,14 @@ def _ids(root: Path) -> list[str]:
     return sorted(p.stem for p in (root / RULES).glob("*.md")) if (root / RULES).is_dir() else []
 
 
+def _index_only(root: Path) -> bool:
+    """config.json packRulebooks "index": pack rulebooks have no per-assistant copy and are read through INDEX."""
+    return config.load(root)["packRulebooks"] == "index"
+
+
 def _loads_itself(root: Path, client: str, ids: list[str]) -> bool:
     """The assistant has path-scoped rules and its folder holds a copy of every canonical rulebook."""
-    if client not in RULE_FORMATS:
+    if client not in RULE_FORMATS or _index_only(root):
         return False
     folder, suffix = RULE_FORMATS[client]
     return all((root / folder / f"{rid}{suffix}").is_file() for rid in ids)
@@ -126,10 +132,13 @@ TABLE_HEAD = ["| Rulebook | Applies to | Covers |", "|---|---|---|"]
 
 
 def needs_index(root: Path, file_rel: str, readers: list[str]) -> bool:
-    """The file needs the rulebook table, and it is too large to keep inline."""
+    """The file needs the rulebook table, and it is too large to keep inline (or the repo keeps pack rulebooks
+    reachable only through the index, config.json packRulebooks "index")."""
     ids = _ids(root)
     if all(_loads_itself(root, c, ids) for c in readers):
         return False
+    if _index_only(root):
+        return True
     return len("\n".join(TABLE_HEAD + rows(root, file_rel, load_targets(root))).encode("utf-8")) > BLOCK_BUDGET
 
 

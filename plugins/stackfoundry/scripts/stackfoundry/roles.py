@@ -65,7 +65,8 @@ def _plugin_roles() -> tuple[str, ...]:
 def resolve(agent: str | None, project: Path) -> tuple[str, str, bool] | None:
     """(the agent as named, its plugin role, read-only?) for a stackfoundry agent, else None.
     A plugin agent is `stackfoundry:<role>`; a materialized one is `.stackfoundry/agents/<name>.md`, whose role is
-    the plugin role its name ends with."""
+    the plugin role its name ends with. A materialized agent a repo keeps only in Claude Code's folder
+    (`.claude/agents/<name>.md`) is read from there, so its role rules still apply."""
     if not agent:
         return None
     if agent.startswith(PREFIX):
@@ -76,8 +77,11 @@ def resolve(agent: str | None, project: Path) -> tuple[str, str, bool] | None:
     else:
         if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", agent):
             return None
+        role = next((r for r in _plugin_roles() if agent == r or agent.endswith(f"-{r}")), None)
         fields = _definition(str(project / ".stackfoundry" / "agents" / f"{agent}.md"))
-        role = next((r for r in _plugin_roles() if agent == r or agent.endswith(f"-{r}")), agent)
+        if fields is None and role is not None:
+            fields = _definition(str(project / ".claude" / "agents" / f"{agent}.md"))
+        role = role or agent
     if fields is None:
         return None
     return agent, role, bool(READ_ONLY.search(str(fields.get("description", ""))))

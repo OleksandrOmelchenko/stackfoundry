@@ -32,8 +32,9 @@ configuration (`docsRoot`, `researchRefreshDays`, `defaultEffort`) go to `.stack
 the values they had set, since the plugin can no longer read them. The rulebooks in `.claude/rules/` that the
 manifest records become canonical: copy each to `.stackfoundry/rules/` (same name), keep the `.claude/rules/` file
 as Claude Code's copy, and move each manifest entry's record to the canonical file while also recording the copy.
-A `materialized` agent in `.claude/agents/` moves the same way to `.stackfoundry/agents/`. Then continue with
-step 1.
+A `materialized` agent in `.claude/agents/` moves the same way to `.stackfoundry/agents/`, unless the team keeps it
+only there (`stackfoundry outputs --check` accepts it when the manifest records that copy as `materialized`). Then
+continue with step 1.
 
 ## 1. Plan
 
@@ -62,7 +63,8 @@ new · keep mine · merge by hand (you produce the merged text and show it befor
 
 - Regenerate from the new template with the same inputs (the profile, the target, the pack) and write. The shared
   rulebooks (`reference/rulebooks/`) regenerate with `stackfoundry render-rulebook <name> --write`, then each
-  assistant's copy with `render-rule`; never fill their placeholders by hand.
+  assistant's copy with `render-rule`; never fill their placeholders by hand. Re-render only the copies
+  `stackfoundry outputs --check` expects: no pack rulebook copy when `packRulebooks` is `index`.
 - Schema migration: rewrite the JSON to the new shape, keeping every value; validate with the CLI's checks
   (`stackfoundry change-targets --files <any>` loads and checks `targets.json`).
 - `stackfoundry manifest record <files> --template <template>` for every file written from the template (take new,

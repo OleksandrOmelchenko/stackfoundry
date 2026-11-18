@@ -14,6 +14,9 @@ from .clients import CLIENTS
 from .profile import CONFIG, TARGETS, ProfileError, find_root, load_json
 
 EFFORTS = ("quick", "standard", "thorough")
+# copies: each assistant with path-scoped rules gets a copy of every rulebook. index: pack rulebooks get none and are
+# read through .stackfoundry/rulebooks.md (render-block); the shared rulebooks are still copied.
+PACK_RULEBOOKS = ("copies", "index")
 DEFAULTS = {
     "schemaVersion": 1,
     "clients": ["claude-code"],
@@ -21,6 +24,7 @@ DEFAULTS = {
     "researchRefreshDays": 90,
     "defaultEffort": "standard",
     "shellWithBrowser": [],
+    "packRulebooks": "copies",
 }
 AGENT_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
@@ -46,6 +50,8 @@ def check(data: dict) -> list[str]:
         errors.append("researchRefreshDays must be a whole number from 7 to 365")
     if data.get("defaultEffort", DEFAULTS["defaultEffort"]) not in EFFORTS:
         errors.append(f"defaultEffort must be one of {', '.join(EFFORTS)}")
+    if data.get("packRulebooks", DEFAULTS["packRulebooks"]) not in PACK_RULEBOOKS:
+        errors.append(f"packRulebooks must be one of {', '.join(PACK_RULEBOOKS)}")
     exempt = data.get("shellWithBrowser", DEFAULTS["shellWithBrowser"])
     if not isinstance(exempt, list) or not all(_exemption_ok(e) for e in exempt):
         errors.append('shellWithBrowser must be a list of {"agent": "<agent name>", "reason": "<why it is safe>"}, '

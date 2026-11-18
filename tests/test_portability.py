@@ -33,7 +33,7 @@ class ConfigTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual(json.loads(proc.stdout), {"schemaVersion": 1, "clients": ["claude-code"], "docsRoot": "docs",
                                                    "researchRefreshDays": 90, "defaultEffort": "standard",
-                                                   "shellWithBrowser": []})
+                                                   "shellWithBrowser": [], "packRulebooks": "copies"})
 
     def test_one_key_prints_its_plain_value_and_file_values_win(self):
         files = {".stackfoundry/config.json": json.dumps({"schemaVersion": 1, "defaultEffort": "thorough",

@@ -13,6 +13,17 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   rejects a shell beside web or browser tools by default (threat model T2), and the list never exempts `WebFetch`,
   `WebSearch` or another browser tool: an agent holding those with a shell stays an error. An entry naming no agent
   is a warning.
+- **`packRulebooks` in `.stackfoundry/config.json`**: `"index"` keeps researched pack rulebooks out of each
+  assistant's rules folder; they are read through `.stackfoundry/rulebooks.md`, which the instruction block then
+  always links whatever the table's size. The shared rulebooks are still copied. Default `"copies"`, as before.
+- **`stackfoundry outputs --check`** (read-only) lists the rulebook and team-agent copies the repo's settings
+  expect and that are missing, exit 1 when any is. It honours `packRulebooks`, and accepts a materialized agent
+  kept only in an assistant's agents folder when the manifest records that copy as `materialized` (without the
+  record it is reported as "not recorded", with the command that records it). `sync` uses it for the "copy missing"
+  drift row, so neither layout reads as missing any more; `init`, `research-stack` and `upgrade` write only the
+  copies it expects, and `upgrade` no longer moves an assistant-only materialized agent.
+- The guard's role rules reach a materialized agent kept only in `.claude/agents/`: when
+  `.stackfoundry/agents/<name>.md` is absent and the name ends in a plugin role, the Claude Code copy is read.
 
 ### Changed
 

@@ -104,7 +104,11 @@ kept by hand:
   rendered into each assistant's path-scoped format (`stackfoundry render-rule`); assistants without one read
   the canonical file through the table in their instruction file. Team agents are canonical in
   `.stackfoundry/agents/` and rendered the same way (`render-agent`). `stackfoundry outputs` is the one place that
-  decides which assistant gets which copy, from `.stackfoundry/config.json`'s `clients`.
+  decides which assistant gets which copy, from `.stackfoundry/config.json`'s `clients`, and `outputs --check`
+  lists the expected copies that are missing. Two settings narrow what is expected: `packRulebooks: "index"` keeps
+  pack rulebooks out of the assistants' rules folders (the instruction block then always links
+  `.stackfoundry/rulebooks.md`), and a materialized agent the manifest records as `materialized` may live only in
+  an assistant's agents folder.
 
 The guard is one command for every assistant's pre-tool hook; it tells the assistant from the event's shape and
 answers in its format (see *Guards*).

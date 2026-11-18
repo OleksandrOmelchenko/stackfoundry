@@ -197,5 +197,107 @@ class ShellWithBrowserTests(unittest.TestCase):
         self.assertTrue(any("'ghost'" in w for w in warnings), warnings)
 
 
+RULE = "---\ndescription: {title} rulebook (capability layer).\npaths:\n  - \"web/**/*.ts\"\n---\n\n# {title}\n"
+MATERIALIZED = ("---\nname: web-bug-hunter\ndescription: Hunts bugs in web. Read-only.\ntools: Read, Grep, Bash\n---\n\n"
+                "# Web bug hunter\n\nHunt.\n\n## Tooling\n\n- `Bash` for `git diff`.\n")
+
+
+def _profile(pack_rulebooks: str, materialized: dict | None = None) -> dict[str, str]:
+    target = {"name": "web", "paths": ["web/**"], "packs": ["capability-web"]}
+    if materialized:
+        target["materialized"] = materialized
+    return {
+        ".stackfoundry/config.json": json.dumps({"schemaVersion": 1, "packRulebooks": pack_rulebooks}),
+        ".stackfoundry/targets.json": json.dumps({"schemaVersion": 1, "targets": [target]}),
+        ".stackfoundry/rules/capability-web.md": RULE.format(title="Web"),
+        ".stackfoundry/rules/testing.md": RULE.format(title="Testing"),
+        ".claude/rules/testing.md": RULE.format(title="Testing"),
+        "CLAUDE.md": "# Repo\n",
+    }
+
+
+class ExpectedCopiesTests(unittest.TestCase):
+    """P5: a repo may keep pack rulebooks reachable only through .stackfoundry/rulebooks.md, and materialized agents
+    only in an assistant's agents folder; `outputs --check` then reports nothing missing."""
+
+    def check(self, files: dict[str, str]):
+        with TempRepo(files) as root:
+            r = run_cli(["outputs", "--check", "--json", "--root", str(root)])
+        self.assertIn(r.returncode, (0, 1), r.stderr)
+        return r.returncode, json.loads(r.stdout)
+
+    def test_index_mode_expects_no_pack_copy(self):
+        code, found = self.check(_profile("index"))
+        self.assertEqual((code, found), (0, {"missing": [], "notRecorded": []}))
+
+    def test_copies_mode_reports_the_missing_pack_copy(self):
+        code, found = self.check(_profile("copies"))
+        self.assertEqual(code, 1)
+        self.assertEqual([m["file"] for m in found["missing"]], [".claude/rules/capability-web.md"])
+
+    def test_index_mode_still_expects_the_shared_rulebook_copies(self):
+        files = _profile("index")
+        del files[".claude/rules/testing.md"]
+        code, found = self.check(files)
+        self.assertEqual(code, 1)
+        self.assertEqual([m["file"] for m in found["missing"]], [".claude/rules/testing.md"])
+
+    def test_materialized_agent_kept_only_in_the_assistant_folder_is_accepted_when_recorded(self):
+        files = _profile("index", {"bug-hunter": "web-bug-hunter"})
+        files[".claude/agents/web-bug-hunter.md"] = MATERIALIZED
+        with TempRepo(files) as root:
+            rec = run_cli(["manifest", "record", ".claude/agents/web-bug-hunter.md", "--kind", "materialized",
+                           "--root", str(root)])
+            self.assertEqual(rec.returncode, 0, rec.stderr)
+            r = run_cli(["outputs", "--check", "--json", "--root", str(root)])
+        self.assertEqual((r.returncode, json.loads(r.stdout)), (0, {"missing": [], "notRecorded": []}))
+
+    def test_materialized_agent_without_a_manifest_record_is_reported_not_missing(self):
+        files = _profile("index", {"bug-hunter": "web-bug-hunter"})
+        files[".claude/agents/web-bug-hunter.md"] = MATERIALIZED
+        code, found = self.check(files)
+        self.assertEqual(code, 1)
+        self.assertEqual(found["missing"], [])
+        self.assertEqual([n["file"] for n in found["notRecorded"]], [".claude/agents/web-bug-hunter.md"])
+
+    def test_canonical_materialized_agent_needs_its_copy(self):
+        files = _profile("index", {"bug-hunter": "web-bug-hunter"})
+        files[".stackfoundry/agents/web-bug-hunter.md"] = MATERIALIZED
+        code, found = self.check(files)
+        self.assertEqual(code, 1)
+        self.assertEqual([m["file"] for m in found["missing"]], [".claude/agents/web-bug-hunter.md"])
+
+    def test_materialized_agent_found_nowhere_is_missing(self):
+        code, found = self.check(_profile("index", {"bug-hunter": "web-bug-hunter"}))
+        self.assertEqual(code, 1)
+        self.assertEqual([m["file"] for m in found["missing"]], [".stackfoundry/agents/web-bug-hunter.md"])
+
+    def test_index_mode_block_links_the_index_even_for_a_small_repo(self):
+        from stackfoundry import block
+        for mode, linked in (("index", True), ("copies", False)):
+            files = _profile(mode)
+            files[".claude/rules/capability-web.md"] = RULE.format(title="Web")
+            with self.subTest(mode=mode), TempRepo(files) as root:
+                text = block.render(root, "CLAUDE.md", ["claude-code"])
+                self.assertEqual("read [`.stackfoundry/rulebooks.md`]" in text, linked, text)
+                self.assertEqual(block.needs_index(root, "CLAUDE.md", ["claude-code"]), linked)
+
+    def test_bad_mode_is_a_config_error(self):
+        from stackfoundry import config
+        self.assertTrue(config.check({"packRulebooks": "some"}))
+        self.assertEqual(config.check({"packRulebooks": "index"}), [])
+
+    def test_guard_role_rules_reach_a_materialized_agent_kept_only_in_claude_agents(self):
+        from stackfoundry import roles
+        roles._definition.cache_clear()
+        with TempRepo({".claude/agents/web-bug-hunter.md": MATERIALIZED,
+                       ".claude/agents/msbuild.md": MATERIALIZED.replace("web-bug-hunter", "msbuild")}) as root:
+            self.assertEqual(roles.resolve("web-bug-hunter", root), ("web-bug-hunter", "bug-hunter", True))
+            # an agent whose name is no plugin role is the repo's own, not a materialized one
+            self.assertIsNone(roles.resolve("msbuild", root))
+            ask = roles.verdict("bash", [], "rm web/a.ts", "Bash", root, root, "web-bug-hunter")
+        self.assertEqual(ask[0], "ask")
+
+
 if __name__ == "__main__":
     unittest.main()

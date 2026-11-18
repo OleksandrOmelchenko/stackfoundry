@@ -45,6 +45,11 @@
         }
       },
       "default": []
+    },
+    "packRulebooks": {
+      "enum": ["copies", "index"],
+      "description": "copies: each assistant with path-scoped rules gets a copy of every rulebook in its rules folder. index: researched pack rulebooks get no per-assistant copy and are read through .stackfoundry/rulebooks.md, which the instruction block links; the shared rulebooks (testing, documentation, dependency-bumps, benchmarking) are still copied. `stackfoundry outputs --check` lists the copies the setting expects.",
+      "default": "copies"
     }
   }
 }

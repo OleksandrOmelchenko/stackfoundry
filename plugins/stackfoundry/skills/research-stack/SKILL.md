@@ -59,7 +59,8 @@ deprecations now in use, changed guidance) and keeps every `repoConvention` the 
   takes the new pack; otherwise delete `pack.next.json`.
 - The rulebook: `stackfoundry pack render <pack.json> --out .stackfoundry/rules/<pack-id>.md`, then each assistant's
   copy: `stackfoundry render-rule .stackfoundry/rules/<pack-id>.md --client <assistant> --write` for every entry of
-  `stackfoundry outputs` → rules. Check each file's state first with
+  `stackfoundry outputs` → rules, unless `outputs` says `packRulebooks` is `index` (then no copy; the block's index
+  lists the pack). Check each file's state first with
   `stackfoundry manifest diff --json`: **edited** by the team, or recorded as `merged` → show the regenerated text
   beside the current one and ask (take new · keep mine · merge by hand); untouched or new → write it.
 - New pack: add it to the targets' `packs`, regenerate each instruction file's block (`stackfoundry render-block

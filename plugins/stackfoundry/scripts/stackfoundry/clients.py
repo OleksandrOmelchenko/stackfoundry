@@ -2,7 +2,8 @@
 
 The one home of the per-assistant mapping in code (reference/clients.md is the prose with sources):
   - `outputs(clients)`: where init and sync write rulebooks, instruction blocks, generated skills and team agents
-    for the assistants a repo uses (`stackfoundry outputs`);
+    for the assistants a repo uses (`stackfoundry outputs`); `missing_copies(root)`: which of those copies are not
+    there (`stackfoundry outputs --check`, read-only);
   - `render_rule(text, client)`: a canonical rulebook (`.stackfoundry/rules/<id>.md`, frontmatter `description` +
     `paths`) in that assistant's path-scoped format (`stackfoundry render-rule`);
   - `render_agent(text, client)`: a Claude Code agent file in that assistant's agent format
@@ -21,6 +22,8 @@ from .profile import PROFILE_DIR, find_root
 CLIENTS = ("claude-code", "codex", "copilot", "cursor", "gemini", "antigravity")
 CANONICAL_RULES = (PROFILE_DIR / "rules").as_posix()
 CANONICAL_AGENTS = (PROFILE_DIR / "agents").as_posix()
+# A researched pack's rulebook (`<layer>-<name>`); with config packRulebooks "index" it gets no per-assistant copy.
+PACK_RULEBOOK = re.compile(r"^(?:language|app-model|capability|tooling)-[a-z0-9-]+$")
 
 # Claude Code tool grant -> Copilot custom-agent tool aliases (docs.github.com, custom agents configuration).
 COPILOT_TOOLS = {"Read": "read", "Grep": "search", "Glob": "search", "Bash": "execute", "PowerShell": "execute",
@@ -62,9 +65,9 @@ AGENT_FORMATS = {"claude-code": (".claude/agents", ".md"), "codex": (".codex/age
                  "gemini": (".gemini/agents", ".md")}
 
 
-def outputs(clients: list[str]) -> dict:
+def outputs(clients: list[str], pack_rulebooks: str = "copies") -> dict:
     """Where each kind of generated file goes for these assistants. Deterministic; no assistant gets a copy another
-    one already reads for it."""
+    one already reads for it. `pack_rulebooks` is config.json's: "index" leaves pack rulebooks out of the copies."""
     has = set(clients)
     rules = [{"client": c, "folder": RULE_FORMATS[c][0], "suffix": RULE_FORMATS[c][1]}
              for c in CLIENTS if c in has and c in RULE_FORMATS]
@@ -90,6 +93,7 @@ def outputs(clients: list[str]) -> dict:
         "clients": [c for c in CLIENTS if c in has],
         "canonicalRules": CANONICAL_RULES,
         "rules": rules,
+        "packRulebooks": pack_rulebooks,
         "rulesReadFromInstructions": [c for c in CLIENTS if c in has and c not in RULE_FORMATS],
         "instructions": instructions,
         "skills": skills,
@@ -258,21 +262,79 @@ def _write(root: Path, rel: str, text: str, newline: str = "\n") -> None:
     print(f"wrote {rel}")
 
 
+def missing_copies(root: Path, data: dict) -> dict:
+    """The copies `data` (an `outputs` result) calls for that are not in the repo. Read-only.
+
+    Rulebooks: a copy of every canonical rulebook in each assistant's rules folder, pack rulebooks left out when
+    packRulebooks is "index". Team agents: each materialized agent (a target's `materialized` value, or a manifest
+    entry of kind materialized) as `.stackfoundry/agents/<name>.md` plus each assistant's copy. One kept only in an
+    assistant's agents folder is accepted when the manifest records that copy as materialized; without the record it
+    is `notRecorded`, since upgrade would then treat it as a generated file."""
+    from . import manifest
+    from .profile import TARGETS, load_targets
+    missing: list[dict] = []
+    not_recorded: list[dict] = []
+    rules_dir = root / CANONICAL_RULES
+    ids = sorted(p.stem for p in rules_dir.glob("*.md")) if rules_dir.is_dir() else []
+    for r in data["rules"]:
+        for rid in ids:
+            if data.get("packRulebooks") == "index" and PACK_RULEBOOK.fullmatch(rid):
+                continue
+            rel = f"{r['folder']}/{rid}{r['suffix']}"
+            if not (root / rel).is_file():
+                missing.append({"file": rel, "source": f"{CANONICAL_RULES}/{rid}.md", "client": r["client"]})
+    files = manifest.load(root).get("files", {})
+    recorded = {rel for rel, e in files.items() if isinstance(e, dict) and e.get("kind") == "materialized"}
+    names = {Path(rel).stem for rel in recorded if rel.startswith(CANONICAL_AGENTS + "/")}
+    for t in load_targets(root).get("targets", []) if (root / TARGETS).is_file() else []:
+        mat = t.get("materialized") if isinstance(t, dict) else None
+        names |= {v for v in (mat.values() if isinstance(mat, dict) else []) if isinstance(v, str)}
+    for name in sorted(names):
+        canonical = f"{CANONICAL_AGENTS}/{name}.md"
+        copies = [(f"{a['folder']}/{name}{a['suffix']}", a["client"]) for a in data["agents"]]
+        if (root / canonical).is_file():
+            missing += [{"file": c, "source": canonical, "client": client}
+                        for c, client in copies if not (root / c).is_file()]
+            continue
+        present = [c for c, _ in copies if (root / c).is_file()]
+        if not present:
+            missing.append({"file": canonical, "source": "targets.json materialized", "client": None})
+        elif not any(c in recorded for c in present):
+            not_recorded += [{"file": c, "fix": f"stackfoundry manifest record {c} --kind materialized"}
+                             for c in present]
+    return {"missing": missing, "notRecorded": not_recorded}
+
+
 def main_outputs(args) -> int:
     from . import config
     root = Path(args.root).resolve() if args.root else find_root(Path.cwd())
-    clients = args.clients.split(",") if args.clients else config.load(root)["clients"]
+    settings = config.load(root)
+    clients = args.clients.split(",") if args.clients else settings["clients"]
     unknown = [c for c in clients if c not in CLIENTS]
     if unknown:
         print(f"outputs: unknown client(s) {unknown}; known: {', '.join(CLIENTS)}", file=sys.stderr)
         return 2
-    data = outputs(clients)
+    data = outputs(clients, settings["packRulebooks"])
+    if getattr(args, "check", False):
+        found = missing_copies(root, data)
+        if args.json:
+            print(json.dumps(found, indent=2))
+        else:
+            for m in found["missing"]:
+                print(f"missing: {m['file']} (from {m['source']})")
+            for n in found["notRecorded"]:
+                print(f"not recorded: {n['file']} is a materialized agent kept only here; run `{n['fix']}`")
+            print(f"outputs --check: {len(found['missing'])} missing, {len(found['notRecorded'])} not recorded")
+        return 1 if found["missing"] or found["notRecorded"] else 0
     if args.json:
         print(json.dumps(data, indent=2))
         return 0
     print(f"clients: {', '.join(data['clients'])}")
+    index_only = (" (pack rulebooks: none, read through .stackfoundry/rulebooks.md)"
+                  if data["packRulebooks"] == "index" and data["rules"] else "")
     print(f"rulebooks: canonical in {data['canonicalRules']}/; copies: "
-          + ("; ".join(f"{r['client']} {r['folder']}/<id>{r['suffix']}" for r in data["rules"]) or "none"))
+          + ("; ".join(f"{r['client']} {r['folder']}/<id>{r['suffix']}" for r in data["rules"]) or "none")
+          + index_only)
     if data["rulesReadFromInstructions"]:
         print(f"  read through the instruction file by: {', '.join(data['rulesReadFromInstructions'])}")
     print(f"instruction blocks: {', '.join(data['instructions'])}")
