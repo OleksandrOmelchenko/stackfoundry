@@ -64,7 +64,12 @@ new · keep mine · merge by hand (you produce the merged text and show it befor
 - Regenerate from the new template with the same inputs (the profile, the target, the pack) and write. The shared
   rulebooks (`reference/rulebooks/`) regenerate with `stackfoundry render-rulebook <name> --write`, then each
   assistant's copy with `render-rule`; never fill their placeholders by hand. Re-render only the copies
-  `stackfoundry outputs --check` expects: no pack rulebook copy when `packRulebooks` is `index`.
+  `stackfoundry outputs --check` expects: no pack rulebook copy when `packRulebooks` is `index`. A repo's
+  additions (`.stackfoundry/rulebook-additions/<name>.md`, `${CLAUDE_PLUGIN_ROOT}/reference/rulebook-additions.md`)
+  are applied by the render; when it fails on a heading the new template renamed, show the section, the nearest
+  heading it names and the changelog's "Changed (extension anchors)" line, and ask where it goes now (edit only
+  that heading in the additions file). A shared rulebook kept `merged` by hand: offer to move the repo's lines
+  into an additions file once, so later upgrades replace it instead of asking.
 - Schema migration: rewrite the JSON to the new shape, keeping every value; validate with the CLI's checks
   (`stackfoundry change-targets --files <any>` loads and checks `targets.json`).
 - `stackfoundry manifest record <files> --template <template>` for every file written from the template (take new,

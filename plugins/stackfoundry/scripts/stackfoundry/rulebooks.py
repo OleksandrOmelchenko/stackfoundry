@@ -4,19 +4,29 @@ The shared rulebooks (testing, dependency-bumps, documentation, benchmarking) ca
 docs root, the deferred-upgrades file, and `paths:` lines listing test paths, pin and lock files, or benchmark
 folders. This fills them from `.stackfoundry/targets.json`, `ecosystems.json` and `config.json`, deterministically,
 so no one renders a rulebook by hand. Writes only with `--out` or `--write` (the canonical `.stackfoundry/rules/`).
+
+A repo's own additions come from `.stackfoundry/rulebook-additions/<name>.md` (reference/rulebook-additions.md): each
+`## <heading>` section is appended at the end of that heading's section of the render, and an `extraPaths:` list in
+its frontmatter joins `paths:`. A heading the template does not have is an error naming the nearest one, like an
+extension anchor, so a renamed heading never drops an addition silently.
 """
 from __future__ import annotations
 
+import difflib
 import re
 from pathlib import Path
 
 from . import REFERENCE, config
 from .clients import _write
+from .extensions import FENCE, norm
 from .frontmatter import split
 from .globs import match
-from .profile import ECOSYSTEMS, ProfileError, find_root, load_json, load_targets
+from .pack import BRACES, GLOB_BAD
+from .profile import ECOSYSTEMS, PROFILE_DIR, ProfileError, find_root, load_json, load_targets
 
 NAMES = ("testing", "dependency-bumps", "documentation", "benchmarking")
+ADDITIONS = PROFILE_DIR / "rulebook-additions"
+ADDITION_KEYS = {"extraPaths"}
 # {{one "  - \"<glob>\"" line per <what>[, plus "  - \"<extra>\""]}} on a line of its own
 LIST = re.compile(r'^\{\{one "  - \\"<glob>\\"" line per (?P<what>.+?)(?:, plus "  - \\"(?P<extra>.+?)\\"")?\}\}$', re.M)
 TOOLING_LINKS = "{{one link per tooling pack used for tests}}"
@@ -77,6 +87,103 @@ def _tooling_links(targets: dict) -> str:
     return ", ".join(f"[{p}]({p}.md)" for p in packs) or "none researched yet"
 
 
+def addition_path(name: str) -> str:
+    return f"{ADDITIONS.as_posix()}/{name}.md"
+
+
+def _sections(body: str) -> list[tuple[str, int, int]]:
+    """(heading, start line, end line) of each `## ` section outside code fences; end is the next `## ` or EOF."""
+    lines, out, fenced = body.split("\n"), [], False
+    for i, line in enumerate(lines):
+        if FENCE.match(line):
+            fenced = not fenced
+        elif not fenced and line.startswith("## "):
+            if out:
+                out[-1] = (out[-1][0], out[-1][1], i)
+            out.append((line[3:].strip(), i, len(lines)))
+    return out
+
+
+def load_additions(root: Path, name: str, rendered: str) -> tuple[list[str], list[tuple[str, str]]]:
+    """(extra paths, [(heading of the render, text)]) from the repo's additions file; nothing when there is none.
+    Raises ValueError for an unknown key, a bad glob, text before the first section, or a heading the render lacks."""
+    rel = addition_path(name)
+    path = root / rel
+    if not path.is_file():
+        return [], []
+    fields, body, errors = split(path.read_text(encoding="utf-8-sig").replace("\r\n", "\n"))
+    if errors:
+        raise ValueError(f"{rel}: frontmatter: {'; '.join(errors)}")
+    unknown = sorted(set(fields or {}) - ADDITION_KEYS)
+    if unknown:
+        raise ValueError(f"{rel}: unknown frontmatter key(s) {', '.join(unknown)} (only extraPaths)")
+    extra = (fields or {}).get("extraPaths") or []
+    if isinstance(extra, str):
+        extra = [extra]
+    for g in extra:
+        if not isinstance(g, str) or not g or GLOB_BAD.search(g):
+            hint = "; split `{a,b}` into one glob per extension" if isinstance(g, str) and BRACES.search(g) else ""
+            raise ValueError(f"{rel}: extraPaths entry {g!r} must be a plain glob (no quotes, backslashes, commas, "
+                             f"braces, '#' or spaces){hint}")
+    _, rbody, _ = split(rendered)
+    known = {norm(h): h for h, _, _ in _sections(rbody)}
+    found = _sections(body)
+    lines = body.split("\n")
+    before = "\n".join(lines[: found[0][1]] if found else lines).strip()
+    if before:
+        raise ValueError(f"{rel}: text before the first `## <heading>` section goes nowhere; put it under a heading")
+    out = []
+    for heading, start, end in found:
+        if norm(heading) not in known:
+            near = difflib.get_close_matches(norm(heading), list(known), n=1, cutoff=0.4)
+            hint = f"; nearest: {known[near[0]]!r}" if near else ""
+            raise ValueError(f"{rel}: line {start + 1}: '## {heading}' matches no heading of the {name} rulebook{hint}")
+        text = "\n".join(lines[start + 1:end]).strip("\n")
+        if text.strip():
+            out.append((known[norm(heading)], text))
+    return [g for g in extra if isinstance(g, str)], out
+
+
+def _add_paths(text: str, extra: list[str]) -> str:
+    """The rendered rulebook with `extra` globs joined to its frontmatter `paths:` list (deduplicated, minimal)."""
+    lines = text.split("\n")
+    if not extra or not lines or lines[0] != "---" or "paths:" not in lines:
+        return text
+    start = lines.index("paths:") + 1
+    end = start
+    while end < len(lines) and lines[end].startswith("  - "):
+        end += 1
+    current = [line[4:].strip().strip('"') for line in lines[start:end]]
+    merged = _minimal(current + extra)
+    return "\n".join(lines[:start] + [f'  - "{g}"' for g in merged] + lines[end:])
+
+
+def _splice(text: str, additions: list[tuple[str, str]]) -> str:
+    """The rendered rulebook with each addition appended at the end of its heading's section, in file order."""
+    if not additions:
+        return text
+    fm_end = 0
+    lines = text.split("\n")
+    if lines and lines[0] == "---" and "---" in lines[1:]:
+        fm_end = lines.index("---", 1) + 1
+    body = lines[fm_end:]
+    sections = {h: (s, e) for h, s, e in _sections("\n".join(body))}
+    inserts: dict[int, list[str]] = {}
+    for heading, add in additions:
+        inserts.setdefault(sections[heading][1], []).append(add)
+    out: list[str] = []
+    for i in range(len(body) + 1):
+        if i in inserts:
+            while out and not out[-1].strip():
+                out.pop()
+            for add in inserts[i]:
+                out += ["", *add.split("\n")]
+            out.append("")
+        if i < len(body):
+            out.append(body[i])
+    return "\n".join(lines[:fm_end] + out)
+
+
 def render(root: Path, name: str) -> tuple[str, str]:
     """(output path, text) of one shared rulebook."""
     if name not in NAMES:
@@ -109,6 +216,8 @@ def render(root: Path, name: str) -> tuple[str, str]:
     left = sorted(set(re.findall(r"\{\{[^}]*\}\}", text)))
     if left:
         raise ValueError(f"{name}: unfilled placeholders {left}")
+    extra, additions = load_additions(root, name, text)
+    text = _splice(_add_paths(text, extra), additions)
     return meta["output"], text.rstrip("\n") + "\n"
 
 

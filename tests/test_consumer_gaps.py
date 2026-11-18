@@ -299,5 +299,95 @@ class ExpectedCopiesTests(unittest.TestCase):
         self.assertEqual(ask[0], "ask")
 
 
+ORACLES = "Oracles: where an expected value may come from"
+ADDITION = (f"---\nextraPaths:\n  - \"web/e2e/**\"\n---\n\n## {ORACLES}\n\n- **Repo rule.** Prices come from the price list."
+            "\n\n## Determinism\n\n- **Repo clock.** Use the shop's fake clock.\n")
+
+
+def _testing_profile(addition: str | None = None) -> dict[str, str]:
+    files = {".stackfoundry/targets.json": json.dumps({"schemaVersion": 1, "targets": [
+        {"name": "web", "paths": ["web/**"], "testPaths": ["web/tests/**"], "packs": []}]})}
+    if addition is not None:
+        files[".stackfoundry/rulebook-additions/testing.md"] = addition
+    return files
+
+
+class RulebookAdditionTests(unittest.TestCase):
+    """P7: a repo's additions to a shared rulebook are rendered into it, so the assistant copy stays a pure render."""
+
+    def render(self, files: dict[str, str]):
+        from stackfoundry import rulebooks
+        with TempRepo(files) as root:
+            return rulebooks.render(root, "testing")[1]
+
+    def test_addition_lands_at_the_end_of_its_section_and_extra_paths_join(self):
+        from stackfoundry.frontmatter import split
+        plain = self.render(_testing_profile())
+        text = self.render(_testing_profile(ADDITION))
+        fields, body, _ = split(text)
+        self.assertEqual(fields["paths"], ["web/tests/**", "docs/test-designs/**", "web/e2e/**"])
+        oracles = body.split(f"## 1. {ORACLES}")[1].split("\n## ")[0]
+        self.assertTrue(oracles.rstrip().endswith("- **Repo rule.** Prices come from the price list."), oracles)
+        determinism = body.split("## 6. Determinism")[1].split("\n## ")[0]
+        self.assertTrue(determinism.rstrip().endswith("- **Repo clock.** Use the shop's fake clock."), determinism)
+        # nothing else moved: removing the two added lines and the extra path gives the plain render back
+        stripped = (text.replace("\n\n- **Repo rule.** Prices come from the price list.", "")
+                    .replace("\n\n- **Repo clock.** Use the shop's fake clock.", "")
+                    .replace('\n  - "web/e2e/**"', ""))
+        self.assertEqual(stripped, plain)
+
+    def test_assistant_copy_equals_render_rule_of_the_canonical_file(self):
+        with TempRepo(_testing_profile(ADDITION)) as root:
+            w = run_cli(["render-rulebook", "testing", "--write", "--root", str(root)])
+            self.assertEqual(w.returncode, 0, w.stderr)
+            c = run_cli(["render-rule", str(root / ".stackfoundry/rules/testing.md"), "--client", "claude-code",
+                         "--write", "--root", str(root)])
+            self.assertEqual(c.returncode, 0, c.stderr)
+            canonical = (root / ".stackfoundry/rules/testing.md").read_text(encoding="utf-8")
+            copy = (root / ".claude/rules/testing.md").read_text(encoding="utf-8")
+        from stackfoundry.clients import render_rule
+        from stackfoundry.frontmatter import split
+        self.assertIn("- **Repo rule.** Prices come from the price list.", copy)
+        self.assertIn('  - "web/e2e/**"', copy)
+        self.assertEqual(copy, render_rule(canonical, "claude-code"))
+        self.assertEqual(split(copy)[1], split(canonical)[1])  # the body travels unchanged: no hand-merged copy
+
+    def test_unknown_heading_fails_and_names_the_nearest(self):
+        with TempRepo(_testing_profile("## Oracle: where expected values come from\n\n- x\n")) as root:
+            r = run_cli(["render-rulebook", "testing", "--root", str(root)])
+        self.assertEqual(r.returncode, 2, r.stdout)
+        self.assertIn("matches no heading of the testing rulebook", r.stderr)
+        self.assertIn(f"nearest: '1. {ORACLES}'", r.stderr)
+
+    def test_bad_inputs_fail(self):
+        from stackfoundry import rulebooks
+        for bad in ("- loose text\n\n## Determinism\n\n- x\n", "---\nextraPaths:\n  - \"web/**/*.{ts,vue}\"\n---\n",
+                    "---\ncolour: red\n---\n"):
+            with self.subTest(bad=bad), TempRepo(_testing_profile(bad)) as root:
+                with self.assertRaises(ValueError):
+                    rulebooks.render(root, "testing")
+
+    def test_no_additions_file_renders_as_before(self):
+        from stackfoundry import rulebooks
+        with TempRepo(_testing_profile()) as root:
+            text = rulebooks.render(root, "testing")[1]
+        self.assertNotIn("web/e2e", text)
+        self.assertIn('  - "web/tests/**"', text)
+
+    def test_manifest_flags_the_rulebook_when_its_additions_change(self):
+        from stackfoundry import manifest
+        with TempRepo(_testing_profile(ADDITION)) as root:
+            run_cli(["render-rulebook", "testing", "--write", "--root", str(root)])
+            manifest.record(root, [".stackfoundry/rules/testing.md"], "reference/rulebooks/testing.md", "generated")
+            entry = manifest.load(root)["files"][".stackfoundry/rules/testing.md"]
+            self.assertEqual(list(entry["additions"]), [".stackfoundry/rulebook-additions/testing.md"])
+            row = next(r for r in manifest.diff(root) if r["file"] == ".stackfoundry/rules/testing.md")
+            self.assertEqual(row["action"], "none")
+            write(root, {".stackfoundry/rulebook-additions/testing.md": ADDITION + "\n- one more line\n"})
+            row = next(r for r in manifest.diff(root) if r["file"] == ".stackfoundry/rules/testing.md")
+        self.assertTrue(row["outdated"])
+        self.assertEqual(row["action"], "re-render with render-rulebook --write (its additions changed)")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -12,6 +12,7 @@ Everything here is technology-neutral. Facts about a particular repository are w
 | [`examples/`](examples/) | A worked targets/guards/ecosystems set for a repo with an API, a WPF app and a server-rendered web app |
 | [`templates/`](templates/) | Skeletons of the repo profile, target profiles, pack rulebooks, code-writer skills, the CLAUDE.md block, materialized agents |
 | [`rulebooks/`](rulebooks/) | Shared rulebooks installed into the repo: testing, dependency bumps, documentation, benchmarking |
+| [`rulebook-additions.md`](rulebook-additions.md) | How a repo adds its own rules and paths to a shared rulebook without a hand-merged copy |
 | [`trackers/`](trackers/) | Tracker READMEs and templates: bug reports, test designs, plans, specifications, reports, deferred upgrades, radar decisions |
 
 Role procedures are the agents in `../agents/`; orchestration is the skills in `../skills/`.

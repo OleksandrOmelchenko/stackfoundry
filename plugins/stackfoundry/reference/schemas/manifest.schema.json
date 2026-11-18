@@ -17,7 +17,8 @@
           "template": {"type": "string", "description": "Plugin-relative template path, or 'research' for a file generated from a researched pack."},
           "templateVersion": {"type": "string"},
           "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "Of the content with line endings normalized to LF."},
-          "kind": {"enum": ["generated", "materialized", "merged"], "description": "merged: the team's content is in it too (merged by hand or kept by choice); upgrade and research-stack always ask before changing it."}
+          "kind": {"enum": ["generated", "materialized", "merged"], "description": "merged: the team's content is in it too (merged by hand or kept by choice); upgrade and research-stack always ask before changing it."},
+          "additions": {"type": "object", "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "description": "A shared rulebook's repo additions (.stackfoundry/rulebook-additions/<name>.md) and their sha256 when it was recorded; `manifest diff` reports the rulebook outdated when they change."}
         }
       }
     }

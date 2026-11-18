@@ -3,7 +3,10 @@
 `.stackfoundry/manifest.lock.json`:
     {"schemaVersion": 1, "pluginVersion": "0.1.0",
      "files": {"<repo-relative path>": {"template": "<plugin path | research | profile>", "templateVersion": "1",
-                                        "sha256": "<hex>", "kind": "generated|materialized|merged"}}}
+                                        "sha256": "<hex>", "kind": "generated|materialized|merged",
+                                        "additions": {"<additions file>": "<hex>"}}}}
+`additions` is set only for a shared rulebook rendered with a repo's `.stackfoundry/rulebook-additions/<name>.md`;
+`diff` reports the rulebook outdated when that file changed, appeared or went away since it was recorded.
 
 `merged` is a generated file that holds the team's own content too: one merged by hand, or kept by choice over a new
 version. Its recorded hash is of that content, so it reads `untouched`; it is never replaced on that account, and a
@@ -68,6 +71,18 @@ def load(root: Path) -> dict:
     return json.loads(p.read_text(encoding="utf-8-sig"))
 
 
+def additions(root: Path, rel: str) -> dict | None:
+    """For a shared rulebook (`.stackfoundry/rules/testing.md`…): {additions file: sha256}, empty when the repo has
+    none. None for any other file. The additions are an input of the render, so a change to them is a reason to
+    re-render even when the template did not move."""
+    from .rulebooks import NAMES, addition_path
+    m = re.fullmatch(r"\.stackfoundry/rules/([a-z0-9-]+)\.md", rel)
+    if not m or m.group(1) not in NAMES:
+        return None
+    add = addition_path(m.group(1))
+    return {add: sha256(root / add)} if (root / add).is_file() else {}
+
+
 def record(root: Path, files: list[str], template: str, kind: str) -> dict:
     data = load(root)
     data["pluginVersion"] = plugin_version()
@@ -78,6 +93,8 @@ def record(root: Path, files: list[str], template: str, kind: str) -> dict:
             raise FileNotFoundError(rel)
         data["files"][rel] = {"template": template, "templateVersion": template_version(template),
                               "sha256": sha256(path), "kind": kind}
+        if adds := additions(root, rel):
+            data["files"][rel]["additions"] = adds
     data["files"] = dict(sorted(data["files"].items()))
     write_json(root / MANIFEST, data)
     return data
@@ -107,10 +124,15 @@ def diff(root: Path) -> list[dict]:
         current = template_version(entry.get("template", ""))
         outdated = entry.get("kind") != "materialized" and current not in (*NO_TEMPLATE, "missing") \
             and current != entry.get("templateVersion")
+        adds = additions(root, rel)
+        adds_changed = adds is not None and adds != (entry.get("additions") or {})
+        outdated = outdated or adds_changed
         merged = entry.get("kind") == "merged"
         action = (
             "merge via extensions merge (materialized)" if entry.get("kind") == "materialized"
             else "leave deleted" if state == "deleted"
+            else "re-render with render-rulebook --write (its additions changed)" if adds_changed
+            and state == "untouched" and not merged
             else "re-research via research-stack, then merge by hand (merged)" if merged
             and entry.get("template") == "research"
             else "re-research via research-stack" if entry.get("template") == "research"

@@ -24,6 +24,14 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   copies it expects, and `upgrade` no longer moves an assistant-only materialized agent.
 - The guard's role rules reach a materialized agent kept only in `.claude/agents/`: when
   `.stackfoundry/agents/<name>.md` is absent and the name ends in a plugin role, the Claude Code copy is read.
+- **Repo additions to the shared rulebooks**: `.stackfoundry/rulebook-additions/<name>.md` for `testing`,
+  `documentation`, `dependency-bumps` and `benchmarking`. Its `## <heading>` sections are appended under that
+  heading of the render, and an optional `extraPaths:` list joins `paths:`. `render-rulebook` applies them, so each
+  assistant's copy from `render-rule` stays a pure render and a hand-merged copy is no longer needed. A heading the
+  rulebook does not have is an error naming the nearest one, like an extension anchor. `manifest record` stores the
+  additions' hash and `manifest diff` asks for a re-render when they change; `upgrade` re-anchors a section after a
+  heading rename and offers to move a `merged` rulebook into an additions file. Format:
+  `reference/rulebook-additions.md`.
 
 ### Changed
 
@@ -46,6 +54,13 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   extra risk over `Bash`: the guard hook already matches `PowerShell` and applies the same role rules, and the
   read-only roles name in their Tooling what the shell is for. Copilot, Gemini CLI and Antigravity map both shells
   to their one shell tool.
+
+### Changed (extension anchors)
+
+- No skill or agent heading was renamed or removed.
+- New anchors: every `##` heading of the shared rulebooks (`reference/rulebooks/testing.md`, `documentation.md`,
+  `dependency-bumps.md`, `benchmarking.md`) is now an anchor for rulebook additions. Renaming one from now on is
+  listed here, old → new.
 
 ### Fixed
 
