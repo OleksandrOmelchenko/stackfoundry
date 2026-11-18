@@ -1,5 +1,5 @@
 ---
-templateVersion: 1
+templateVersion: 2
 output: "{{docsRoot}}/bug-reports/README.md"
 ---
 # Bug reports
@@ -23,7 +23,8 @@ findings are a **tracker**: the marker on each finding is kept current by the sk
 ```
 
 - **Ids** are stable (`B1`, `B2`, …; a prefix per report family is fine) and never reused. A re-found finding keeps
-  its id.
+  its id. An id is upper-case letters and digits, in parts joined by `-` (several ids may join with `/`), with at
+  least one digit: `B1`, `SUMUP-1`, `A11Y-TARGET-SIZE`, `EL7/N26`.
 - **Severity**: 🔴 blocker (wrong, unsafe, or breaks something outside the change) · 🟡 confirm · 🔵 suggestion.
 - **Markers**: ⬜ OPEN · ⚠️ PARTIAL (the remainder spelled out) · ✅ FIXED · 🚫 WONT-FIX (with the reason).
   `/stackfoundry:fix-verify` flips them from its verdicts; nobody else flips a marker without verification.

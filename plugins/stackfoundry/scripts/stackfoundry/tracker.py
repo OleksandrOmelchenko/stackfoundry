@@ -13,6 +13,10 @@ Test design
   Status (last cell): ⬜ to write · ✍️ written · ✅ reviewed sound · ⚠️ flagged · ❓ question · ⏸ quarantined ·
   🚫 dropped. Open = anything but ✅ and 🚫.
 
+A finding id is upper-case letters and digits in parts joined by `-`, optionally several joined by `/` (`B1`,
+`SUMUP-1`, `A11Y-TARGET-SIZE`, `EL7/N26`), and holds at least one digit, so banner words (`OPEN`, `PARTIAL`) never
+read as ids. In a banner, a token that is no finding id of the file reads as its `-`/`/` parts (`B1/B2` is two ids).
+
 The banner lists open ids, never tallies: a count goes stale the moment one finding moves.
 """
 from __future__ import annotations
@@ -24,12 +28,15 @@ from pathlib import Path
 SEVERITIES = ("🔴", "🟡", "🔵")
 OPEN_MARKERS = ("⬜", "⚠️", "⚠")
 CLOSED_MARKERS = ("✅", "🚫")
-FINDING = re.compile(r"^#{2,4}\s+([A-Z]{1,3}\d+)\s+(🔴|🟡|🔵)\s+(⬜|⚠️|⚠|✅|🚫)")
+_PART = r"[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*"
+ID_TOKEN = rf"{_PART}(?:/{_PART})*"
+FINDING = re.compile(rf"^#{{2,4}}\s+({ID_TOKEN})\s+(🔴|🟡|🔵)\s+(⬜|⚠️|⚠|✅|🚫)")
 TD_ROW = re.compile(r"^\|\s*(TD-\d+)\s*\|(.*)\|\s*$")
 TD_STATUS = ("⬜", "✍️", "✍", "✅", "⚠️", "⚠", "❓", "⏸️", "⏸", "🚫")
 BANNER = re.compile(r"^\*\*Open:\*\*\s*(.*)$")
 TALLY = re.compile(r"\b\d+\s+(?:open|fixed|closed|findings?|rows?|partial)\b", re.I)
-ID = re.compile(r"\b(?:TD-\d+|[A-Z]{1,3}\d+)\b")
+ID = re.compile(rf"\b{ID_TOKEN}\b")
+DIGIT = re.compile(r"\d")
 
 
 def kind_of(text: str) -> str:
@@ -44,7 +51,7 @@ def parse_bug_report(text: str) -> dict:
     for n, line in enumerate(text.splitlines(), start=1):
         if banner is None and (b := BANNER.match(line)):
             banner = {"line": n, "text": b.group(1)}
-        if m := FINDING.match(line):
+        if (m := FINDING.match(line)) and DIGIT.search(m.group(1)):
             marker = m.group(3)
             findings.append({"id": m.group(1), "severity": m.group(2), "marker": marker, "line": n,
                              "open": marker in OPEN_MARKERS})
@@ -77,6 +84,18 @@ def is_tracker(text: str) -> bool:
     return bool(doc["items"]) or doc["banner"] is not None
 
 
+def banner_ids(text: str, known: set[str]) -> list[str]:
+    """The ids a banner segment names: a token that is a finding id of the file as is, any other split into its
+    `-`/`/` parts, keeping only those with a digit (so `B1/B2` and `B1-B3` read as before ids could hold `-`)."""
+    out: list[str] = []
+    for token in ID.findall(text):
+        if token in known:
+            out.append(token)
+        else:
+            out += [p for p in re.split(r"[-/]", token) if DIGIT.search(p) and re.fullmatch(_PART, p)]
+    return out
+
+
 def check(text: str) -> list[str]:
     doc = parse(text)
     problems: list[str] = []
@@ -100,7 +119,8 @@ def check(text: str) -> list[str]:
     if TALLY.search(btext):
         problems.append(f"line {banner['line']}: the banner carries a tally ({TALLY.search(btext).group(0)!r}); list open ids")
     open_part = btext.split("**Questions:**")[0]
-    listed = set(ID.findall(open_part))
+    known = set(ids)
+    listed = set(banner_ids(open_part, known))
     if open_part.strip().lower().startswith("none"):
         listed = set()
     if listed - open_ids:
@@ -112,7 +132,7 @@ def check(text: str) -> list[str]:
             if not item["open"]:
                 continue
             seg = re.search(re.escape(item["severity"]) + r"([^🔴🟡🔵]*)", open_part)
-            if item["id"] in listed and (seg is None or item["id"] not in ID.findall(seg.group(1))):
+            if item["id"] in listed and (seg is None or item["id"] not in banner_ids(seg.group(1), known)):
                 problems.append(f"{item['id']} is listed under the wrong severity in the banner")
     return problems
 

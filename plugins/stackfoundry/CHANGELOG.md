@@ -6,6 +6,15 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 
 ## [Unreleased]
 
+### Changed
+
+- **Wider finding ids.** `tracker check`, `tracker parse` and `backlog` read a finding id as upper-case letters and
+  digits in parts joined by `-`, optionally several joined by `/` (`SUMUP-1`, `CAT-X1`, `I-MCP3`,
+  `A11Y-TARGET-SIZE`, `EL7/N26`), instead of only `[A-Z]{1,3}\d+`. An id still holds a digit, so banner words never
+  read as ids, and a banner token that is no finding id of the file still reads as its parts (`B1/B2` is two ids):
+  existing trackers parse exactly as before. Test-design rows keep `TD-<n>`. The bug-reports README template
+  (version 2) states the shape.
+
 ## [0.5.0] - 2026-11-12
 
 ### Added

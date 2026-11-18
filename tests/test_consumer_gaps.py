@@ -1,0 +1,71 @@
+"""Gaps a consuming repo hit while handing its own tooling to the plugin (P1-P7), one class per gap."""
+from __future__ import annotations
+
+import json
+import unittest
+
+from tests._support import TempRepo, run_cli, write
+
+from stackfoundry import tracker
+
+WIDE_IDS = ("SUMUP-1", "CAT-X1", "BN-C8", "I-MCP3", "A11Y-TARGET-SIZE", "EL7/N26")
+
+
+def _report(open_ids: str, findings: list[tuple[str, str, str]]) -> str:
+    blocks = "\n\n".join(f"### {i} {sev} {marker} — title of {i}\n- **Where:** `x.py:1`" for i, sev, marker in findings)
+    return f"# area: sweep (2026-01-01)\n\n**Open:** {open_ids}\n\n## Findings\n\n{blocks}\n"
+
+
+class TrackerIdTests(unittest.TestCase):
+    """P3: hyphenated and slash finding ids parse; old ids parse exactly as before."""
+
+    WIDE = _report("🔴 SUMUP-1, CAT-X1 · 🟡 BN-C8, I-MCP3 · 🔵 A11Y-TARGET-SIZE, EL7/N26",
+                   [("SUMUP-1", "🔴", "⬜"), ("CAT-X1", "🔴", "⚠️"), ("BN-C8", "🟡", "⬜"), ("I-MCP3", "🟡", "⬜"),
+                    ("A11Y-TARGET-SIZE", "🔵", "⬜"), ("EL7/N26", "🔵", "⬜"), ("MB-12", "🟡", "✅")])
+
+    def test_wide_ids_parse_and_check(self):
+        items = tracker.parse(self.WIDE)["items"]
+        self.assertEqual([i["id"] for i in items], [*WIDE_IDS, "MB-12"])
+        self.assertEqual(tracker.check(self.WIDE), [])
+
+    def test_wide_ids_misplaced_in_banner_are_reported(self):
+        text = self.WIDE.replace("🔴 SUMUP-1, CAT-X1 · 🟡 BN-C8", "🔴 CAT-X1 · 🟡 SUMUP-1, BN-C8")
+        self.assertIn("SUMUP-1 is listed under the wrong severity in the banner", tracker.check(text))
+        text = self.WIDE.replace("EL7/N26", "EL7/N27", 1)
+        self.assertTrue(any("not open" in p and "N27" in p for p in tracker.check(text)), tracker.check(text))
+
+    def test_backlog_lists_wide_ids(self):
+        with TempRepo({"docs/bug-reports/2026-01-01-area-sweep.md": self.WIDE}) as root:
+            r = run_cli(["backlog", "--section", "bugs", "--json", "--root", str(root)])
+            self.assertEqual(r.returncode, 0, r.stderr)
+            ids = [b["id"] for b in json.loads(r.stdout)["bugs"]]
+        self.assertEqual(ids, list(WIDE_IDS))
+
+    def test_tracker_check_cli_passes(self):
+        with TempRepo({"r.md": self.WIDE}) as root:
+            r = run_cli(["tracker", "check", str(root / "r.md")])
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_old_ids_parse_as_before(self):
+        text = _report("🔴 B1 · 🟡 B3/B4, AB12", [("B1", "🔴", "⬜"), ("B2", "🔴", "✅"), ("B3", "🟡", "⬜"),
+                                                ("B4", "🟡", "⚠️"), ("AB12", "🟡", "⬜")])
+        doc = tracker.parse(text)
+        self.assertEqual([(i["id"], i["open"]) for i in doc["items"]],
+                         [("B1", True), ("B2", False), ("B3", True), ("B4", True), ("AB12", True)])
+        self.assertEqual(tracker.check(text), [])
+        # `B1-B3` in a banner still names B1 and B3, not one id
+        self.assertEqual(tracker.banner_ids("B1-B3", {"B1", "B3"}), ["B1", "B3"])
+
+    def test_words_without_a_digit_are_never_ids(self):
+        self.assertEqual(tracker.banner_ids("OPEN, PARTIAL · FIXED and UTF-8 then B2", {"B2"}), ["B2"])
+        self.assertEqual(tracker.parse("### OPEN 🔴 ⬜ OPEN — not a finding\n")["items"], [])
+
+    def test_test_design_rows_keep_td_ids(self):
+        text = "**Open:** TD-1 · **Questions:** Q1\n\n| ID | B | T | L | O | S |\n|---|---|---|---|---|---|\n" \
+               "| TD-1 | a | b | c | d | ⬜ |\n| TD-2 | a | b | c | d | ✅ |\n"
+        self.assertEqual([r["id"] for r in tracker.parse(text)["items"]], ["TD-1", "TD-2"])
+        self.assertEqual(tracker.check(text), [])
+
+
+if __name__ == "__main__":
+    unittest.main()
