@@ -6,6 +6,8 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-19
+
 ### Added
 
 - **`shellWithBrowser` in `.stackfoundry/config.json`**: a repo may let its own agents hold a shell beside the local
