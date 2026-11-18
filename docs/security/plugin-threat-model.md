@@ -131,7 +131,12 @@ recorded as mitigated threats below.
     `threat-model`, `performance-review`) pass its cited notes as `web:`.
   - `scripts/stackfoundry/plumbing.py` rejects a grant holding `Bash`/`PowerShell` beside web or browser tools. Its
     one allowed exception, `SHELL_WITH_WEB`, is `web-fix-verifier`: local app only, with the reason recorded.
-  - Tests: `tests/test_plumbing_manifest.py`.
+  - A repo's own agents that drive only the local app in the browser pane are exempted the same way, by the repo:
+    `.stackfoundry/config.json` `shellWithBrowser`, one entry per agent with a required reason. It covers the pane
+    alone (`plumbing.py` `LOCAL_BROWSER`); an agent holding `WebFetch`, `WebSearch` or another browser beside a shell
+    stays an error whatever the list says, because those reach pages nobody in the repo controls. The residual risk
+    is the repo's own call: a listed agent sent to a remote URL in its brief would read that page with a shell.
+  - Tests: `tests/test_plumbing_manifest.py`, `tests/test_consumer_gaps.py` (`ShellWithBrowserTests`).
 - **Where:**
   - `agents/security-reviewer.md` (*Web pass*) and `agents/performance-reviewer.md` (*Pass 2*): `Bash` with
     `WebSearch`/`WebFetch`;

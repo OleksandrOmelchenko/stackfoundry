@@ -139,5 +139,63 @@ class PowerShellGrantTests(unittest.TestCase):
                 self.assertIn("`PowerShell` for a `.ps1` command when you have it", text)
 
 
+def _repo_agent(name: str, tools: str) -> str:
+    return (f"---\nname: {name}\ndescription: Verifies a fix in the local app. Read-only.\ntools: {tools}\n---\n\n"
+            f"# {name}\n\nVerify.\n\n## Tooling\n\n- `Bash` for the gate commands.\n")
+
+
+BROWSER = "Read, Bash, mcp__Claude_Browser__navigate, mcp__Claude_Browser__read_page"
+
+
+class ShellWithBrowserTests(unittest.TestCase):
+    """P2: a repo may exempt its own agent that holds a shell beside the local browser pane, with a reason; never
+    one that holds WebFetch, WebSearch or another browser."""
+
+    def check(self, agents: dict[str, str], config: dict | None = None):
+        from stackfoundry.plumbing import check
+        files = {f".claude/agents/{n}.md": _repo_agent(n, t) for n, t in agents.items()}
+        if config is not None:
+            files[".stackfoundry/config.json"] = json.dumps(config)
+        with TempRepo(files) as root:
+            report = check(root)
+        return report.errors, report.warnings
+
+    def test_local_browser_with_a_shell_is_an_error_without_an_entry(self):
+        errors, _ = self.check({"web-verifier": BROWSER})
+        self.assertTrue(any("web-verifier" in e and "shellWithBrowser" in e for e in errors), errors)
+
+    def test_an_entry_with_a_reason_exempts_the_local_browser(self):
+        errors, _ = self.check({"web-verifier": BROWSER}, {"shellWithBrowser": [
+            {"agent": "web-verifier", "reason": "opens only the app on localhost"}]})
+        self.assertEqual(errors, [])
+
+    def test_the_same_pane_from_a_cloud_session_is_local_too(self):
+        errors, _ = self.check({"web-verifier": "Read, Bash, mcp__remote-devices__Claude_Browser__navigate"},
+                               {"shellWithBrowser": [{"agent": "web-verifier", "reason": "local app only"}]})
+        self.assertEqual(errors, [])
+
+    def test_web_fetch_with_a_shell_stays_an_error_even_when_listed(self):
+        errors, _ = self.check({"builder": "Read, Bash, WebFetch"},
+                               {"shellWithBrowser": [{"agent": "builder", "reason": "reads build docs"}]})
+        self.assertTrue(any("builder" in e and "never WebFetch" in e for e in errors), errors)
+
+    def test_listing_does_not_cover_another_browser_beside_the_pane(self):
+        errors, _ = self.check({"mixed": BROWSER + ", mcp__playwright_browser__navigate"},
+                               {"shellWithBrowser": [{"agent": "mixed", "reason": "local app only"}]})
+        self.assertTrue(any("mixed" in e and "together with" in e for e in errors), errors)
+
+    def test_an_entry_without_a_reason_is_a_config_error(self):
+        from stackfoundry import config
+        self.assertTrue(config.check({"shellWithBrowser": [{"agent": "web-verifier"}]}))
+        self.assertTrue(config.check({"shellWithBrowser": [{"agent": "web-verifier", "reason": " "}]}))
+        self.assertEqual(config.check({"shellWithBrowser": [{"agent": "web-verifier", "reason": "local"}]}), [])
+        errors, _ = self.check({"web-verifier": BROWSER}, {"shellWithBrowser": [{"agent": "web-verifier"}]})
+        self.assertTrue(any("cannot read shellWithBrowser" in e for e in errors), errors)
+
+    def test_an_entry_for_no_agent_warns(self):
+        _, warnings = self.check({}, {"shellWithBrowser": [{"agent": "ghost", "reason": "x"}]})
+        self.assertTrue(any("'ghost'" in w for w in warnings), warnings)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -6,6 +6,14 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
 
 ## [Unreleased]
 
+### Added
+
+- **`shellWithBrowser` in `.stackfoundry/config.json`**: a repo may let its own agents hold a shell beside the local
+  browser pane (`mcp__Claude_Browser__*`), one entry per agent with a required reason. `verify-plumbing` still
+  rejects a shell beside web or browser tools by default (threat model T2), and the list never exempts `WebFetch`,
+  `WebSearch` or another browser tool: an agent holding those with a shell stays an error. An entry naming no agent
+  is a warning.
+
 ### Changed
 
 - **Wider finding ids.** `tracker check`, `tracker parse` and `backlog` read a finding id as upper-case letters and

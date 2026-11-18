@@ -9,9 +9,10 @@ import json
 import re
 from pathlib import Path
 
-from . import PLUGIN_ROOT, extensions, preamble
+from . import PLUGIN_ROOT, config, extensions, preamble
 from .clients import PRIVILEGED_AGENT_KEYS
 from .frontmatter import split
+from .profile import CONFIG, ProfileError
 
 MATERIALIZED = Path(".stackfoundry") / "agents"
 
@@ -38,6 +39,10 @@ WEB_TOOLS = {"WebSearch", "WebFetch"}
 SHELL_WITH_WEB = {
     "web-fix-verifier": "its browser opens only the local app under test, and its brief never names a remote page",
 }
+# A repo may exempt its own agents too (`.stackfoundry/config.json` shellWithBrowser, each with a reason), but only
+# for the browser pane that previews the local app: never WebFetch, WebSearch or a browser with the user's sign-ins.
+# The second prefix is the same pane reached from a cloud session linked to the user's computer.
+LOCAL_BROWSER = ("mcp__Claude_Browser__", "mcp__remote-devices__Claude_Browser__")
 NEGATION = re.compile(r"\b(never|not|no|don't|do not|without|cannot|isn't|must not)\b", re.I)
 LINK = re.compile(r"(?<!!)\[[^\]]*\]\(([^)\s]+)\)")
 PLUGIN_REF = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}/([^\s`\"')\]]+)")
@@ -156,6 +161,12 @@ def check(base: Path) -> Report:
                                  "Use to, Use after or Use before)")
                 bodies.append((f, body))
 
+    exempt: dict[str, str] = {}
+    if not plugin_mode:
+        try:
+            exempt = {e["agent"]: e["reason"] for e in config.load(base)["shellWithBrowser"]}
+        except (ProfileError, OSError, ValueError) as exc:
+            rep.error(base / CONFIG, f"cannot read shellWithBrowser: {exc}")
     agent_files = sorted(agents_dir.glob("*.md")) if agents_dir.is_dir() else []
     if not plugin_mode and (base / MATERIALIZED).is_dir():
         # The canonical team agents; .claude/agents holds Claude Code's copies of them.
@@ -198,8 +209,18 @@ def check(base: Path) -> Report:
             web = [t for t in tools if t in WEB_TOOLS or (t.startswith("mcp__") and "browser" in t.lower())]
             shell = [t for t in tools if t in ("Bash", "PowerShell")]
             if web and shell and f.stem not in SHELL_WITH_WEB:
-                rep.error(f, f"grants {', '.join(shell)} together with {', '.join(web[:2])}; give the web part to "
-                             "web-researcher, or add the agent to plumbing.SHELL_WITH_WEB with the reason")
+                local_only = all(t.startswith(LOCAL_BROWSER) for t in web)
+                if local_only and f.stem in exempt:
+                    pass  # the repo listed it, with its reason, in config.json shellWithBrowser
+                elif local_only and not plugin_mode:
+                    rep.error(f, f"grants {', '.join(shell)} together with {', '.join(web[:2])}; if its browser opens "
+                                 "only the local app, list it in .stackfoundry/config.json shellWithBrowser with the "
+                                 "reason, or give the web part to web-researcher")
+                else:
+                    listed = (" (shellWithBrowser exempts local browser-preview tools only, never WebFetch, "
+                              "WebSearch or another browser)" if f.stem in exempt else "")
+                    rep.error(f, f"grants {', '.join(shell)} together with {', '.join(web[:2])}; give the web part to "
+                                 f"web-researcher, or add the agent to plumbing.SHELL_WITH_WEB with the reason{listed}")
             if isinstance(desc, str) and re.search(r"\bread-only\b", desc, re.I):
                 for t in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
                     if t in tools:
@@ -225,6 +246,8 @@ def check(base: Path) -> Report:
                         rep.error(f, f"body tells it to use `{t}` but the grant lacks it: {line.strip()[:90]}")
             bodies.append((f, body))
 
+    for name in sorted(set(exempt) - agent_names):
+        rep.warn(base / CONFIG, f"shellWithBrowser names {name!r}, which is no agent here")
     # In a repo, a team agent may dispatch the installed plugin's agents (`stackfoundry:<role>`).
     known_agents = agent_names | ({p.stem for p in (plugin_root / "agents").glob("*.md")} if not plugin_mode else set())
     for path, body in bodies:

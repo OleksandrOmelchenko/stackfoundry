@@ -6,6 +6,7 @@ collaborator reads the same values. Schema: reference/schemas/config.schema.json
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -19,7 +20,15 @@ DEFAULTS = {
     "docsRoot": "docs",
     "researchRefreshDays": 90,
     "defaultEffort": "standard",
+    "shellWithBrowser": [],
 }
+AGENT_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+
+
+def _exemption_ok(entry) -> bool:
+    return (isinstance(entry, dict) and set(entry) == {"agent", "reason"} and isinstance(entry["agent"], str)
+            and bool(AGENT_NAME.fullmatch(entry["agent"])) and isinstance(entry["reason"], str)
+            and bool(entry["reason"].strip()))
 
 
 def check(data: dict) -> list[str]:
@@ -37,6 +46,10 @@ def check(data: dict) -> list[str]:
         errors.append("researchRefreshDays must be a whole number from 7 to 365")
     if data.get("defaultEffort", DEFAULTS["defaultEffort"]) not in EFFORTS:
         errors.append(f"defaultEffort must be one of {', '.join(EFFORTS)}")
+    exempt = data.get("shellWithBrowser", DEFAULTS["shellWithBrowser"])
+    if not isinstance(exempt, list) or not all(_exemption_ok(e) for e in exempt):
+        errors.append('shellWithBrowser must be a list of {"agent": "<agent name>", "reason": "<why it is safe>"}, '
+                      "each with a non-empty reason")
     unknown = sorted(set(data) - set(DEFAULTS))
     if unknown:
         errors.append(f"unknown key(s): {', '.join(unknown)}")

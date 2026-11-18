@@ -217,4 +217,7 @@ backticked tool name there, on a line without a negation, must be in the grant. 
 - **How:** web questions go to `web-researcher` (no shell, no write), and its cited notes travel to the reviewer in
   the brief (`web:`).
 - **Enforced:** `verify-plumbing` reports any grant that holds `Bash` or `PowerShell` together with `WebSearch`,
-  `WebFetch` or a browser tool. The exceptions are listed, each with its reason, in `plumbing.py` `SHELL_WITH_WEB`.
+  `WebFetch` or a browser tool. The plugin's exceptions are listed, each with its reason, in `plumbing.py`
+  `SHELL_WITH_WEB`. A repo may exempt its own agents in `.stackfoundry/config.json` `shellWithBrowser`, each with
+  a reason, but only beside the local browser pane (`plumbing.py` `LOCAL_BROWSER`): `WebFetch`, `WebSearch` or
+  another browser with a shell stays an error, since those reach pages the repo does not control.

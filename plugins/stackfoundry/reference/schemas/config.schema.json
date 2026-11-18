@@ -31,6 +31,20 @@
       "enum": ["quick", "standard", "thorough"],
       "description": "How wide orchestrators fan out when the request does not say: quick (diff scope, one verify vote), standard, or thorough (deep sweep, three refutation votes on high-risk findings).",
       "default": "standard"
+    },
+    "shellWithBrowser": {
+      "type": "array",
+      "description": "The repo's own agents allowed a shell (Bash, PowerShell) beside the local browser pane (mcp__Claude_Browser__*), each with the reason it is safe. verify-plumbing otherwise rejects that grant (threat model T2). It never exempts WebFetch, WebSearch or any other browser tool.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["agent", "reason"],
+        "properties": {
+          "agent": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$", "description": "The agent's name (its file name without .md)."},
+          "reason": {"type": "string", "minLength": 1, "description": "Why its shell cannot be steered by a page: for example, its browser opens only the app on localhost."}
+        }
+      },
+      "default": []
     }
   }
 }
