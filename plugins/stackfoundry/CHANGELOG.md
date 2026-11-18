@@ -54,6 +54,9 @@ A release tag is `stackfoundry--v<version>` (see `docs/release.md` in the reposi
   extra risk over `Bash`: the guard hook already matches `PowerShell` and applies the same role rules, and the
   read-only roles name in their Tooling what the shell is for. Copilot, Gemini CLI and Antigravity map both shells
   to their one shell tool.
+- **`code-verifier` gives mechanical fixes as exact edits.** It stays read-only (an `Edit` grant would widen a review
+  role); its report now gives each mechanical fix (a stale path, a key, a handler or job name) as file, old text and
+  new text a caller can apply directly, and keeps judgment fixes as prose.
 
 ### Changed (extension anchors)
 

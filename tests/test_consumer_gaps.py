@@ -389,5 +389,20 @@ class RulebookAdditionTests(unittest.TestCase):
         self.assertEqual(row["action"], "re-render with render-rulebook --write (its additions changed)")
 
 
+class CodeVerifierEditTests(unittest.TestCase):
+    """P6: code-verifier stays read-only, and gives each mechanical fix as an exact edit a caller can apply."""
+
+    def test_report_asks_for_exact_edits_and_the_grant_stays_read_only(self):
+        import re
+        from tests._support import PLUGIN
+        from stackfoundry.frontmatter import split
+        fields, body, _ = split((PLUGIN / "agents" / "code-verifier.md").read_text(encoding="utf-8"))
+        tools = {t.strip() for t in fields["tools"].split(",")}
+        self.assertFalse(tools & {"Edit", "Write", "MultiEdit", "NotebookEdit"})
+        report = re.search(r"^## Report\n(.*?)(?=^## )", body, re.M | re.S).group(1)
+        for part in ("exact", "**file**", "**old text**", "**new text**", "unique in"):
+            self.assertIn(part, report)
+
+
 if __name__ == "__main__":
     unittest.main()

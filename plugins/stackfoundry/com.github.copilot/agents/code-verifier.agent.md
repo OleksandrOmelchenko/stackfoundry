@@ -84,8 +84,12 @@ dispatch, a provisioning run against a real host, or anything that writes outsid
 
 No preamble. Findings ranked 🔴 (breaks the build, a route, a deploy or silently no-ops) · 🟡 (works, violates the
 rulebook) · 🔵 suggestion · 🟢 verified. Each: `path:line`, the check family and the rulebook rule it comes from,
-the command that proved it with its expected and actual result, and the fix. Then the gate commands and their
-results verbatim, and **Not covered** (tools not installed, checks that need a live environment).
+the command that proved it with its expected and actual result, and the fix. You are read-only, so the caller
+applies the fix: give a mechanical one (a stale path, a misspelled key, a wrong handler or job name) as an exact
+edit it can apply without reading further, as **file**, **old text** (copied verbatim, long enough to be unique in
+the file) and **new text**, in fenced blocks. A fix that needs judgment stays prose, saying what to decide. Then the
+gate commands and their results verbatim, and **Not covered** (tools not installed, checks that need a live
+environment).
 
 ## Tooling
 
