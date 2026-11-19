@@ -35,6 +35,10 @@ from . import roles, shellwords
 from .globs import CASE_INSENSITIVE_FS, match
 from .profile import GUARDS
 
+# Claude Code's hook runs through `sh`, which Windows has only with Git Bash. A module constant, so a test can play
+# Windows on any host (patching os.name would break pathlib off Windows).
+ON_WINDOWS = os.name == "nt"
+
 # The fallback for a command shellwords cannot split (unbalanced quotes): whole-string patterns.
 # A command can start after a separator, a parenthesis, whitespace or an opening quote (sh -c 'git push').
 _START = r"""(?:^|[;&|(\s'"`])"""
@@ -421,7 +425,7 @@ def main(args) -> int:
         for p in problems:
             print(f"guards.json: {p}")
         print("guards.json: ok" if not problems else f"guards.json: {len(problems)} problem(s)")
-        if os.name == "nt" and not shutil.which("sh"):
+        if ON_WINDOWS and not shutil.which("sh"):
             # Claude Code's hook runs `sh "<root>/scripts/stackfoundry.sh" guard`; without Git Bash that fails and,
             # with onFailure "continue", every call goes through. A warning, not a problem in the file.
             print("guard: warning: no `sh` on PATH, so Claude Code's guard hook cannot run here and every call goes "

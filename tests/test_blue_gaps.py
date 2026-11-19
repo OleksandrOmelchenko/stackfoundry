@@ -93,8 +93,9 @@ class GitBashWarningTests(unittest.TestCase):
         from stackfoundry import guard
         with TempRepo() as root:
             write(root, {".stackfoundry/guards.json": json.dumps({"schemaVersion": 1})})
-            with mock.patch.object(guard.os, "name", os_name), mock.patch.object(guard.shutil, "which",
-                                                                                 return_value=sh), \
+            # guard.ON_WINDOWS, not os.name: patching os.name makes pathlib build WindowsPath on Linux and macOS
+            with mock.patch.object(guard, "ON_WINDOWS", os_name == "nt"), mock.patch.object(guard.shutil, "which",
+                                                                                            return_value=sh), \
                     contextlib.redirect_stdout(io.StringIO()) as out:
                 code = guard.main(argparse.Namespace(check=True, root=str(root)))
         return code, out.getvalue()
@@ -106,8 +107,12 @@ class GitBashWarningTests(unittest.TestCase):
         self.assertIn("no `sh` on PATH, so Claude Code's guard hook cannot run here", out)
 
     def test_windows_with_sh_says_nothing_more(self):
-        # (os.name cannot be faked as "posix" on Windows: pathlib refuses PosixPath there.)
         self.assertNotIn("warning", self.check("nt", "C:/Program Files/Git/usr/bin/sh.exe")[1])
+
+    def test_other_systems_never_warn_about_sh(self):
+        code, out = self.check("posix", None)
+        self.assertEqual(code, 0)
+        self.assertNotIn("warning", out)
 
 
 class PrivilegedFrontmatterTests(unittest.TestCase):
